@@ -758,13 +758,35 @@
         "E-6A01B5",
         "E-6460A4",
         "E-FCF78C",
-        "E-D2A1D1"
+        "E-D2A1D1",
+        "E-D20808",
+        "E-4C881B",
+        "E-39FE91",
+        "E-3A02BB",
+        "E-664EBA",
+        "E-BCB5B9",
+        "E-6FDCCD",
+        "E-03D8A8",
+        "E-FD96DD",
+        "E-431D50",
+        "E-4D7267",
+        "E-15D2BC",
+        "E-195761",
+        "E-BEA2D5",
+        "E-FFE61C",
+        "E-95ED6C",
+        "E-40670D",
+        "E-AB9BE6",
+        "E-83F576",
+        "E-8EB890"
       ],
       "finding_ids": [
         "FND-F3EADB",
         "FND-B038DA",
         "FND-ACA54A",
-        "FND-D1BC1B"
+        "FND-D1BC1B",
+        "FND-DA834C",
+        "FND-828043"
       ],
       "hypothesis_ids": [
         "H-78A9FC",
@@ -778,10 +800,18 @@
         "H-478BDA",
         "H-4EEB69",
         "H-1F0636",
-        "H-24EBEA"
+        "H-24EBEA",
+        "H-588B87",
+        "H-6BC174",
+        "H-1EB594",
+        "H-9B957A",
+        "H-5E12CC",
+        "H-18DE30"
       ],
       "limitations": [],
       "recommendations": [
+        "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
+        "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
         "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
         "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
         "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
@@ -840,6 +870,64 @@
         "H-4DC28D",
         "H-1C5E84",
         "H-450065"
+      ],
+      "limitations": [],
+      "recommendations": [
+        "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records."
+      ]
+    },
+    {
+      "investigation_id": "INV-398DBB7C",
+      "artifact_name": "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+      "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+      "artifact_sha256": "c36d812cd9037d9a5a4e443d40c8ea29f4742274414afaef07f5b735a3375731",
+      "artifact_md5": "7658f393720ea504ff43b7a8cd657850",
+      "artifact_size": 1469,
+      "file_type": "pcap",
+      "status": "COMPLETED",
+      "created_at": "2026-09-10T12:29:01.729268+00:00",
+      "completed_at": null,
+      "packet_count": 15,
+      "duration_seconds": 0.28,
+      "completeness_percentage": 100.0,
+      "protocols_detected": [
+        "SMTP"
+      ],
+      "streams_analyzed": 1,
+      "posture": {
+        "overall_posture_score": 20.0,
+        "risk_level": "CRITICAL RISK",
+        "confidence_score": 98.0,
+        "score_deductions": [
+          {
+            "source": "Rule: RULE-STARTTLS-PLAINTEXT-VIOLATION",
+            "points": -80.0,
+            "reason": "STARTTLS plaintext fallback exposed email payloads."
+          }
+        ],
+        "bonus_points": [],
+        "ml_risk_probability": 0.9997,
+        "ml_anomaly_contribution": 10.0
+      },
+      "evidence_ids": [
+        "E-5B7952",
+        "E-66EEAA",
+        "E-316409",
+        "E-69DC85",
+        "E-AF63C5",
+        "E-902703",
+        "E-8288DD",
+        "E-29B09B",
+        "E-79262F",
+        "E-C3181D"
+      ],
+      "finding_ids": [
+        "FND-7698BF"
+      ],
+      "hypothesis_ids": [
+        "H-D1CF61",
+        "H-0E8410",
+        "H-0B8AFF"
       ],
       "limitations": [],
       "recommendations": [
@@ -7984,6 +8072,1449 @@
         "completeness": 100.0,
         "downgrade_confirmed": true
       }
+    },
+    {
+      "evidence_id": "E-5B7952",
+      "investigation_id": "INV-398DBB7C",
+      "type": "OBSERVED",
+      "claim": "PCAP capture 'INV-398DBB7C_mail_attack_starttls_strip.pcap' loaded: 15 packets, SHA256 c36d812cd9037d9a...",
+      "source_tool": "CaptureEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T12:29:01.902492+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "pcap.inspect"
+      ],
+      "details": {
+        "artifact_name": "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "artifact_sha256": "c36d812cd9037d9a5a4e443d40c8ea29f4742274414afaef07f5b735a3375731",
+        "artifact_md5": "7658f393720ea504ff43b7a8cd657850",
+        "artifact_size": 1469,
+        "file_type": "pcap",
+        "packet_count": 15,
+        "start_time": 1789024022.532865,
+        "end_time": 1789024022.812864,
+        "duration_seconds": 0.28,
+        "completeness": {
+          "completeness_percentage": 100.0,
+          "total_tcp_packets": 15,
+          "tcp_streams_count": 1,
+          "sequence_gaps": 0,
+          "retransmissions": 0,
+          "truncated_packets": 0,
+          "is_complete": true,
+          "assessment": "HIGH_QUALITY_COMPLETE"
+        }
+      }
+    },
+    {
+      "evidence_id": "E-66EEAA",
+      "investigation_id": "INV-398DBB7C",
+      "type": "OBSERVED",
+      "claim": "Discovered 1 TCP stream(s) with protocols: SMTP.",
+      "source_tool": "TCPReconstructionEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap/streams",
+      "timestamp": "2026-09-10T12:29:01.963331+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "pcap.sessions"
+      ],
+      "details": {
+        "protocols": [
+          "SMTP"
+        ],
+        "stream_count": 1
+      }
+    },
+    {
+      "evidence_id": "E-316409",
+      "investigation_id": "INV-398DBB7C",
+      "type": "starttls_advertised",
+      "claim": "SMTP Server advertised STARTTLS capability in EHLO response.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-10T12:29:02.028505+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "EHLO"
+      ],
+      "details": {
+        "advertised_extensions": [
+          "10240000",
+          "OK",
+          "2.1.0 Ok",
+          "2.1.5 Ok"
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-69DC85",
+      "investigation_id": "INV-398DBB7C",
+      "type": "starttls_requested",
+      "claim": "SMTP Client issued STARTTLS command.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-10T12:29:02.045352+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "STARTTLS"
+      ],
+      "details": {
+        "client_ehlo": "EHLO client.internal.org"
+      }
+    },
+    {
+      "evidence_id": "E-AF63C5",
+      "investigation_id": "INV-398DBB7C",
+      "type": "plaintext_continuation",
+      "claim": "CRITICAL: Cleartext SMTP traffic continued on the wire after STARTTLS negotiation.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap/TCP-0001/smtp/fallback",
+      "timestamp": "2026-09-10T12:29:02.063418+00:00",
+      "confidence": 0.99,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "MAIL_FROM"
+      ],
+      "details": {
+        "anomalies": [
+          "Plaintext MAIL FROM command observed after STARTTLS negotiation.",
+          "STARTTLS accepted by server, but TLS ClientHello was absent; connection fell back to plaintext."
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-902703",
+      "investigation_id": "INV-398DBB7C",
+      "type": "DERIVED",
+      "claim": "Capture Completeness calculated at 100.0% (HIGH_QUALITY_COMPLETE). Gaps: 0, Retransmissions: 0.",
+      "source_tool": "CaptureEngine.completeness",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap/completeness",
+      "timestamp": "2026-09-10T12:29:02.271099+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": "H-D1CF61",
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "pcap.completeness"
+      ],
+      "details": {
+        "completeness_percentage": 100.0,
+        "total_tcp_packets": 15,
+        "tcp_streams_count": 1,
+        "sequence_gaps": 0,
+        "retransmissions": 0,
+        "truncated_packets": 0,
+        "is_complete": true,
+        "assessment": "HIGH_QUALITY_COMPLETE"
+      }
+    },
+    {
+      "evidence_id": "E-8288DD",
+      "investigation_id": "INV-398DBB7C",
+      "type": "OBSERVED",
+      "claim": "Reconstructed stream TCP-0001 (192.168.1.105:49152 -> 198.51.100.25:25, 395 bytes).",
+      "source_tool": "TCPReconstructionEngine.stream",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap/TCP-0001",
+      "timestamp": "2026-09-10T12:29:02.361803+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": "H-D1CF61",
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "TCP-0001"
+      ],
+      "details": {
+        "stream_id": "TCP-0001",
+        "client_endpoint": "192.168.1.105:49152",
+        "server_endpoint": "198.51.100.25:25",
+        "protocol_hint": "SMTP",
+        "segment_count": 12,
+        "total_bytes": 395,
+        "duration_seconds": 0.28,
+        "transcript": [
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2001,
+            "timestamp": 1789024022.5929,
+            "length": 39,
+            "preview": "220 mail.securebank.com ESMTP Postfix\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1001,
+            "timestamp": 1789024022.6129,
+            "length": 26,
+            "preview": "EHLO client.internal.org\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2040,
+            "timestamp": 1789024022.6329,
+            "length": 82,
+            "preview": "250-mail.securebank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250 OK\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1027,
+            "timestamp": 1789024022.6529,
+            "length": 10,
+            "preview": "STARTTLS\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2122,
+            "timestamp": 1789024022.6729,
+            "length": 30,
+            "preview": "220 2.0.0 Ready to start TLS\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1037,
+            "timestamp": 1789024022.6929,
+            "length": 30,
+            "preview": "MAIL FROM:<ceo@internal.org>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2152,
+            "timestamp": 1789024022.7129,
+            "length": 14,
+            "preview": "250 2.1.0 Ok\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1067,
+            "timestamp": 1789024022.7329,
+            "length": 34,
+            "preview": "RCPT TO:<finance@securebank.com>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2166,
+            "timestamp": 1789024022.7529,
+            "length": 14,
+            "preview": "250 2.1.5 Ok\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1101,
+            "timestamp": 1789024022.7729,
+            "length": 6,
+            "preview": "DATA\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2180,
+            "timestamp": 1789024022.7929,
+            "length": 37,
+            "preview": "354 End data with <CR><LF>.<CR><LF>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1107,
+            "timestamp": 1789024022.8129,
+            "length": 73,
+            "preview": "Subject: Urgent Wire Transfer\r\nPlease transfer funds to ACCT-991283.\r\n.\r\n",
+            "is_binary": false
+          }
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-29B09B",
+      "investigation_id": "INV-398DBB7C",
+      "type": "crypto_rule_triggered",
+      "claim": "Rule Triggered [RULE-STARTTLS-PLAINTEXT-VIOLATION]: STARTTLS Protocol Downgrade / Plaintext Continuation - STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+      "source_tool": "CryptoRuleEngine",
+      "tool_version": "2026.1",
+      "tool_args": {
+        "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION"
+      },
+      "raw_artifact_ref": "rule://RULE-STARTTLS-PLAINTEXT-VIOLATION",
+      "timestamp": "2026-09-10T12:29:02.441604+00:00",
+      "confidence": 1.0,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "CryptoRuleEngine",
+        "RULE-STARTTLS-PLAINTEXT-VIOLATION"
+      ],
+      "details": {
+        "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION",
+        "title": "STARTTLS Protocol Downgrade / Plaintext Continuation",
+        "description": "STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+        "severity": "critical",
+        "triggered": true,
+        "details": {
+          "smtp_violation": true,
+          "imap_violation": false,
+          "pop3_violation": false
+        },
+        "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records."
+      }
+    },
+    {
+      "evidence_id": "E-79262F",
+      "investigation_id": "INV-398DBB7C",
+      "type": "ML_CLASSIFICATION",
+      "claim": "XGBoost Classifier classified session as 'PLAINTEXT_FALLBACK' (Risk Probability: 100.0%, Confidence: 51.7%).",
+      "source_tool": "CryptoRiskClassifier (XGBoost)",
+      "tool_version": "3.4",
+      "tool_args": {
+        "predicted_class": "PLAINTEXT_FALLBACK"
+      },
+      "raw_artifact_ref": "ml://prediction/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T12:29:02.498879+00:00",
+      "confidence": 0.5171,
+      "severity": "high",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "XGBoost",
+        "PLAINTEXT_FALLBACK"
+      ],
+      "details": {
+        "predicted_class": "PLAINTEXT_FALLBACK",
+        "class_confidence": 0.5171,
+        "risk_probability": 0.9997,
+        "is_anomalous": true,
+        "class_probabilities": {
+          "SECURE_BASELINE": 0.0003,
+          "DEPRECATED_TLS": 0.4804,
+          "WEAK_CIPHER": 0.0004,
+          "WEAK_CERTIFICATE": 0.0004,
+          "CERTIFICATE_ANOMALY": 0.0003,
+          "STARTTLS_STRIPPING": 0.0003,
+          "PLAINTEXT_FALLBACK": 0.5171,
+          "INCOMPLETE_HANDSHAKE": 0.0007
+        },
+        "top_features": [
+          {
+            "feature": "starttls_advertised",
+            "value": 1.0,
+            "importance": 0.1412000060081482,
+            "contribution": 0.1412000060081482
+          },
+          {
+            "feature": "capture_completeness",
+            "value": 100.0,
+            "importance": 0.12380000203847885,
+            "contribution": 0.12380000203847885
+          },
+          {
+            "feature": "plaintext_after_starttls",
+            "value": 1.0,
+            "importance": 0.09080000221729279,
+            "contribution": 0.09080000221729279
+          },
+          {
+            "feature": "handshake_rtt_ms",
+            "value": 45.0,
+            "importance": 0.03150000050663948,
+            "contribution": 0.03150000050663948
+          },
+          {
+            "feature": "is_cert_expired",
+            "value": 0.0,
+            "importance": 0.24130000174045563,
+            "contribution": 0.02410000003874302
+          }
+        ],
+        "extracted_features": {
+          "tls_version_num": 0.0,
+          "cipher_strength_score": 0.0,
+          "has_pfs": 0.0,
+          "cert_key_bits": 0.0,
+          "is_self_signed": 0.0,
+          "is_cert_expired": 0.0,
+          "has_weak_sig": 0.0,
+          "starttls_advertised": 1.0,
+          "starttls_requested": 1.0,
+          "starttls_accepted": 1.0,
+          "plaintext_after_starttls": 1.0,
+          "auth_in_plaintext": 0.0,
+          "capture_completeness": 100.0,
+          "handshake_rtt_ms": 45.0,
+          "stream_total_bytes": 395.0
+        }
+      }
+    },
+    {
+      "evidence_id": "E-C3181D",
+      "investigation_id": "INV-398DBB7C",
+      "type": "DERIVED",
+      "claim": "High capture completeness (>=95%) with continuous TCP sequencing contradicts packet drop; confirms deliberate STARTTLS strip or unencrypted downgrade.",
+      "source_tool": "ContradictionEngine",
+      "tool_version": "1.0",
+      "tool_args": {},
+      "raw_artifact_ref": "pcap://INV-398DBB7C_mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T12:29:02.522731+00:00",
+      "confidence": 0.99,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-398DBB7C",
+        "pcap.completeness",
+        "smtp.analyze"
+      ],
+      "details": {
+        "completeness": 100.0,
+        "downgrade_confirmed": true
+      }
+    },
+    {
+      "evidence_id": "E-D20808",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "OBSERVED",
+      "claim": "PCAP capture 'mail_attack_starttls_strip.pcap' loaded: 15 packets, SHA256 c36d812cd9037d9a...",
+      "source_tool": "CaptureEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T13:25:33.849366+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "pcap.inspect"
+      ],
+      "details": {
+        "artifact_name": "mail_attack_starttls_strip.pcap",
+        "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "artifact_sha256": "c36d812cd9037d9a5a4e443d40c8ea29f4742274414afaef07f5b735a3375731",
+        "artifact_md5": "7658f393720ea504ff43b7a8cd657850",
+        "artifact_size": 1469,
+        "file_type": "pcap",
+        "packet_count": 15,
+        "start_time": 1789024022.532865,
+        "end_time": 1789024022.812864,
+        "duration_seconds": 0.28,
+        "completeness": {
+          "completeness_percentage": 100.0,
+          "total_tcp_packets": 15,
+          "tcp_streams_count": 1,
+          "sequence_gaps": 0,
+          "retransmissions": 0,
+          "truncated_packets": 0,
+          "is_complete": true,
+          "assessment": "HIGH_QUALITY_COMPLETE"
+        }
+      }
+    },
+    {
+      "evidence_id": "E-4C881B",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "OBSERVED",
+      "claim": "Discovered 1 TCP stream(s) with protocols: SMTP.",
+      "source_tool": "TCPReconstructionEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/streams",
+      "timestamp": "2026-09-10T13:25:33.911554+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "pcap.sessions"
+      ],
+      "details": {
+        "protocols": [
+          "SMTP"
+        ],
+        "stream_count": 1
+      }
+    },
+    {
+      "evidence_id": "E-39FE91",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "starttls_advertised",
+      "claim": "SMTP Server advertised STARTTLS capability in EHLO response.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-10T13:25:33.998103+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "EHLO"
+      ],
+      "details": {
+        "advertised_extensions": [
+          "10240000",
+          "OK",
+          "2.1.0 Ok",
+          "2.1.5 Ok"
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-3A02BB",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "starttls_requested",
+      "claim": "SMTP Client issued STARTTLS command.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-10T13:25:34.017668+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "STARTTLS"
+      ],
+      "details": {
+        "client_ehlo": "EHLO client.internal.org"
+      }
+    },
+    {
+      "evidence_id": "E-664EBA",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "plaintext_continuation",
+      "claim": "CRITICAL: Cleartext SMTP traffic continued on the wire after STARTTLS negotiation.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001/smtp/fallback",
+      "timestamp": "2026-09-10T13:25:34.035170+00:00",
+      "confidence": 0.99,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "MAIL_FROM"
+      ],
+      "details": {
+        "anomalies": [
+          "Plaintext MAIL FROM command observed after STARTTLS negotiation.",
+          "STARTTLS accepted by server, but TLS ClientHello was absent; connection fell back to plaintext."
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-BCB5B9",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "DERIVED",
+      "claim": "Capture Completeness calculated at 100.0% (HIGH_QUALITY_COMPLETE). Gaps: 0, Retransmissions: 0.",
+      "source_tool": "CaptureEngine.completeness",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/completeness",
+      "timestamp": "2026-09-10T13:25:34.290264+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": "H-588B87",
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "pcap.completeness"
+      ],
+      "details": {
+        "completeness_percentage": 100.0,
+        "total_tcp_packets": 15,
+        "tcp_streams_count": 1,
+        "sequence_gaps": 0,
+        "retransmissions": 0,
+        "truncated_packets": 0,
+        "is_complete": true,
+        "assessment": "HIGH_QUALITY_COMPLETE"
+      }
+    },
+    {
+      "evidence_id": "E-6FDCCD",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "OBSERVED",
+      "claim": "Reconstructed stream TCP-0001 (192.168.1.105:49152 -> 198.51.100.25:25, 395 bytes).",
+      "source_tool": "TCPReconstructionEngine.stream",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001",
+      "timestamp": "2026-09-10T13:25:34.405424+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": "H-588B87",
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001"
+      ],
+      "details": {
+        "stream_id": "TCP-0001",
+        "client_endpoint": "192.168.1.105:49152",
+        "server_endpoint": "198.51.100.25:25",
+        "protocol_hint": "SMTP",
+        "segment_count": 12,
+        "total_bytes": 395,
+        "duration_seconds": 0.28,
+        "transcript": [
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2001,
+            "timestamp": 1789024022.5929,
+            "length": 39,
+            "preview": "220 mail.securebank.com ESMTP Postfix\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1001,
+            "timestamp": 1789024022.6129,
+            "length": 26,
+            "preview": "EHLO client.internal.org\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2040,
+            "timestamp": 1789024022.6329,
+            "length": 82,
+            "preview": "250-mail.securebank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250 OK\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1027,
+            "timestamp": 1789024022.6529,
+            "length": 10,
+            "preview": "STARTTLS\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2122,
+            "timestamp": 1789024022.6729,
+            "length": 30,
+            "preview": "220 2.0.0 Ready to start TLS\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1037,
+            "timestamp": 1789024022.6929,
+            "length": 30,
+            "preview": "MAIL FROM:<ceo@internal.org>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2152,
+            "timestamp": 1789024022.7129,
+            "length": 14,
+            "preview": "250 2.1.0 Ok\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1067,
+            "timestamp": 1789024022.7329,
+            "length": 34,
+            "preview": "RCPT TO:<finance@securebank.com>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2166,
+            "timestamp": 1789024022.7529,
+            "length": 14,
+            "preview": "250 2.1.5 Ok\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1101,
+            "timestamp": 1789024022.7729,
+            "length": 6,
+            "preview": "DATA\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2180,
+            "timestamp": 1789024022.7929,
+            "length": 37,
+            "preview": "354 End data with <CR><LF>.<CR><LF>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1107,
+            "timestamp": 1789024022.8129,
+            "length": 73,
+            "preview": "Subject: Urgent Wire Transfer\r\nPlease transfer funds to ACCT-991283.\r\n.\r\n",
+            "is_binary": false
+          }
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-03D8A8",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "crypto_rule_triggered",
+      "claim": "Rule Triggered [RULE-STARTTLS-PLAINTEXT-VIOLATION]: STARTTLS Protocol Downgrade / Plaintext Continuation - STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+      "source_tool": "CryptoRuleEngine",
+      "tool_version": "2026.1",
+      "tool_args": {
+        "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION"
+      },
+      "raw_artifact_ref": "rule://RULE-STARTTLS-PLAINTEXT-VIOLATION",
+      "timestamp": "2026-09-10T13:25:34.494172+00:00",
+      "confidence": 1.0,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "CryptoRuleEngine",
+        "RULE-STARTTLS-PLAINTEXT-VIOLATION"
+      ],
+      "details": {
+        "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION",
+        "title": "STARTTLS Protocol Downgrade / Plaintext Continuation",
+        "description": "STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+        "severity": "critical",
+        "triggered": true,
+        "details": {
+          "smtp_violation": true,
+          "imap_violation": false,
+          "pop3_violation": false
+        },
+        "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records."
+      }
+    },
+    {
+      "evidence_id": "E-FD96DD",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "ML_CLASSIFICATION",
+      "claim": "XGBoost Classifier classified session as 'PLAINTEXT_FALLBACK' (Risk Probability: 100.0%, Confidence: 51.7%).",
+      "source_tool": "CryptoRiskClassifier (XGBoost)",
+      "tool_version": "3.4",
+      "tool_args": {
+        "predicted_class": "PLAINTEXT_FALLBACK"
+      },
+      "raw_artifact_ref": "ml://prediction/mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T13:25:34.559253+00:00",
+      "confidence": 0.5171,
+      "severity": "high",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "XGBoost",
+        "PLAINTEXT_FALLBACK"
+      ],
+      "details": {
+        "predicted_class": "PLAINTEXT_FALLBACK",
+        "class_confidence": 0.5171,
+        "risk_probability": 0.9997,
+        "is_anomalous": true,
+        "class_probabilities": {
+          "SECURE_BASELINE": 0.0003,
+          "DEPRECATED_TLS": 0.4804,
+          "WEAK_CIPHER": 0.0004,
+          "WEAK_CERTIFICATE": 0.0004,
+          "CERTIFICATE_ANOMALY": 0.0003,
+          "STARTTLS_STRIPPING": 0.0003,
+          "PLAINTEXT_FALLBACK": 0.5171,
+          "INCOMPLETE_HANDSHAKE": 0.0007
+        },
+        "top_features": [
+          {
+            "feature": "starttls_advertised",
+            "value": 1.0,
+            "importance": 0.1412000060081482,
+            "contribution": 0.1412000060081482
+          },
+          {
+            "feature": "capture_completeness",
+            "value": 100.0,
+            "importance": 0.12380000203847885,
+            "contribution": 0.12380000203847885
+          },
+          {
+            "feature": "plaintext_after_starttls",
+            "value": 1.0,
+            "importance": 0.09080000221729279,
+            "contribution": 0.09080000221729279
+          },
+          {
+            "feature": "handshake_rtt_ms",
+            "value": 45.0,
+            "importance": 0.03150000050663948,
+            "contribution": 0.03150000050663948
+          },
+          {
+            "feature": "is_cert_expired",
+            "value": 0.0,
+            "importance": 0.24130000174045563,
+            "contribution": 0.02410000003874302
+          }
+        ],
+        "extracted_features": {
+          "tls_version_num": 0.0,
+          "cipher_strength_score": 0.0,
+          "has_pfs": 0.0,
+          "cert_key_bits": 0.0,
+          "is_self_signed": 0.0,
+          "is_cert_expired": 0.0,
+          "has_weak_sig": 0.0,
+          "starttls_advertised": 1.0,
+          "starttls_requested": 1.0,
+          "starttls_accepted": 1.0,
+          "plaintext_after_starttls": 1.0,
+          "auth_in_plaintext": 0.0,
+          "capture_completeness": 100.0,
+          "handshake_rtt_ms": 45.0,
+          "stream_total_bytes": 395.0
+        }
+      }
+    },
+    {
+      "evidence_id": "E-431D50",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "DERIVED",
+      "claim": "High capture completeness (>=95%) with continuous TCP sequencing contradicts packet drop; confirms deliberate STARTTLS strip or unencrypted downgrade.",
+      "source_tool": "ContradictionEngine",
+      "tool_version": "1.0",
+      "tool_args": {},
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T13:25:34.586983+00:00",
+      "confidence": 0.99,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "pcap.completeness",
+        "smtp.analyze"
+      ],
+      "details": {
+        "completeness": 100.0,
+        "downgrade_confirmed": true
+      }
+    },
+    {
+      "evidence_id": "E-4D7267",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "OBSERVED",
+      "claim": "PCAP capture 'mail_attack_starttls_strip.pcap' loaded: 15 packets, SHA256 c36d812cd9037d9a...",
+      "source_tool": "CaptureEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T13:26:01.421824+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "pcap.inspect"
+      ],
+      "details": {
+        "artifact_name": "mail_attack_starttls_strip.pcap",
+        "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "artifact_sha256": "c36d812cd9037d9a5a4e443d40c8ea29f4742274414afaef07f5b735a3375731",
+        "artifact_md5": "7658f393720ea504ff43b7a8cd657850",
+        "artifact_size": 1469,
+        "file_type": "pcap",
+        "packet_count": 15,
+        "start_time": 1789024022.532865,
+        "end_time": 1789024022.812864,
+        "duration_seconds": 0.28,
+        "completeness": {
+          "completeness_percentage": 100.0,
+          "total_tcp_packets": 15,
+          "tcp_streams_count": 1,
+          "sequence_gaps": 0,
+          "retransmissions": 0,
+          "truncated_packets": 0,
+          "is_complete": true,
+          "assessment": "HIGH_QUALITY_COMPLETE"
+        }
+      }
+    },
+    {
+      "evidence_id": "E-15D2BC",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "OBSERVED",
+      "claim": "Discovered 1 TCP stream(s) with protocols: SMTP.",
+      "source_tool": "TCPReconstructionEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/streams",
+      "timestamp": "2026-09-10T13:26:01.476344+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "pcap.sessions"
+      ],
+      "details": {
+        "protocols": [
+          "SMTP"
+        ],
+        "stream_count": 1
+      }
+    },
+    {
+      "evidence_id": "E-195761",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "starttls_advertised",
+      "claim": "SMTP Server advertised STARTTLS capability in EHLO response.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-10T13:26:01.543716+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "EHLO"
+      ],
+      "details": {
+        "advertised_extensions": [
+          "10240000",
+          "OK",
+          "2.1.0 Ok",
+          "2.1.5 Ok"
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-BEA2D5",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "starttls_requested",
+      "claim": "SMTP Client issued STARTTLS command.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-10T13:26:01.557837+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "STARTTLS"
+      ],
+      "details": {
+        "client_ehlo": "EHLO client.internal.org"
+      }
+    },
+    {
+      "evidence_id": "E-FFE61C",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "plaintext_continuation",
+      "claim": "CRITICAL: Cleartext SMTP traffic continued on the wire after STARTTLS negotiation.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001/smtp/fallback",
+      "timestamp": "2026-09-10T13:26:01.571675+00:00",
+      "confidence": 0.99,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001",
+        "MAIL_FROM"
+      ],
+      "details": {
+        "anomalies": [
+          "Plaintext MAIL FROM command observed after STARTTLS negotiation.",
+          "STARTTLS accepted by server, but TLS ClientHello was absent; connection fell back to plaintext."
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-95ED6C",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "DERIVED",
+      "claim": "Capture Completeness calculated at 100.0% (HIGH_QUALITY_COMPLETE). Gaps: 0, Retransmissions: 0.",
+      "source_tool": "CaptureEngine.completeness",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/completeness",
+      "timestamp": "2026-09-10T13:26:01.749298+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": "H-9B957A",
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "pcap.completeness"
+      ],
+      "details": {
+        "completeness_percentage": 100.0,
+        "total_tcp_packets": 15,
+        "tcp_streams_count": 1,
+        "sequence_gaps": 0,
+        "retransmissions": 0,
+        "truncated_packets": 0,
+        "is_complete": true,
+        "assessment": "HIGH_QUALITY_COMPLETE"
+      }
+    },
+    {
+      "evidence_id": "E-40670D",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "OBSERVED",
+      "claim": "Reconstructed stream TCP-0001 (192.168.1.105:49152 -> 198.51.100.25:25, 395 bytes).",
+      "source_tool": "TCPReconstructionEngine.stream",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap/TCP-0001",
+      "timestamp": "2026-09-10T13:26:01.827165+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": "H-9B957A",
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "TCP-0001"
+      ],
+      "details": {
+        "stream_id": "TCP-0001",
+        "client_endpoint": "192.168.1.105:49152",
+        "server_endpoint": "198.51.100.25:25",
+        "protocol_hint": "SMTP",
+        "segment_count": 12,
+        "total_bytes": 395,
+        "duration_seconds": 0.28,
+        "transcript": [
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2001,
+            "timestamp": 1789024022.5929,
+            "length": 39,
+            "preview": "220 mail.securebank.com ESMTP Postfix\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1001,
+            "timestamp": 1789024022.6129,
+            "length": 26,
+            "preview": "EHLO client.internal.org\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2040,
+            "timestamp": 1789024022.6329,
+            "length": 82,
+            "preview": "250-mail.securebank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250 OK\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1027,
+            "timestamp": 1789024022.6529,
+            "length": 10,
+            "preview": "STARTTLS\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2122,
+            "timestamp": 1789024022.6729,
+            "length": 30,
+            "preview": "220 2.0.0 Ready to start TLS\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1037,
+            "timestamp": 1789024022.6929,
+            "length": 30,
+            "preview": "MAIL FROM:<ceo@internal.org>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2152,
+            "timestamp": 1789024022.7129,
+            "length": 14,
+            "preview": "250 2.1.0 Ok\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1067,
+            "timestamp": 1789024022.7329,
+            "length": 34,
+            "preview": "RCPT TO:<finance@securebank.com>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2166,
+            "timestamp": 1789024022.7529,
+            "length": 14,
+            "preview": "250 2.1.5 Ok\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1101,
+            "timestamp": 1789024022.7729,
+            "length": 6,
+            "preview": "DATA\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "SERVER_TO_CLIENT",
+            "src": "198.51.100.25:25",
+            "dst": "192.168.1.105:49152",
+            "seq": 2180,
+            "timestamp": 1789024022.7929,
+            "length": 37,
+            "preview": "354 End data with <CR><LF>.<CR><LF>\r\n",
+            "is_binary": false
+          },
+          {
+            "direction": "CLIENT_TO_SERVER",
+            "src": "192.168.1.105:49152",
+            "dst": "198.51.100.25:25",
+            "seq": 1107,
+            "timestamp": 1789024022.8129,
+            "length": 73,
+            "preview": "Subject: Urgent Wire Transfer\r\nPlease transfer funds to ACCT-991283.\r\n.\r\n",
+            "is_binary": false
+          }
+        ]
+      }
+    },
+    {
+      "evidence_id": "E-AB9BE6",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "crypto_rule_triggered",
+      "claim": "Rule Triggered [RULE-STARTTLS-PLAINTEXT-VIOLATION]: STARTTLS Protocol Downgrade / Plaintext Continuation - STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+      "source_tool": "CryptoRuleEngine",
+      "tool_version": "2026.1",
+      "tool_args": {
+        "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION"
+      },
+      "raw_artifact_ref": "rule://RULE-STARTTLS-PLAINTEXT-VIOLATION",
+      "timestamp": "2026-09-10T13:26:01.897844+00:00",
+      "confidence": 1.0,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "CryptoRuleEngine",
+        "RULE-STARTTLS-PLAINTEXT-VIOLATION"
+      ],
+      "details": {
+        "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION",
+        "title": "STARTTLS Protocol Downgrade / Plaintext Continuation",
+        "description": "STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+        "severity": "critical",
+        "triggered": true,
+        "details": {
+          "smtp_violation": true,
+          "imap_violation": false,
+          "pop3_violation": false
+        },
+        "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records."
+      }
+    },
+    {
+      "evidence_id": "E-83F576",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "ML_CLASSIFICATION",
+      "claim": "XGBoost Classifier classified session as 'PLAINTEXT_FALLBACK' (Risk Probability: 100.0%, Confidence: 51.7%).",
+      "source_tool": "CryptoRiskClassifier (XGBoost)",
+      "tool_version": "3.4",
+      "tool_args": {
+        "predicted_class": "PLAINTEXT_FALLBACK"
+      },
+      "raw_artifact_ref": "ml://prediction/mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T13:26:01.954122+00:00",
+      "confidence": 0.5171,
+      "severity": "high",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "mail_attack_starttls_strip.pcap",
+        "XGBoost",
+        "PLAINTEXT_FALLBACK"
+      ],
+      "details": {
+        "predicted_class": "PLAINTEXT_FALLBACK",
+        "class_confidence": 0.5171,
+        "risk_probability": 0.9997,
+        "is_anomalous": true,
+        "class_probabilities": {
+          "SECURE_BASELINE": 0.0003,
+          "DEPRECATED_TLS": 0.4804,
+          "WEAK_CIPHER": 0.0004,
+          "WEAK_CERTIFICATE": 0.0004,
+          "CERTIFICATE_ANOMALY": 0.0003,
+          "STARTTLS_STRIPPING": 0.0003,
+          "PLAINTEXT_FALLBACK": 0.5171,
+          "INCOMPLETE_HANDSHAKE": 0.0007
+        },
+        "top_features": [
+          {
+            "feature": "starttls_advertised",
+            "value": 1.0,
+            "importance": 0.1412000060081482,
+            "contribution": 0.1412000060081482
+          },
+          {
+            "feature": "capture_completeness",
+            "value": 100.0,
+            "importance": 0.12380000203847885,
+            "contribution": 0.12380000203847885
+          },
+          {
+            "feature": "plaintext_after_starttls",
+            "value": 1.0,
+            "importance": 0.09080000221729279,
+            "contribution": 0.09080000221729279
+          },
+          {
+            "feature": "handshake_rtt_ms",
+            "value": 45.0,
+            "importance": 0.03150000050663948,
+            "contribution": 0.03150000050663948
+          },
+          {
+            "feature": "is_cert_expired",
+            "value": 0.0,
+            "importance": 0.24130000174045563,
+            "contribution": 0.02410000003874302
+          }
+        ],
+        "extracted_features": {
+          "tls_version_num": 0.0,
+          "cipher_strength_score": 0.0,
+          "has_pfs": 0.0,
+          "cert_key_bits": 0.0,
+          "is_self_signed": 0.0,
+          "is_cert_expired": 0.0,
+          "has_weak_sig": 0.0,
+          "starttls_advertised": 1.0,
+          "starttls_requested": 1.0,
+          "starttls_accepted": 1.0,
+          "plaintext_after_starttls": 1.0,
+          "auth_in_plaintext": 0.0,
+          "capture_completeness": 100.0,
+          "handshake_rtt_ms": 45.0,
+          "stream_total_bytes": 395.0
+        }
+      }
+    },
+    {
+      "evidence_id": "E-8EB890",
+      "investigation_id": "INV-REPLAY-TEST",
+      "type": "DERIVED",
+      "claim": "High capture completeness (>=95%) with continuous TCP sequencing contradicts packet drop; confirms deliberate STARTTLS strip or unencrypted downgrade.",
+      "source_tool": "ContradictionEngine",
+      "tool_version": "1.0",
+      "tool_args": {},
+      "raw_artifact_ref": "pcap://mail_attack_starttls_strip.pcap",
+      "timestamp": "2026-09-10T13:26:01.974354+00:00",
+      "confidence": 0.99,
+      "severity": "critical",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-REPLAY-TEST",
+        "pcap.completeness",
+        "smtp.analyze"
+      ],
+      "details": {
+        "completeness": 100.0,
+        "downgrade_confirmed": true
+      }
     }
   ],
   "hypotheses": [
@@ -8562,6 +10093,150 @@
       "notes": [],
       "created_at": "2026-09-10T12:26:28.328330+00:00",
       "updated_at": "2026-09-10T12:26:28.328362+00:00"
+    },
+    {
+      "hypothesis_id": "H-D1CF61",
+      "investigation_id": "INV-398DBB7C",
+      "title": "H1: STARTTLS Stripping / Downgrade Attack",
+      "description": "Active adversary or misconfigured MTA forced cleartext email fallback.",
+      "status": "CONFIRMED",
+      "confidence": 1.0,
+      "supporting_evidence_ids": [
+        "E-902703"
+      ],
+      "refuting_evidence_ids": [],
+      "notes": [
+        "[SUPPORTED] High completeness proves unencrypted messages were actually transmitted.",
+        "[CONFIRMED] Verified cleartext MAIL FROM / DATA payload after STARTTLS acceptance."
+      ],
+      "created_at": "2026-09-10T12:29:02.218710+00:00",
+      "updated_at": "2026-09-10T12:29:02.218776+00:00"
+    },
+    {
+      "hypothesis_id": "H-0E8410",
+      "investigation_id": "INV-398DBB7C",
+      "title": "H2: Incomplete Packet Capture",
+      "description": "Missing TLS ClientHello is an artifact of packet loss or truncated PCAP capture.",
+      "status": "REFUTED",
+      "confidence": 0.0,
+      "supporting_evidence_ids": [],
+      "refuting_evidence_ids": [
+        "E-902703"
+      ],
+      "notes": [
+        "[REFUTED] PCAP completeness is 100.0%; packet loss ruled out."
+      ],
+      "created_at": "2026-09-10T12:29:02.233849+00:00",
+      "updated_at": "2026-09-10T12:29:02.233865+00:00"
+    },
+    {
+      "hypothesis_id": "H-0B8AFF",
+      "investigation_id": "INV-398DBB7C",
+      "title": "H3: TLS Negotiation Failure",
+      "description": "Client or server aborted TLS handshake due to incompatible parameters.",
+      "status": "PROPOSED",
+      "confidence": 0.5,
+      "supporting_evidence_ids": [],
+      "refuting_evidence_ids": [],
+      "notes": [],
+      "created_at": "2026-09-10T12:29:02.249093+00:00",
+      "updated_at": "2026-09-10T12:29:02.249104+00:00"
+    },
+    {
+      "hypothesis_id": "H-588B87",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "H1: STARTTLS Stripping / Downgrade Attack",
+      "description": "Active adversary or misconfigured MTA forced cleartext email fallback.",
+      "status": "CONFIRMED",
+      "confidence": 1.0,
+      "supporting_evidence_ids": [
+        "E-BCB5B9"
+      ],
+      "refuting_evidence_ids": [],
+      "notes": [
+        "[SUPPORTED] High completeness proves unencrypted messages were actually transmitted.",
+        "[CONFIRMED] Verified cleartext MAIL FROM / DATA payload after STARTTLS acceptance."
+      ],
+      "created_at": "2026-09-10T13:25:34.220988+00:00",
+      "updated_at": "2026-09-10T13:25:34.221019+00:00"
+    },
+    {
+      "hypothesis_id": "H-6BC174",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "H2: Incomplete Packet Capture",
+      "description": "Missing TLS ClientHello is an artifact of packet loss or truncated PCAP capture.",
+      "status": "REFUTED",
+      "confidence": 0.0,
+      "supporting_evidence_ids": [],
+      "refuting_evidence_ids": [
+        "E-BCB5B9"
+      ],
+      "notes": [
+        "[REFUTED] PCAP completeness is 100.0%; packet loss ruled out."
+      ],
+      "created_at": "2026-09-10T13:25:34.245278+00:00",
+      "updated_at": "2026-09-10T13:25:34.245377+00:00"
+    },
+    {
+      "hypothesis_id": "H-1EB594",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "H3: TLS Negotiation Failure",
+      "description": "Client or server aborted TLS handshake due to incompatible parameters.",
+      "status": "PROPOSED",
+      "confidence": 0.5,
+      "supporting_evidence_ids": [],
+      "refuting_evidence_ids": [],
+      "notes": [],
+      "created_at": "2026-09-10T13:25:34.264826+00:00",
+      "updated_at": "2026-09-10T13:25:34.264841+00:00"
+    },
+    {
+      "hypothesis_id": "H-9B957A",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "H1: STARTTLS Stripping / Downgrade Attack",
+      "description": "Active adversary or misconfigured MTA forced cleartext email fallback.",
+      "status": "CONFIRMED",
+      "confidence": 1.0,
+      "supporting_evidence_ids": [
+        "E-95ED6C"
+      ],
+      "refuting_evidence_ids": [],
+      "notes": [
+        "[SUPPORTED] High completeness proves unencrypted messages were actually transmitted.",
+        "[CONFIRMED] Verified cleartext MAIL FROM / DATA payload after STARTTLS acceptance."
+      ],
+      "created_at": "2026-09-10T13:26:01.701153+00:00",
+      "updated_at": "2026-09-10T13:26:01.701170+00:00"
+    },
+    {
+      "hypothesis_id": "H-5E12CC",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "H2: Incomplete Packet Capture",
+      "description": "Missing TLS ClientHello is an artifact of packet loss or truncated PCAP capture.",
+      "status": "REFUTED",
+      "confidence": 0.0,
+      "supporting_evidence_ids": [],
+      "refuting_evidence_ids": [
+        "E-95ED6C"
+      ],
+      "notes": [
+        "[REFUTED] PCAP completeness is 100.0%; packet loss ruled out."
+      ],
+      "created_at": "2026-09-10T13:26:01.714675+00:00",
+      "updated_at": "2026-09-10T13:26:01.714690+00:00"
+    },
+    {
+      "hypothesis_id": "H-18DE30",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "H3: TLS Negotiation Failure",
+      "description": "Client or server aborted TLS handshake due to incompatible parameters.",
+      "status": "PROPOSED",
+      "confidence": 0.5,
+      "supporting_evidence_ids": [],
+      "refuting_evidence_ids": [],
+      "notes": [],
+      "created_at": "2026-09-10T13:26:01.728808+00:00",
+      "updated_at": "2026-09-10T13:26:01.728850+00:00"
     }
   ],
   "findings": [
@@ -8916,6 +10591,66 @@
       "hypothesis_id": null,
       "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
       "created_at": "2026-09-10T12:26:28.641932+00:00"
+    },
+    {
+      "finding_id": "FND-7698BF",
+      "investigation_id": "INV-398DBB7C",
+      "title": "STARTTLS Protocol Downgrade / Plaintext Continuation",
+      "description": "STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "confidence": 1.0,
+      "evidence_ids": [
+        "E-5B7952",
+        "E-66EEAA",
+        "E-316409",
+        "E-69DC85",
+        "E-AF63C5"
+      ],
+      "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION",
+      "hypothesis_id": null,
+      "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
+      "created_at": "2026-09-10T12:29:02.557665+00:00"
+    },
+    {
+      "finding_id": "FND-DA834C",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "STARTTLS Protocol Downgrade / Plaintext Continuation",
+      "description": "STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "confidence": 1.0,
+      "evidence_ids": [
+        "E-020D7A",
+        "E-CB046D",
+        "E-F1C600",
+        "E-04AC84",
+        "E-5ECE9E"
+      ],
+      "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION",
+      "hypothesis_id": null,
+      "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
+      "created_at": "2026-09-10T13:25:34.626018+00:00"
+    },
+    {
+      "finding_id": "FND-828043",
+      "investigation_id": "INV-REPLAY-TEST",
+      "title": "STARTTLS Protocol Downgrade / Plaintext Continuation",
+      "description": "STARTTLS was advertised and accepted, but the session fell back to plaintext transmission. Sensitive commands/credentials were exposed on the wire.",
+      "severity": "critical",
+      "status": "VERIFIED",
+      "confidence": 1.0,
+      "evidence_ids": [
+        "E-020D7A",
+        "E-CB046D",
+        "E-F1C600",
+        "E-04AC84",
+        "E-5ECE9E"
+      ],
+      "rule_id": "RULE-STARTTLS-PLAINTEXT-VIOLATION",
+      "hypothesis_id": null,
+      "remediation": "Enforce mandatory TLS (Reject plaintext fallback) and enable MTA-STS / DANE DNSSEC records.",
+      "created_at": "2026-09-10T13:26:02.005170+00:00"
     }
   ],
   "tool_executions": [
@@ -15471,6 +17206,1350 @@
       "stdout_summary": "Completed in 11.26ms with 0 evidence items.",
       "stderr": "",
       "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-3073007B",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "pcap.inspect",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:01Z",
+      "end_time": "2026-09-10T12:29:01Z",
+      "stdout_summary": "Completed in 17.11ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-5B7952"
+      ]
+    },
+    {
+      "execution_id": "EXEC-B8D8869C",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "pcap.sessions",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:01Z",
+      "end_time": "2026-09-10T12:29:01Z",
+      "stdout_summary": "Completed in 16.22ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-66EEAA"
+      ]
+    },
+    {
+      "execution_id": "EXEC-756FF8EA",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "smtp.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 52.97ms with 3 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-316409",
+        "E-69DC85",
+        "E-AF63C5"
+      ]
+    },
+    {
+      "execution_id": "EXEC-7EE06E18",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "tls.handshake",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 2.29ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-E5F14E23",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "tls.certificate",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 2.79ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-39782B62",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "pcap.completeness",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 21.47ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-902703"
+      ]
+    },
+    {
+      "execution_id": "EXEC-4C38F92B",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "pcap.tcp_stream",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-398DBB7C_mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 19.43ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-8288DD"
+      ]
+    },
+    {
+      "execution_id": "EXEC-F6467C32",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "rules.evaluate",
+      "tool_version": "2.6.0",
+      "args": {
+        "forensic_context": {
+          "tls": {
+            "handshake_observed": false,
+            "client_hello_observed": false,
+            "server_hello_observed": false,
+            "handshake_completed": false,
+            "record_version": null,
+            "negotiated_version": null,
+            "client_offered_versions": [],
+            "client_cipher_count": 0,
+            "selected_cipher": null,
+            "sni": null,
+            "alpn": [],
+            "supported_groups": [],
+            "key_share_group": null,
+            "has_forward_secrecy": false,
+            "certificate_observable": false,
+            "certificate_count": 0,
+            "certificate_note": "",
+            "handshake_rtt_ms": null
+          },
+          "smtp": {
+            "states_traversed": [
+              "CONNECTED",
+              "GREETING",
+              "EHLO",
+              "STARTTLS_ADVERTISED",
+              "STARTTLS_REQUESTED",
+              "STARTTLS_ACCEPTED",
+              "PLAINTEXT_FALLBACK"
+            ],
+            "banner": "220 mail.securebank.com ESMTP Postfix",
+            "client_ehlo": "EHLO client.internal.org",
+            "advertised_extensions": [
+              "10240000",
+              "OK",
+              "2.1.0 Ok",
+              "2.1.5 Ok"
+            ],
+            "starttls_advertised": true,
+            "starttls_requested": true,
+            "starttls_accepted": true,
+            "starttls_stripped": false,
+            "tls_handshake_observed": false,
+            "plaintext_after_starttls": true,
+            "auth_in_plaintext": false,
+            "mail_from": "MAIL FROM:<ceo@internal.org>",
+            "rcpt_to": [
+              "RCPT TO:<finance@securebank.com>"
+            ],
+            "anomalies": [
+              "Plaintext MAIL FROM command observed after STARTTLS negotiation.",
+              "STARTTLS accepted by server, but TLS ClientHello was absent; connection fell back to plaintext."
+            ],
+            "transition_log": [
+              {
+                "state": "GREETING",
+                "line": "220 mail.securebank.com ESMTP Postfix",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "EHLO client.internal.org",
+                "dir": "C->S"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-mail.securebank.com",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-PIPELINING",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-SIZE 10240000",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250-STARTTLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250 OK",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_REQUESTED",
+                "line": "STARTTLS",
+                "dir": "C->S"
+              },
+              {
+                "state": "STARTTLS_ACCEPTED",
+                "line": "220 2.0.0 Ready to start TLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "MAIL FROM:<ceo@internal.org>",
+                "dir": "C->S"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "250 2.1.0 Ok",
+                "dir": "S->C"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "RCPT TO:<finance@securebank.com>",
+                "dir": "C->S"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "250 2.1.5 Ok",
+                "dir": "S->C"
+              }
+            ]
+          },
+          "imap": {},
+          "pop3": {},
+          "certificate": {},
+          "completeness": {
+            "completeness_percentage": 100.0,
+            "total_tcp_packets": 15,
+            "tcp_streams_count": 1,
+            "sequence_gaps": 0,
+            "retransmissions": 0,
+            "truncated_packets": 0,
+            "is_complete": true,
+            "assessment": "HIGH_QUALITY_COMPLETE"
+          },
+          "stream": {
+            "stream_id": "TCP-0001",
+            "client_endpoint": "192.168.1.105:49152",
+            "server_endpoint": "198.51.100.25:25",
+            "protocol_hint": "SMTP",
+            "segment_count": 12,
+            "total_bytes": 395,
+            "duration_seconds": 0.28,
+            "transcript": [
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2001,
+                "timestamp": 1789024022.5929,
+                "length": 39,
+                "preview": "220 mail.securebank.com ESMTP Postfix\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1001,
+                "timestamp": 1789024022.6129,
+                "length": 26,
+                "preview": "EHLO client.internal.org\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2040,
+                "timestamp": 1789024022.6329,
+                "length": 82,
+                "preview": "250-mail.securebank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250 OK\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1027,
+                "timestamp": 1789024022.6529,
+                "length": 10,
+                "preview": "STARTTLS\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2122,
+                "timestamp": 1789024022.6729,
+                "length": 30,
+                "preview": "220 2.0.0 Ready to start TLS\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1037,
+                "timestamp": 1789024022.6929,
+                "length": 30,
+                "preview": "MAIL FROM:<ceo@internal.org>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2152,
+                "timestamp": 1789024022.7129,
+                "length": 14,
+                "preview": "250 2.1.0 Ok\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1067,
+                "timestamp": 1789024022.7329,
+                "length": 34,
+                "preview": "RCPT TO:<finance@securebank.com>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2166,
+                "timestamp": 1789024022.7529,
+                "length": 14,
+                "preview": "250 2.1.5 Ok\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1101,
+                "timestamp": 1789024022.7729,
+                "length": 6,
+                "preview": "DATA\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2180,
+                "timestamp": 1789024022.7929,
+                "length": 37,
+                "preview": "354 End data with <CR><LF>.<CR><LF>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1107,
+                "timestamp": 1789024022.8129,
+                "length": 73,
+                "preview": "Subject: Urgent Wire Transfer\r\nPlease transfer funds to ACCT-991283.\r\n.\r\n",
+                "is_binary": false
+              }
+            ]
+          }
+        }
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 17.21ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-29B09B"
+      ]
+    },
+    {
+      "execution_id": "EXEC-27C8437A",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "report.generate_json",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-398DBB7C"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 1.45ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-56D785AC",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "report.generate_html",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-398DBB7C"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 11.59ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-5315BF13",
+      "investigation_id": "INV-398DBB7C",
+      "tool": "report.generate_pdf",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-398DBB7C"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T12:29:02Z",
+      "end_time": "2026-09-10T12:29:02Z",
+      "stdout_summary": "Completed in 12.49ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-AE2797AA",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.inspect",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:33Z",
+      "end_time": "2026-09-10T13:25:33Z",
+      "stdout_summary": "Completed in 19.33ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-D20808"
+      ]
+    },
+    {
+      "execution_id": "EXEC-FE3E2708",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.sessions",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:33Z",
+      "end_time": "2026-09-10T13:25:33Z",
+      "stdout_summary": "Completed in 19.54ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-4C881B"
+      ]
+    },
+    {
+      "execution_id": "EXEC-F05CB361",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "smtp.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:33Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 57.26ms with 3 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-39FE91",
+        "E-3A02BB",
+        "E-664EBA"
+      ]
+    },
+    {
+      "execution_id": "EXEC-8B07B827",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "tls.handshake",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 2.64ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-6B041C8A",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "tls.certificate",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 2.43ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-126CA216",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.completeness",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 25.05ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-BCB5B9"
+      ]
+    },
+    {
+      "execution_id": "EXEC-75D78829",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.tcp_stream",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 22.1ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-6FDCCD"
+      ]
+    },
+    {
+      "execution_id": "EXEC-16B992C7",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "rules.evaluate",
+      "tool_version": "2.6.0",
+      "args": {
+        "forensic_context": {
+          "tls": {
+            "handshake_observed": false,
+            "client_hello_observed": false,
+            "server_hello_observed": false,
+            "handshake_completed": false,
+            "record_version": null,
+            "negotiated_version": null,
+            "client_offered_versions": [],
+            "client_cipher_count": 0,
+            "selected_cipher": null,
+            "sni": null,
+            "alpn": [],
+            "supported_groups": [],
+            "key_share_group": null,
+            "has_forward_secrecy": false,
+            "certificate_observable": false,
+            "certificate_count": 0,
+            "certificate_note": "",
+            "handshake_rtt_ms": null
+          },
+          "smtp": {
+            "states_traversed": [
+              "CONNECTED",
+              "GREETING",
+              "EHLO",
+              "STARTTLS_ADVERTISED",
+              "STARTTLS_REQUESTED",
+              "STARTTLS_ACCEPTED",
+              "PLAINTEXT_FALLBACK"
+            ],
+            "banner": "220 mail.securebank.com ESMTP Postfix",
+            "client_ehlo": "EHLO client.internal.org",
+            "advertised_extensions": [
+              "10240000",
+              "OK",
+              "2.1.0 Ok",
+              "2.1.5 Ok"
+            ],
+            "starttls_advertised": true,
+            "starttls_requested": true,
+            "starttls_accepted": true,
+            "starttls_stripped": false,
+            "tls_handshake_observed": false,
+            "plaintext_after_starttls": true,
+            "auth_in_plaintext": false,
+            "mail_from": "MAIL FROM:<ceo@internal.org>",
+            "rcpt_to": [
+              "RCPT TO:<finance@securebank.com>"
+            ],
+            "anomalies": [
+              "Plaintext MAIL FROM command observed after STARTTLS negotiation.",
+              "STARTTLS accepted by server, but TLS ClientHello was absent; connection fell back to plaintext."
+            ],
+            "transition_log": [
+              {
+                "state": "GREETING",
+                "line": "220 mail.securebank.com ESMTP Postfix",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "EHLO client.internal.org",
+                "dir": "C->S"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-mail.securebank.com",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-PIPELINING",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-SIZE 10240000",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250-STARTTLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250 OK",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_REQUESTED",
+                "line": "STARTTLS",
+                "dir": "C->S"
+              },
+              {
+                "state": "STARTTLS_ACCEPTED",
+                "line": "220 2.0.0 Ready to start TLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "MAIL FROM:<ceo@internal.org>",
+                "dir": "C->S"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "250 2.1.0 Ok",
+                "dir": "S->C"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "RCPT TO:<finance@securebank.com>",
+                "dir": "C->S"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "250 2.1.5 Ok",
+                "dir": "S->C"
+              }
+            ]
+          },
+          "imap": {},
+          "pop3": {},
+          "certificate": {},
+          "completeness": {
+            "completeness_percentage": 100.0,
+            "total_tcp_packets": 15,
+            "tcp_streams_count": 1,
+            "sequence_gaps": 0,
+            "retransmissions": 0,
+            "truncated_packets": 0,
+            "is_complete": true,
+            "assessment": "HIGH_QUALITY_COMPLETE"
+          },
+          "stream": {
+            "stream_id": "TCP-0001",
+            "client_endpoint": "192.168.1.105:49152",
+            "server_endpoint": "198.51.100.25:25",
+            "protocol_hint": "SMTP",
+            "segment_count": 12,
+            "total_bytes": 395,
+            "duration_seconds": 0.28,
+            "transcript": [
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2001,
+                "timestamp": 1789024022.5929,
+                "length": 39,
+                "preview": "220 mail.securebank.com ESMTP Postfix\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1001,
+                "timestamp": 1789024022.6129,
+                "length": 26,
+                "preview": "EHLO client.internal.org\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2040,
+                "timestamp": 1789024022.6329,
+                "length": 82,
+                "preview": "250-mail.securebank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250 OK\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1027,
+                "timestamp": 1789024022.6529,
+                "length": 10,
+                "preview": "STARTTLS\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2122,
+                "timestamp": 1789024022.6729,
+                "length": 30,
+                "preview": "220 2.0.0 Ready to start TLS\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1037,
+                "timestamp": 1789024022.6929,
+                "length": 30,
+                "preview": "MAIL FROM:<ceo@internal.org>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2152,
+                "timestamp": 1789024022.7129,
+                "length": 14,
+                "preview": "250 2.1.0 Ok\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1067,
+                "timestamp": 1789024022.7329,
+                "length": 34,
+                "preview": "RCPT TO:<finance@securebank.com>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2166,
+                "timestamp": 1789024022.7529,
+                "length": 14,
+                "preview": "250 2.1.5 Ok\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1101,
+                "timestamp": 1789024022.7729,
+                "length": 6,
+                "preview": "DATA\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2180,
+                "timestamp": 1789024022.7929,
+                "length": 37,
+                "preview": "354 End data with <CR><LF>.<CR><LF>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1107,
+                "timestamp": 1789024022.8129,
+                "length": 73,
+                "preview": "Subject: Urgent Wire Transfer\r\nPlease transfer funds to ACCT-991283.\r\n.\r\n",
+                "is_binary": false
+              }
+            ]
+          }
+        }
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 17.36ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-03D8A8"
+      ]
+    },
+    {
+      "execution_id": "EXEC-C1A0AB13",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "report.generate_json",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-REPLAY-TEST"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 6.32ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-F8C2D910",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "report.generate_html",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-REPLAY-TEST"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 12.27ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-D6A47AA1",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "report.generate_pdf",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-REPLAY-TEST"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:25:34Z",
+      "end_time": "2026-09-10T13:25:34Z",
+      "stdout_summary": "Completed in 15.81ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-409B159E",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.inspect",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 19.97ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-4D7267"
+      ]
+    },
+    {
+      "execution_id": "EXEC-15761CC6",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.sessions",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 15.96ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-15D2BC"
+      ]
+    },
+    {
+      "execution_id": "EXEC-8EA36679",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "smtp.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 43.32ms with 3 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-195761",
+        "E-BEA2D5",
+        "E-FFE61C"
+      ]
+    },
+    {
+      "execution_id": "EXEC-4279E28D",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "tls.handshake",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 2.0ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-43943443",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "tls.certificate",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 1.74ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-9E501F27",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.completeness",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 16.44ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-95ED6C"
+      ]
+    },
+    {
+      "execution_id": "EXEC-3C162ACA",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "pcap.tcp_stream",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/samples/mail_attack_starttls_strip.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 14.88ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-40670D"
+      ]
+    },
+    {
+      "execution_id": "EXEC-FF0E964F",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "rules.evaluate",
+      "tool_version": "2.6.0",
+      "args": {
+        "forensic_context": {
+          "tls": {
+            "handshake_observed": false,
+            "client_hello_observed": false,
+            "server_hello_observed": false,
+            "handshake_completed": false,
+            "record_version": null,
+            "negotiated_version": null,
+            "client_offered_versions": [],
+            "client_cipher_count": 0,
+            "selected_cipher": null,
+            "sni": null,
+            "alpn": [],
+            "supported_groups": [],
+            "key_share_group": null,
+            "has_forward_secrecy": false,
+            "certificate_observable": false,
+            "certificate_count": 0,
+            "certificate_note": "",
+            "handshake_rtt_ms": null
+          },
+          "smtp": {
+            "states_traversed": [
+              "CONNECTED",
+              "GREETING",
+              "EHLO",
+              "STARTTLS_ADVERTISED",
+              "STARTTLS_REQUESTED",
+              "STARTTLS_ACCEPTED",
+              "PLAINTEXT_FALLBACK"
+            ],
+            "banner": "220 mail.securebank.com ESMTP Postfix",
+            "client_ehlo": "EHLO client.internal.org",
+            "advertised_extensions": [
+              "10240000",
+              "OK",
+              "2.1.0 Ok",
+              "2.1.5 Ok"
+            ],
+            "starttls_advertised": true,
+            "starttls_requested": true,
+            "starttls_accepted": true,
+            "starttls_stripped": false,
+            "tls_handshake_observed": false,
+            "plaintext_after_starttls": true,
+            "auth_in_plaintext": false,
+            "mail_from": "MAIL FROM:<ceo@internal.org>",
+            "rcpt_to": [
+              "RCPT TO:<finance@securebank.com>"
+            ],
+            "anomalies": [
+              "Plaintext MAIL FROM command observed after STARTTLS negotiation.",
+              "STARTTLS accepted by server, but TLS ClientHello was absent; connection fell back to plaintext."
+            ],
+            "transition_log": [
+              {
+                "state": "GREETING",
+                "line": "220 mail.securebank.com ESMTP Postfix",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "EHLO client.internal.org",
+                "dir": "C->S"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-mail.securebank.com",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-PIPELINING",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-SIZE 10240000",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250-STARTTLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250 OK",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_REQUESTED",
+                "line": "STARTTLS",
+                "dir": "C->S"
+              },
+              {
+                "state": "STARTTLS_ACCEPTED",
+                "line": "220 2.0.0 Ready to start TLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "MAIL FROM:<ceo@internal.org>",
+                "dir": "C->S"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "250 2.1.0 Ok",
+                "dir": "S->C"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "RCPT TO:<finance@securebank.com>",
+                "dir": "C->S"
+              },
+              {
+                "state": "PLAINTEXT_FALLBACK",
+                "line": "250 2.1.5 Ok",
+                "dir": "S->C"
+              }
+            ]
+          },
+          "imap": {},
+          "pop3": {},
+          "certificate": {},
+          "completeness": {
+            "completeness_percentage": 100.0,
+            "total_tcp_packets": 15,
+            "tcp_streams_count": 1,
+            "sequence_gaps": 0,
+            "retransmissions": 0,
+            "truncated_packets": 0,
+            "is_complete": true,
+            "assessment": "HIGH_QUALITY_COMPLETE"
+          },
+          "stream": {
+            "stream_id": "TCP-0001",
+            "client_endpoint": "192.168.1.105:49152",
+            "server_endpoint": "198.51.100.25:25",
+            "protocol_hint": "SMTP",
+            "segment_count": 12,
+            "total_bytes": 395,
+            "duration_seconds": 0.28,
+            "transcript": [
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2001,
+                "timestamp": 1789024022.5929,
+                "length": 39,
+                "preview": "220 mail.securebank.com ESMTP Postfix\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1001,
+                "timestamp": 1789024022.6129,
+                "length": 26,
+                "preview": "EHLO client.internal.org\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2040,
+                "timestamp": 1789024022.6329,
+                "length": 82,
+                "preview": "250-mail.securebank.com\r\n250-PIPELINING\r\n250-SIZE 10240000\r\n250-STARTTLS\r\n250 OK\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1027,
+                "timestamp": 1789024022.6529,
+                "length": 10,
+                "preview": "STARTTLS\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2122,
+                "timestamp": 1789024022.6729,
+                "length": 30,
+                "preview": "220 2.0.0 Ready to start TLS\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1037,
+                "timestamp": 1789024022.6929,
+                "length": 30,
+                "preview": "MAIL FROM:<ceo@internal.org>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2152,
+                "timestamp": 1789024022.7129,
+                "length": 14,
+                "preview": "250 2.1.0 Ok\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1067,
+                "timestamp": 1789024022.7329,
+                "length": 34,
+                "preview": "RCPT TO:<finance@securebank.com>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2166,
+                "timestamp": 1789024022.7529,
+                "length": 14,
+                "preview": "250 2.1.5 Ok\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1101,
+                "timestamp": 1789024022.7729,
+                "length": 6,
+                "preview": "DATA\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "198.51.100.25:25",
+                "dst": "192.168.1.105:49152",
+                "seq": 2180,
+                "timestamp": 1789024022.7929,
+                "length": 37,
+                "preview": "354 End data with <CR><LF>.<CR><LF>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "192.168.1.105:49152",
+                "dst": "198.51.100.25:25",
+                "seq": 1107,
+                "timestamp": 1789024022.8129,
+                "length": 73,
+                "preview": "Subject: Urgent Wire Transfer\r\nPlease transfer funds to ACCT-991283.\r\n.\r\n",
+                "is_binary": false
+              }
+            ]
+          }
+        }
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:01Z",
+      "end_time": "2026-09-10T13:26:01Z",
+      "stdout_summary": "Completed in 19.34ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-AB9BE6"
+      ]
+    },
+    {
+      "execution_id": "EXEC-80603336",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "report.generate_json",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-REPLAY-TEST"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:02Z",
+      "end_time": "2026-09-10T13:26:02Z",
+      "stdout_summary": "Completed in 5.91ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-AF44044E",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "report.generate_html",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-REPLAY-TEST"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:02Z",
+      "end_time": "2026-09-10T13:26:02Z",
+      "stdout_summary": "Completed in 8.95ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-A5EF6812",
+      "investigation_id": "INV-REPLAY-TEST",
+      "tool": "report.generate_pdf",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-REPLAY-TEST"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-10T13:26:02Z",
+      "end_time": "2026-09-10T13:26:02Z",
+      "stdout_summary": "Completed in 12.32ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
     }
   ],
   "timeline": {
@@ -17188,6 +20267,226 @@
         "detail": "report.generate_pdf returned status 'SUCCESS' producing 0 evidence item(s).",
         "evidence_id": null,
         "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-641A1C",
+        "timestamp": "2026-09-10T13:25:33.889297+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.inspect",
+        "detail": "pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-D20808",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-0C2FA2",
+        "timestamp": "2026-09-10T13:25:33.953577+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.sessions",
+        "detail": "pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-4C881B",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-0CBB04",
+        "timestamp": "2026-09-10T13:25:34.078449+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed smtp.analyze",
+        "detail": "smtp.analyze returned status 'SUCCESS' producing 3 evidence item(s).",
+        "evidence_id": "E-39FE91",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-01A6EA",
+        "timestamp": "2026-09-10T13:25:34.125902+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed tls.handshake",
+        "detail": "tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-52003E",
+        "timestamp": "2026-09-10T13:25:34.178985+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed tls.certificate",
+        "detail": "tls.certificate returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-D482BA",
+        "timestamp": "2026-09-10T13:25:34.337203+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.completeness",
+        "detail": "pcap.completeness returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-BCB5B9",
+        "hypothesis_id": "H-588B87"
+      },
+      {
+        "event_id": "EVT-B63911",
+        "timestamp": "2026-09-10T13:25:34.454036+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.tcp_stream",
+        "detail": "pcap.tcp_stream returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-6FDCCD",
+        "hypothesis_id": "H-588B87"
+      },
+      {
+        "event_id": "EVT-538D76",
+        "timestamp": "2026-09-10T13:25:34.537758+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed rules.evaluate",
+        "detail": "rules.evaluate returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-03D8A8",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-DC790F",
+        "timestamp": "2026-09-10T13:25:34.709678+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_json",
+        "detail": "report.generate_json returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-DD8A47",
+        "timestamp": "2026-09-10T13:25:34.772715+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_html",
+        "detail": "report.generate_html returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-D1E3E6",
+        "timestamp": "2026-09-10T13:25:34.836116+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_pdf",
+        "detail": "report.generate_pdf returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-4B8646",
+        "timestamp": "2026-09-10T13:26:01.459054+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.inspect",
+        "detail": "pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-4D7267",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-3BA80B",
+        "timestamp": "2026-09-10T13:26:01.511090+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.sessions",
+        "detail": "pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-15D2BC",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-EC93F6",
+        "timestamp": "2026-09-10T13:26:01.604284+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed smtp.analyze",
+        "detail": "smtp.analyze returned status 'SUCCESS' producing 3 evidence item(s).",
+        "evidence_id": "E-195761",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-8878B7",
+        "timestamp": "2026-09-10T13:26:01.641008+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed tls.handshake",
+        "detail": "tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-D8ABC9",
+        "timestamp": "2026-09-10T13:26:01.673460+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed tls.certificate",
+        "detail": "tls.certificate returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-A471DE",
+        "timestamp": "2026-09-10T13:26:01.781281+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.completeness",
+        "detail": "pcap.completeness returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-95ED6C",
+        "hypothesis_id": "H-9B957A"
+      },
+      {
+        "event_id": "EVT-E23A5D",
+        "timestamp": "2026-09-10T13:26:01.858167+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.tcp_stream",
+        "detail": "pcap.tcp_stream returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-40670D",
+        "hypothesis_id": "H-9B957A"
+      },
+      {
+        "event_id": "EVT-E917AE",
+        "timestamp": "2026-09-10T13:26:01.937351+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed rules.evaluate",
+        "detail": "rules.evaluate returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-AB9BE6",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-1BDADA",
+        "timestamp": "2026-09-10T13:26:02.068015+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_json",
+        "detail": "report.generate_json returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-6A41BC",
+        "timestamp": "2026-09-10T13:26:02.115180+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_html",
+        "detail": "report.generate_html returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-85A375",
+        "timestamp": "2026-09-10T13:26:02.164176+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_pdf",
+        "detail": "report.generate_pdf returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
       }
     ],
     "INV-FB540956": [
@@ -17294,6 +20593,118 @@
       {
         "event_id": "EVT-07748D",
         "timestamp": "2026-09-10T12:26:28.820049+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_pdf",
+        "detail": "report.generate_pdf returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      }
+    ],
+    "INV-398DBB7C": [
+      {
+        "event_id": "EVT-34E39E",
+        "timestamp": "2026-09-10T12:29:01.934428+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.inspect",
+        "detail": "pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-5B7952",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-07E4DF",
+        "timestamp": "2026-09-10T12:29:01.993644+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.sessions",
+        "detail": "pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-66EEAA",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-2B8DF7",
+        "timestamp": "2026-09-10T12:29:02.100088+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed smtp.analyze",
+        "detail": "smtp.analyze returned status 'SUCCESS' producing 3 evidence item(s).",
+        "evidence_id": "E-316409",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-83DF7E",
+        "timestamp": "2026-09-10T12:29:02.143057+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed tls.handshake",
+        "detail": "tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-5D5D9C",
+        "timestamp": "2026-09-10T12:29:02.185223+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed tls.certificate",
+        "detail": "tls.certificate returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-C7A5F9",
+        "timestamp": "2026-09-10T12:29:02.309179+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.completeness",
+        "detail": "pcap.completeness returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-902703",
+        "hypothesis_id": "H-D1CF61"
+      },
+      {
+        "event_id": "EVT-D65200",
+        "timestamp": "2026-09-10T12:29:02.401565+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed pcap.tcp_stream",
+        "detail": "pcap.tcp_stream returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-8288DD",
+        "hypothesis_id": "H-D1CF61"
+      },
+      {
+        "event_id": "EVT-172752",
+        "timestamp": "2026-09-10T12:29:02.479806+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed rules.evaluate",
+        "detail": "rules.evaluate returned status 'SUCCESS' producing 1 evidence item(s).",
+        "evidence_id": "E-29B09B",
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-465F6E",
+        "timestamp": "2026-09-10T12:29:02.622053+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_json",
+        "detail": "report.generate_json returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-36F0E7",
+        "timestamp": "2026-09-10T12:29:02.673921+00:00",
+        "phase": "TOOL_EXECUTION",
+        "actor": "TOOL_GATEWAY",
+        "action": "Executed report.generate_html",
+        "detail": "report.generate_html returned status 'SUCCESS' producing 0 evidence item(s).",
+        "evidence_id": null,
+        "hypothesis_id": null
+      },
+      {
+        "event_id": "EVT-20E4BE",
+        "timestamp": "2026-09-10T12:29:02.729668+00:00",
         "phase": "TOOL_EXECUTION",
         "actor": "TOOL_GATEWAY",
         "action": "Executed report.generate_pdf",

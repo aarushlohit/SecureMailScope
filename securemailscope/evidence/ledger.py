@@ -114,6 +114,10 @@ class EvidenceLedger:
         with self._lock:
             return [e for e in self._evidence.values() if e.investigation_id == investigation_id]
 
+    def get_all_evidence(self) -> List[Evidence]:
+        with self._lock:
+            return list(self._evidence.values())
+
     # Tool execution operations
     def record_tool_execution(self, tx: ToolExecution):
         with self._lock:
@@ -153,6 +157,10 @@ class EvidenceLedger:
     def get_findings_for_investigation(self, investigation_id: str) -> List[Finding]:
         with self._lock:
             return [f for f in self._findings.values() if f.investigation_id == investigation_id]
+
+    def get_all_findings(self) -> List[Finding]:
+        with self._lock:
+            return list(self._findings.values())
 
     # Timeline event operations
     def record_timeline_event(self, event: TimelineEvent, investigation_id: str):

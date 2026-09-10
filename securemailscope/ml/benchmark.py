@@ -78,7 +78,28 @@ class BenchmarkEngine:
         cm_rule = confusion_matrix(y_test, y_pred_rule).tolist()
         cm_ml = confusion_matrix(y_test, y_pred_ml).tolist()
 
+        # Feature importances from XGBoost
+        raw_importances = model.feature_importances_
+        feature_names = FeatureExtractor.FEATURE_NAMES
+        top_features = []
+        for name, score in sorted(zip(feature_names, raw_importances), key=lambda x: x[1], reverse=True)[:5]:
+            top_features.append({
+                "feature_name": name,
+                "name": name,
+                "importance": round(float(score), 4),
+                "weight": round(float(score), 4)
+            })
+
+        rule_and_ml_dict = {
+            "precision": round(float(p_ml), 4),
+            "recall": round(float(r_ml), 4),
+            "f1_score": round(float(f1_ml), 4),
+            "accuracy": round(float(np.mean(y_pred_ml == y_test)), 4),
+            "confusion_matrix": cm_ml
+        }
+
         return {
+            "total_samples": num_samples,
             "test_samples_count": len(y_test),
             "classes": CLASS_NAMES,
             "rule_only_baseline": {
@@ -88,13 +109,10 @@ class BenchmarkEngine:
                 "accuracy": round(float(np.mean(np.array(y_pred_rule) == y_test)), 4),
                 "confusion_matrix": cm_rule
             },
-            "rule_plus_ml": {
-                "precision": round(float(p_ml), 4),
-                "recall": round(float(r_ml), 4),
-                "f1_score": round(float(f1_ml), 4),
-                "accuracy": round(float(np.mean(y_pred_ml == y_test)), 4),
-                "confusion_matrix": cm_ml
-            },
+            "rule_plus_ml": rule_and_ml_dict,
+            "rule_and_ml_engine": rule_and_ml_dict,
+            "ml_engine": rule_and_ml_dict,
+            "top_features": top_features,
             "improvement": {
                 "precision_gain": round(float(p_ml - p_rule) * 100, 2),
                 "recall_gain": round(float(r_ml - r_rule) * 100, 2),

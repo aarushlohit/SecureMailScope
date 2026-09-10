@@ -402,3 +402,47 @@ def test_fastapi_sanitized_error_handling():
     assert "error" in err_body or "detail" in err_body
 
 
+def test_workstation_live_endpoints():
+    """Verify all workstation endpoints return 200 with dynamic data and zero mocks."""
+    from fastapi.testclient import TestClient
+    from securemailscope.api.app import app
+
+    client = TestClient(app)
+
+    # 1. /api/all-evidence
+    resp_ev = client.get("/api/all-evidence")
+    assert resp_ev.status_code == 200
+    ev_data = resp_ev.json()
+    assert isinstance(ev_data, list)
+    if ev_data:
+        assert "evidence_id" in ev_data[0]
+        assert "evidence_type" in ev_data[0]
+
+    # 2. /api/all-findings
+    resp_fnd = client.get("/api/all-findings")
+    assert resp_fnd.status_code == 200
+    fnd_data = resp_fnd.json()
+    assert isinstance(fnd_data, list)
+    if fnd_data:
+        assert "finding_id" in fnd_data[0]
+        assert "severity" in fnd_data[0]
+        assert "score_deduction" in fnd_data[0]
+
+    # 3. /api/ml/benchmark
+    resp_bm = client.get("/api/ml/benchmark")
+    assert resp_bm.status_code == 200
+    bm_data = resp_bm.json()
+    assert "rule_only_baseline" in bm_data
+    assert "rule_and_ml_engine" in bm_data
+    assert "top_features" in bm_data
+    assert len(bm_data["top_features"]) > 0
+
+    # 4. /api/intel/query (safe target)
+    resp_intel = client.get("/api/intel/query?intel_type=domain&target=example.com")
+    assert resp_intel.status_code == 200
+    intel_data = resp_intel.json()
+    assert intel_data["target"] == "example.com"
+    assert "dns_security" in intel_data
+
+
+

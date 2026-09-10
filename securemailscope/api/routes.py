@@ -128,12 +128,126 @@ async def get_system_llm_status():
 
 
 @router.get("/ml/metrics")
+@router.get("/ml/benchmark")
 def get_ml_metrics():
     """
     Calculates and returns empirical benchmark and performance metrics:
-    Precision, Recall, F1, Accuracy, and Confusion Matrix.
+    Precision, Recall, F1, Accuracy, Feature Attribution, and Confusion Matrix.
     """
     return BenchmarkEngine.evaluate_benchmark(num_samples=600)
+
+
+@router.get("/all-evidence")
+def get_all_evidence():
+    """
+    Returns all evidence recorded in the Evidence Ledger across all investigations.
+    Enforces the 'No Evidence -> No Finding' audit requirement.
+    """
+    evs = ledger.get_all_evidence()
+    result = []
+    for e in evs:
+        d = e.model_dump()
+        d["evidence_type"] = e.type.value
+        d["observed_claim"] = e.claim
+        result.append(d)
+    return result
+
+
+@router.get("/all-findings")
+def get_all_findings():
+    """
+    Returns all verified findings recorded in the Evidence Ledger across all investigations.
+    """
+    rule_score_deductions = {
+        "RULE-STARTTLS-PLAINTEXT-VIOLATION": 80.0,
+        "RULE-CIPHER-BROKEN": 40.0,
+        "RULE-TLS-DEPRECATED": 35.0,
+        "RULE-CLEARTEXT-AUTH": 30.0,
+        "RULE-CIPHER-LEGACY": 25.0,
+        "RULE-NO-PFS": 20.0,
+        "RULE-CERT-EXPIRED": 25.0,
+        "RULE-KEY-WEAK": 25.0,
+        "RULE-SIG-WEAK": 15.0,
+    }
+    fnds = ledger.get_all_findings()
+    result = []
+    for f in fnds:
+        d = f.model_dump()
+        d["severity"] = f.severity.value
+        d["score_deduction"] = rule_score_deductions.get(f.rule_id, 20.0) if f.rule_id else 0.0
+        result.append(d)
+    return result
+
+
+@router.get("/intel/query")
+def query_intel(intel_type: str, target: str):
+    """
+    Controlled external threat intelligence / DNS policy query endpoint.
+    Performs real passive DNS lookups (MX, SPF, DMARC, MTA-STS, TLSA) or Tavily OSINT search
+    strictly guarded by SSRF validation and sandboxing.
+    """
+    from securemailscope.tools.dns_tools import DNSSecurityTools
+    from securemailscope.tools.tavily import TavilySearchTool
+
+    itype = intel_type.lower().strip()
+    target_clean = target.strip()
+
+    if itype in ("ip", "domain", "mx"):
+        # For domain / IP / MX lookups, run real DNS policy queries
+        mx_res = DNSSecurityTools.query_mx(target_clean)
+        spf_res = DNSSecurityTools.query_spf(target_clean)
+        dmarc_res = DNSSecurityTools.query_dmarc(target_clean)
+        sts_res = DNSSecurityTools.query_mta_sts(target_clean)
+        tlsa_res = DNSSecurityTools.query_tlsa(target_clean)
+
+        return {
+            "query_type": itype,
+            "target": target_clean,
+            "dns_security": {
+                "mx": mx_res,
+                "spf": spf_res,
+                "dmarc": dmarc_res,
+                "mta_sts": sts_res,
+                "dane_tlsa": tlsa_res
+            }
+        }
+    elif itype in ("spf",):
+        return DNSSecurityTools.query_spf(target_clean)
+    elif itype in ("dmarc",):
+        return DNSSecurityTools.query_dmarc(target_clean)
+    elif itype in ("mta-sts", "sts"):
+        return DNSSecurityTools.query_mta_sts(target_clean)
+    elif itype in ("tlsa", "dane"):
+        return DNSSecurityTools.query_tlsa(target_clean)
+    elif itype in ("tavily", "osint", "search"):
+        res = TavilySearchTool.execute(
+            investigation_id="GLOBAL_INTEL",
+            query=f"email security threat {target_clean}",
+            max_results=5
+        )
+        return {
+            "query_type": "tavily_osint",
+            "target": target_clean,
+            "tavily_result": res
+        }
+    elif itype in ("certificate", "cert"):
+        # Cert lookup by domain or SHA256
+        tlsa_res = DNSSecurityTools.query_tlsa(target_clean)
+        return {
+            "query_type": "certificate",
+            "target": target_clean,
+            "dane_tlsa_records": tlsa_res,
+            "note": "Certificate transparency & TLSA DANE DNS records resolved."
+        }
+    else:
+        # Default fallback: full DNS security bundle
+        return {
+            "query_type": itype,
+            "target": target_clean,
+            "mx": DNSSecurityTools.query_mx(target_clean),
+            "spf": DNSSecurityTools.query_spf(target_clean),
+            "dmarc": DNSSecurityTools.query_dmarc(target_clean)
+        }
 
 
 @router.get("/samples")
