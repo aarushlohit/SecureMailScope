@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureMailScope — Agentic Cryptographic Forensics for Secure Email</title>
+  <meta name="description" content="Analyze SMTP, IMAP and POP3 communications, reconstruct cryptographic sessions, detect security weaknesses, and investigate findings with evidence.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/design-tokens.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background: #FFFFFF;
+      color: #0A0A0A;
+      overflow-x: hidden;
+    }
+
+    /* Restrained Navigation */
+    .landing-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-default);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo-sq {
+      width: 28px;
+      height: 28px;
+      background: #000000;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.3px;
+      color: #000000;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color var(--transition-fast);
+    }
+    .nav-link:hover {
+      color: #000000;
+    }
+
+    .nav-ctas {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Hero Section — Editorial, Restrained */
+    .hero-section {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 100px 48px 60px;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+      gap: 64px;
+      min-height: calc(82vh - 64px);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 24px;
+    }
+
+    .hero-eyebrow-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #000000;
+    }
+
+    .hero-headline {
+      font-size: clamp(48px, 5.5vw, 76px);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      color: #000000;
+      margin-bottom: 24px;
+    }
+
+    .hero-supporting {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin-bottom: 36px;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+      background: #000000;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+    }
+    .btn-hero-primary:hover {
+      background: #262626;
+      transform: translateY(-1px);
+    }
+
+    .btn-hero-secondary {
+      background: #FFFFFF;
+      color: #000000;
+      border: 1px solid var(--border-default);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 22px;
+      border-radius: var(--radius-md);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+    }
+    .btn-hero-secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    /* Floating Landing Asset — NO CONTAINER, NO CARD, NO BORDER */
+    .hero-visual-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-asset-floating {
+      width: 100%;
+      height: auto;
+      max-width: 520px;
+      object-fit: contain;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      animation: gentleFloat 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes gentleFloat {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-8px); }
+    }
+
+    /* Built for Forensic Analysis (Use Cases) */
+    .use-cases-section {
+      max-width: 1280px;
+      margin: 0 auto 80px;
+      padding: 0 48px;
+      text-align: center;
+    }
+
+    .use-cases-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 14px;
+    }
+
+    .use-cases-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      flex-wrap: wrap;
+    }
+
+    /* Section Editorial Shells */
+    .editorial-section {
+      max-width: 1280px;
+      margin: 0 auto 100px;
+      padding: 0 48px;
+    }
+
+    .editorial-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+
+    .editorial-title {
+      font-size: clamp(30px, 3.5vw, 42px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #000000;
+      margin-bottom: 14px;
+      line-height: 1.1;
+    }
+
+    .editorial-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+
+    /* Forensic Stages Architecture (Unified Capabilities & Pipeline) */
+    .forensic-stages-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border-default);
+      margin-top: 16px;
+    }
+
+    .forensic-stage-col {
+      padding: 32px 24px;
+      border-right: 1px solid var(--border-default);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .forensic-stage-col:last-child {
+      border-right: none;
+    }
+
+    .stage-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stage-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--text-tertiary);
+    }
+
+    .stage-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #000000;
+      letter-spacing: -0.2px;
+    }
+
+    .stage-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .stage-step-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .step-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-subtle);
+      border: 1px solid var(--border-default);
+      color: var(--text-primary);
+      align-self: flex-start;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Section 4: Core Engine (Split Editorial Layout) */
+    .split-editorial {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .split-heading-col h3 {
+      font-size: clamp(28px, 3.2vw, 38px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: #000000;
+      margin-bottom: 20px;
+    }
+
+    .split-heading-col p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .engine-rows-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .engine-row-item {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border-default);
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+    }
+    .engine-row-item:first-child {
+      border-top: 1px solid var(--border-default);
+    }
+
+    .engine-row-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      padding-top: 2px;
+    }
+
+    .engine-row-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+
+    .engine-row-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Section 5: AI Investigation Agent (White / Near-Black Split) */
+    .agent-split-section {
+      background: #0A0A0A;
+      color: #FFFFFF;
+      padding: 90px 48px;
+      margin-bottom: 120px;
+    }
+
+    .agent-split-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .agent-split-lead h2 {
+      font-size: clamp(34px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: #FFFFFF;
+      margin-bottom: 20px;
+    }
+
+    .agent-split-lead p {
+      font-size: 16px;
+      color: #A1A1AA;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .agent-console-surface {
+      background: #141414;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+    }
+
+    .agent-console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 18px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #A1A1AA;
+    }
+
+    .agent-console-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #71717A;
+      margin-bottom: 6px;
+    }
+
+    .agent-objective-box {
+      font-size: 13px;
+      color: #E4E4E7;
+      line-height: 1.5;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 2px solid #FFFFFF;
+      margin-bottom: 18px;
+    }
+
+    .agent-hyp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .agent-hyp-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+    }
+
+    .agent-action-panel {
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+
+    /* Section 6: Evidence Ledger (1px Divider Table, No Giant Surrounding Card) */
+    .evidence-table-clean {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 60px;
+    }
+
+    .evidence-table-clean th {
+      text-align: left;
+      padding: 12px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      border-bottom: 1px solid var(--border-strong);
+      border-top: 1px solid var(--border-default);
+    }
+
+    .evidence-table-clean td {
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--border-default);
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    .evidence-table-clean tr:hover td {
+      background: var(--bg-surface-subtle);
+    }
+
+    .evidence-pill-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: #000000;
+      background: var(--bg-surface-subtle);
+      border: 1px solid var(--border-default);
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      cursor: pointer;
+    }
+    .evidence-pill-link:hover {
+      border-color: #000000;
+    }
+
+    /* Section 7: Security Posture Preview (Clean Editorial, Thin Progress Rules) */
+    .posture-editorial-preview {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 64px;
+      align-items: center;
+      padding: 36px 0;
+      border-top: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border-default);
+    }
+
+    .posture-score-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .posture-large-num {
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: #000000;
+    }
+
+    .posture-rating-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--low-text);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .posture-progress-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .posture-metric-row {
+      display: grid;
+      grid-template-columns: 200px 1fr 40px;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .thin-progress-bg {
+      width: 100%;
+      height: 4px;
+      background: var(--bg-hover);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .thin-progress-fill {
+      height: 100%;
+      background: #000000;
+      border-radius: 2px;
+    }
+
+    /* Section 8: Final CTA */
+    .final-clean-cta {
+      max-width: 640px;
+      margin: 100px auto 120px;
+      padding: 0 48px;
+      text-align: center;
+    }
+
+    .final-cta-heading {
+      font-size: clamp(32px, 3.8vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: #000000;
+      margin-bottom: 16px;
+    }
+
+    .final-cta-sub {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-weight: 400;
+    }
+
+    /* Minimal Footer */
+    .clean-footer {
+      border-top: 1px solid var(--border-default);
+      padding: 64px 48px 40px;
+      background: #FFFFFF;
+    }
+
+    .clean-footer-grid {
+      max-width: 1280px;
+      margin: 0 auto 48px;
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1fr 1fr;
+      gap: 48px;
+    }
+
+    .footer-col-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 14px;
+    }
+
+    .footer-links-col {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .footer-links-col a {
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: color var(--transition-fast);
+    }
+    .footer-links-col a:hover {
+      color: #000000;
+    }
+
+    .footer-subline {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .landing-nav { padding: 0 24px; }
+      .hero-section {
+        grid-template-columns: 1fr;
+        padding: 60px 24px 40px;
+        text-align: center;
+      }
+      .hero-supporting { margin: 0 auto 32px; }
+      .hero-actions { justify-content: center; }
+      .editorial-section { padding: 0 24px; margin-bottom: 80px; }
+      .capability-line-wrap { padding: 0 24px; }
+      .use-cases-section { padding: 0 24px; }
+      .split-editorial { grid-template-columns: 1fr; gap: 32px; }
+      .agent-split-inner { grid-template-columns: 1fr; gap: 40px; }
+      .agent-split-section { padding: 60px 24px; }
+      .posture-editorial-preview { grid-template-columns: 1fr; gap: 32px; }
+      .clean-footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .clean-footer { padding: 48px 24px 32px; }
+      .pipeline-grid {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .pipeline-connector {
+        transform: rotate(90deg);
+        margin-left: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation: Exactly 4 Marketing Links, Real Destinations Only -->
+  <nav class="landing-nav" aria-label="Primary Navigation">
+    <div class="brand-group">
+      <a href="/" class="brand-group" aria-label="SecureMailScope Home">
+        <div class="brand-logo-sq" aria-hidden="true">
+          <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+        </div>
+        <span class="brand-name">SECUREMAILSCOPE</span>
+      </a>
+    </div>
+
+    <div class="nav-links">
+      <a href="#capabilities" class="nav-link">Capabilities</a>
+      <a href="#pipeline" class="nav-link">Forensic Engine</a>
+      <a href="#agent" class="nav-link">AI Agent</a>
+      <a href="/app/playground" class="nav-link">Demo</a>
+    </div>
+
+    <div class="nav-ctas">
+      <a href="/login" class="btn-ghost">Sign in</a>
+      <a href="/app" class="btn-primary-dark">Open Workstation &rarr;</a>
+    </div>
+  </nav>
+
+  <!-- 01 HERO: Editorial & Floating Visual -->
+  <section class="hero-section">
+    <div>
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot" aria-hidden="true"></span>
+        AI-POWERED EMAIL FORENSICS &bull; SIH26159
+      </div>
+
+      <h1 class="hero-headline">
+        EMAIL SECURITY<br>CLARITY, FINALLY.
+      </h1>
+
+      <p class="hero-supporting">
+        Analyze SMTP, IMAP, and POP3 communications. Reconstruct sessions, validate cryptographic posture, and investigate anomalies with evidence.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/app" class="btn-hero-primary">
+          Get started &rarr;
+        </a>
+        <a href="/app/playground" class="btn-hero-secondary">
+          Explore Demo &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Visual floats directly on the page — no container, no card, no shadow -->
+    <div class="hero-visual-container">
+      <img
+        src="/assets/landing.png"
+        alt="SecureMailScope email forensic analysis session"
+        class="hero-asset-floating"
+      />
+    </div>
+  </section>
+
+  <!-- Built for Forensic Analysis (Use Cases) -->
+  <div class="use-cases-section">
+    <div class="use-cases-title">BUILT FOR FORENSIC ANALYSIS</div>
+    <div class="use-cases-row">
+      <span>Security teams</span>
+      <span class="capability-sep" aria-hidden="true">&bull;</span>
+      <span>Researchers</span>
+      <span class="capability-sep" aria-hidden="true">&bull;</span>
+      <span>Incident responders</span>
+      <span class="capability-sep" aria-hidden="true">&bull;</span>
+      <span>Mail infrastructure teams</span>
+    </div>
+  </div>
+
+  <!-- 02 CAPABILITIES & FORENSIC PIPELINE: Architectural Stages Grid -->
+  <section id="capabilities" class="editorial-section">
+    <div id="pipeline" style="position: relative; top: -80px;"></div>
+    <div class="editorial-eyebrow">DETERMINISTIC VERIFICATION & FORENSIC PIPELINE</div>
+    <h2 class="editorial-title">Understand what happened.<br>Prove why it happened.</h2>
+    <p class="editorial-subtitle">
+      SecureMailScope executes deterministic session reconstruction and cryptographic validation across every protocol layer to produce undeniable evidence.
+    </p>
+
+    <div class="forensic-stages-grid">
+      <div class="forensic-stage-col">
+        <div class="stage-header">
+          <span class="stage-num">01 / INGESTION</span>
+          <h3 class="stage-title">Capture & Stream</h3>
+        </div>
+        <div class="stage-body">
+          <div class="stage-step-item">
+            <span class="step-badge">PCAP</span>
+            <div class="step-desc">Passive capture inspection, sequence continuity checks, and completeness ratio scoring.</div>
+          </div>
+          <div class="stage-step-item">
+            <span class="step-badge">TCP</span>
+            <div class="step-desc">Bidirectional TCP socket tracking, retransmission filtering, and conversation transcript reassembly.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="forensic-stage-col">
+        <div class="stage-header">
+          <span class="stage-num">02 / PROTOCOL</span>
+          <h3 class="stage-title">State Machine</h3>
+        </div>
+        <div class="stage-body">
+          <div class="stage-step-item">
+            <span class="step-badge">SMTP / IMAP</span>
+            <div class="step-desc">RFC state-machine validation for EHLO/HELO, capabilities advertisement, and command transitions.</div>
+          </div>
+          <div class="stage-step-item">
+            <span class="step-badge">STARTTLS</span>
+            <div class="step-desc">Deterministic detection of downgrade stripping attacks, fallback anomalies, and plaintext leaks.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="forensic-stage-col">
+        <div class="stage-header">
+          <span class="stage-num">03 / CRYPTOGRAPHY</span>
+          <h3 class="stage-title">Handshake & X.509</h3>
+        </div>
+        <div class="stage-body">
+          <div class="stage-step-item">
+            <span class="step-badge">TLS 1.0–1.3</span>
+            <div class="step-desc">Cipher strength analysis, Ephemeral Diffie-Hellman PFS verification, and weak cipher flags.</div>
+          </div>
+          <div class="stage-step-item">
+            <span class="step-badge">X.509</span>
+            <div class="step-desc">Observable certificate chain extraction, UTC validity checks, SAN matching, and key length validation.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="forensic-stage-col">
+        <div class="stage-header">
+          <span class="stage-num">04 / VERDICT</span>
+          <h3 class="stage-title">Evidence & Findings</h3>
+        </div>
+        <div class="stage-body">
+          <div class="stage-step-item">
+            <span class="step-badge">LEDGER</span>
+            <div class="step-desc">Immutable evidence records with SHA-256 hashes, sensor tool version, and raw packet pointers.</div>
+          </div>
+          <div class="stage-step-item">
+            <span class="step-badge">VERIFIED</span>
+            <div class="step-desc">Enforced "No Evidence &rarr; No Finding" gate generating reproducible 0–100 posture scorecards.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 CORE ENGINE: Split Editorial Layout (No Giant Cards) -->
+  <section class="editorial-section">
+    <div class="split-editorial">
+      <div class="split-heading-col">
+        <div class="editorial-eyebrow">CORE ARCHITECTURE</div>
+        <h3>ENGINEERED FOR FORENSIC PRECISION.</h3>
+        <p>
+          Deterministic engines establish facts. Machine learning identifies patterns. The investigation agent determines what to investigate next.
+        </p>
+      </div>
+
+      <div class="engine-rows-list">
+        <div class="engine-row-item">
+          <div class="engine-row-num">01</div>
+          <div>
+            <div class="engine-row-title">Cryptographic Forensics</div>
+            <div class="engine-row-desc">
+              Analyzes handshake parameters, cipher suites, key exchange mechanisms, and observable X.509 certificate chains without making unverified assumptions.
+            </div>
+          </div>
+        </div>
+
+        <div class="engine-row-item">
+          <div class="engine-row-num">02</div>
+          <div>
+            <div class="engine-row-title">Evidence-First Investigation</div>
+            <div class="engine-row-desc">
+              Every finding is grounded in the immutable Evidence Ledger. The agent hypothesizes and selects allowlisted tools dynamically.
+            </div>
+          </div>
+        </div>
+
+        <div class="engine-row-item">
+          <div class="engine-row-num">03</div>
+          <div>
+            <div class="engine-row-title">Explainable Posture</div>
+            <div class="engine-row-desc">
+              0–100 security score where every point deduction is explicitly attributable to verified cryptographic rules and observable artifacts.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 AI INVESTIGATION: White / Near-Black Split -->
+  <section id="agent" class="agent-split-section">
+    <div class="agent-split-inner">
+      <div class="agent-split-lead">
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #A1A1AA; margin-bottom: 16px;">
+          AN INVESTIGATION AGENT
+        </div>
+        <h2>Investigates.<br>Doesn't invent.</h2>
+        <p>
+          The agent does not establish facts itself. It observes structured evidence from deterministic tools, evaluates capture completeness, and tests hypotheses under strict allowlists.
+        </p>
+        <a href="/app" class="btn-primary-dark" style="background: #FFFFFF; color: #000000;">
+          Try Investigation Agent &rarr;
+        </a>
+      </div>
+
+      <!-- Real Product Console Preview -->
+      <div class="agent-console-surface">
+        <div class="agent-console-header">
+          <span>INVESTIGATION AGENT</span>
+          <span style="color: #71717A; font-family: var(--font-mono);">INV-BRANCH-01</span>
+        </div>
+
+        <div class="agent-console-section-title">Current Objective</div>
+        <div class="agent-objective-box">
+          Determine whether missing TLS handshake is caused by capture incompleteness before confirming STARTTLS downgrade.
+        </div>
+
+        <div class="agent-console-section-title">Hypotheses</div>
+        <div class="agent-hyp-list">
+          <div class="agent-hyp-item">
+            <span>H001 STARTTLS downgrade</span>
+            <strong style="color: #FFFFFF; font-family: var(--font-mono);">82%</strong>
+          </div>
+          <div class="agent-hyp-item">
+            <span style="color: #71717A;">H002 Incomplete capture</span>
+            <strong style="color: #71717A; font-family: var(--font-mono);">11%</strong>
+          </div>
+          <div class="agent-hyp-item">
+            <span style="color: #71717A;">H003 Negotiation failure</span>
+            <strong style="color: #71717A; font-family: var(--font-mono);">7%</strong>
+          </div>
+        </div>
+
+        <div class="agent-console-section-title">Next Action</div>
+        <div class="agent-action-panel">
+          <div style="font-family: var(--font-mono); font-weight: 600; color: #FFFFFF; margin-bottom: 4px;">
+            pcap.completeness
+          </div>
+          <div style="color: #A1A1AA; font-size: 11px;">
+            Reason: Determine whether packet loss explains the missing TLS ClientHello.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 EVIDENCE & PROVENANCE: 1px Divider System, No Giant Outer Card -->
+  <section class="editorial-section">
+    <div class="editorial-eyebrow">AUDITABLE PROVENANCE</div>
+    <h2 class="editorial-title">Every conclusion has a trail.</h2>
+    <p class="editorial-subtitle">
+      No evidence &rarr; No finding. Every claim is cryptographically linked to tool version and raw packet reference.
+    </p>
+
+    <table class="evidence-table-clean">
+      <thead>
+        <tr>
+          <th>Evidence ID</th>
+          <th>Type</th>
+          <th>Observed Fact / Claim</th>
+          <th>Source Tool</th>
+          <th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="/app/evidence" class="evidence-pill-link">E001</a></td>
+          <td><code>protocol_identified</code></td>
+          <td>SMTP protocol identified on TCP port 25</td>
+          <td>TShark / Scapy</td>
+          <td>100%</td>
+        </tr>
+        <tr>
+          <td><a href="/app/evidence" class="evidence-pill-link">E002</a></td>
+          <td><code>starttls_advertised</code></td>
+          <td>STARTTLS advertised in server EHLO response</td>
+          <td>SMTP State Engine</td>
+          <td>100%</td>
+        </tr>
+        <tr>
+          <td><a href="/app/evidence" class="evidence-pill-link">E003</a></td>
+          <td><code>starttls_requested</code></td>
+          <td>Client issued STARTTLS command; server returned 220</td>
+          <td>SMTP State Engine</td>
+          <td>100%</td>
+        </tr>
+        <tr>
+          <td><a href="/app/evidence" class="evidence-pill-link">E004</a></td>
+          <td><code>tls_client_hello</code></td>
+          <td>TLS ClientHello absent on the wire post-negotiation</td>
+          <td>TLS Forensic Engine</td>
+          <td>99%</td>
+        </tr>
+        <tr>
+          <td><a href="/app/evidence" class="evidence-pill-link">E010</a></td>
+          <td><code>plaintext_continuation</code></td>
+          <td>Plaintext MAIL FROM and DATA transmitted without TLS encryption</td>
+          <td>TCP Reconstructor</td>
+          <td style="color: var(--critical); font-weight: 600;">99%</td>
+        </tr>
+        <tr>
+          <td><a href="/app/evidence" class="evidence-pill-link">E011</a></td>
+          <td><code>capture_completeness</code></td>
+          <td>Capture completeness verified at 99.6% (0 sequence gaps)</td>
+          <td>Completeness Engine</td>
+          <td>99.6%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 07 SECURITY POSTURE: Clean Editorial Preview -->
+    <div class="posture-editorial-preview">
+      <div class="posture-score-col">
+        <div class="posture-large-num">76</div>
+        <div class="posture-rating-text">POSTURE: GOOD</div>
+      </div>
+
+      <div class="posture-progress-list">
+        <div class="posture-metric-row">
+          <span>TLS Security</span>
+          <div class="thin-progress-bg"><div class="thin-progress-fill" style="width: 95%;"></div></div>
+          <span style="font-family: var(--font-mono); font-size: 12px; text-align: right;">95</span>
+        </div>
+
+        <div class="posture-metric-row">
+          <span>Certificate</span>
+          <div class="thin-progress-bg"><div class="thin-progress-fill" style="width: 90%;"></div></div>
+          <span style="font-family: var(--font-mono); font-size: 12px; text-align: right;">90</span>
+        </div>
+
+        <div class="posture-metric-row">
+          <span>Forward Secrecy</span>
+          <div class="thin-progress-bg"><div class="thin-progress-fill" style="width: 85%;"></div></div>
+          <span style="font-family: var(--font-mono); font-size: 12px; text-align: right;">85</span>
+        </div>
+
+        <div class="posture-metric-row">
+          <span>STARTTLS Resistance</span>
+          <div class="thin-progress-bg"><div class="thin-progress-fill" style="width: 70%;"></div></div>
+          <span style="font-family: var(--font-mono); font-size: 12px; text-align: right;">70</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 FINAL CTA: Clean & Minimal -->
+  <section class="final-clean-cta">
+    <h2 class="final-cta-heading">
+      See what your mail traffic<br>is really telling you.
+    </h2>
+    <p class="final-cta-sub">
+      Analyze. Reconstruct. Verify.
+    </p>
+    <a href="/app" class="btn-hero-primary">
+      Start an investigation &rarr;
+    </a>
+  </section>
+
+  <!-- FOOTER: Minimal, Working Links Only -->
+  <footer class="clean-footer">
+    <div class="clean-footer-grid">
+      <div>
+        <div class="brand-group" style="margin-bottom: 12px;">
+          <div class="brand-logo-sq" aria-hidden="true">
+            <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+          </div>
+          <span class="brand-name">SECUREMAILSCOPE</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-tertiary); max-width: 320px; line-height: 1.6;">
+          Agentic Cryptographic Forensics for Secure Email Communications.<br>SIH26159.
+        </p>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Product</div>
+        <div class="footer-links-col">
+          <a href="/app/investigations">Investigations</a>
+          <a href="/app/evidence">Evidence</a>
+          <a href="/app">AI Agent</a>
+          <a href="/app/reports">Reports</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <div class="footer-links-col">
+          <a href="/app/playground">Demo</a>
+          <a href="/api/samples">API</a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">Repository</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Legal</div>
+        <div class="footer-links-col">
+          <a href="/app/docs">Privacy</a>
+          <a href="/app/docs">Security</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-subline">
+      <div>&copy; 2026 SecureMailScope &bull; SIH26159.</div>
+      <div>Evidence-First Forensic Architecture.</div>
+    </div>
+  </footer>
+
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+"""
+SecureMailScope - Controlled Tool Gateway
+"""
+import uuid
+import time
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+from securemailscope.core.config import config
+from securemailscope.core.exceptions import ToolExecutionError
+from securemailscope.evidence.models import (
+    Evidence,
+    EvidenceType,
+    SeverityLevel,
+    ToolExecution,
+    TimelineEvent
+)
+from securemailscope.evidence.ledger import EvidenceLedger
+from securemailscope.tools.registry import ALLOWLISTED_TOOLS
+from securemailscope.forensics.capture import CaptureEngine
+from securemailscope.forensics.tcp_stream import TCPReconstructionEngine, TCPStream
+from securemailscope.forensics.protocols.smtp import SMTPAnalyzer
+from securemailscope.forensics.protocols.imap import IMAPAnalyzer
+from securemailscope.forensics.protocols.pop3 import POP3Analyzer
+from securemailscope.forensics.tls_engine import TLSEngine
+from securemailscope.forensics.x509_engine import X509Engine
+from securemailscope.forensics.rules import CryptoRuleEngine
+
+
+class ToolGateway:
+    """
+    Controlled Tool Gateway:
+    - Restricts execution strictly to allowlisted tools
+    - Validates arguments
+    - Records tool version, timestamps, and execution logs
+    - Normalizes outputs and writes deterministic Evidence items to the Evidence Ledger
+    """
+
+    def __init__(self, ledger: EvidenceLedger):
+        self.ledger = ledger
+        self.tool_version = config.version
+
+    def execute_tool(
+        self,
+        investigation_id: str,
+        tool_name: str,
+        args: Dict[str, Any],
+        hypothesis_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        if tool_name not in ALLOWLISTED_TOOLS:
+            raise ToolExecutionError(f"Unauthorized or unknown tool requested: '{tool_name}'.")
+
+        exec_id = f"EXEC-{uuid.uuid4().hex[:8].upper()}"
+        start_time_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        t0 = time.perf_counter()
+
+        generated_evidence_ids: List[str] = []
+        result_payload: Dict[str, Any] = {}
+        status = "SUCCESS"
+        error_msg = ""
+
+        try:
+            if tool_name == "pcap.inspect":
+                file_path = Path(args["file_path"])
+                meta = CaptureEngine.inspect_capture(file_path)
+                result_payload = meta
+
+                ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                ev = Evidence(
+                    evidence_id=ev_id,
+                    investigation_id=investigation_id,
+                    type=EvidenceType.CAPTURE_METADATA,
+                    claim=f"PCAP capture '{meta['artifact_name']}' loaded: {meta['packet_count']} packets, SHA256 {meta['artifact_sha256'][:16]}...",
+                    source_tool="CaptureEngine",
+                    tool_version=self.tool_version,
+                    tool_args={"file_path": str(file_path)},
+                    raw_artifact_ref=f"pcap://{meta['artifact_name']}",
+                    confidence=1.0,
+                    severity=SeverityLevel.INFORMATIONAL,
+                    hypothesis_id=hypothesis_id,
+                    provenance_chain=[investigation_id, meta["artifact_name"], "pcap.inspect"],
+                    details=meta
+                )
+                self.ledger.record_evidence(ev)
+                generated_evidence_ids.append(ev_id)
+
+            elif tool_name == "pcap.completeness":
+                file_path = Path(args["file_path"])
+                meta = CaptureEngine.inspect_capture(file_path)
+                comp = meta["completeness"]
+                result_payload = comp
+
+                ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                ev = Evidence(
+                    evidence_id=ev_id,
+                    investigation_id=investigation_id,
+                    type=EvidenceType.CAPTURE_COMPLETENESS,
+                    claim=f"Capture Completeness calculated at {comp['completeness_percentage']}% ({comp['assessment']}). Gaps: {comp['sequence_gaps']}, Retransmissions: {comp['retransmissions']}.",
+                    source_tool="CaptureEngine.completeness",
+                    tool_version=self.tool_version,
+                    tool_args={"file_path": str(file_path)},
+                    raw_artifact_ref=f"pcap://{file_path.name}/completeness",
+                    confidence=1.0,
+                    severity=SeverityLevel.INFORMATIONAL if comp["is_complete"] else SeverityLevel.MEDIUM,
+                    hypothesis_id=hypothesis_id,
+                    provenance_chain=[investigation_id, file_path.name, "pcap.completeness"],
+                    details=comp
+                )
+                self.ledger.record_evidence(ev)
+                generated_evidence_ids.append(ev_id)
+
+            elif tool_name == "pcap.sessions":
+                file_path = args["file_path"]
+                streams = TCPReconstructionEngine.reconstruct_streams(file_path)
+                streams_summary = [s.to_dict() for s in streams]
+                result_payload = {"streams_count": len(streams), "streams": streams_summary}
+
+                ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                protos = list(set(s.protocol_hint for s in streams))
+                ev = Evidence(
+                    evidence_id=ev_id,
+                    investigation_id=investigation_id,
+                    type=EvidenceType.PROTOCOL_IDENTIFIED,
+                    claim=f"Discovered {len(streams)} TCP stream(s) with protocols: {', '.join(protos)}.",
+                    source_tool="TCPReconstructionEngine",
+                    tool_version=self.tool_version,
+                    tool_args={"file_path": file_path},
+                    raw_artifact_ref=f"pcap://{Path(file_path).name}/streams",
+                    confidence=1.0,
+                    severity=SeverityLevel.INFORMATIONAL,
+                    hypothesis_id=hypothesis_id,
+                    provenance_chain=[investigation_id, Path(file_path).name, "pcap.sessions"],
+                    details={"protocols": protos, "stream_count": len(streams)}
+                )
+                self.ledger.record_evidence(ev)
+                generated_evidence_ids.append(ev_id)
+
+            elif tool_name == "pcap.tcp_stream":
+                file_path = args["file_path"]
+                target_stream_id = args.get("stream_id")
+                streams = TCPReconstructionEngine.reconstruct_streams(file_path)
+                selected = next((s for s in streams if s.stream_id == target_stream_id or not target_stream_id), streams[0] if streams else None)
+                if not selected:
+                    raise ToolExecutionError(f"Stream '{target_stream_id}' not found.")
+                result_payload = selected.to_dict()
+
+                ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                ev = Evidence(
+                    evidence_id=ev_id,
+                    investigation_id=investigation_id,
+                    type=EvidenceType.TCP_STREAM_RECONSTRUCTED,
+                    claim=f"Reconstructed stream {selected.stream_id} ({selected.client_endpoint} -> {selected.server_endpoint}, {selected.total_bytes} bytes).",
+                    source_tool="TCPReconstructionEngine.stream",
+                    tool_version=self.tool_version,
+                    tool_args={"file_path": file_path, "stream_id": selected.stream_id},
+                    raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}",
+                    confidence=1.0,
+                    severity=SeverityLevel.INFORMATIONAL,
+                    hypothesis_id=hypothesis_id,
+                    provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id],
+                    details=result_payload
+                )
+                self.ledger.record_evidence(ev)
+                generated_evidence_ids.append(ev_id)
+
+            elif tool_name == "smtp.analyze":
+                file_path = args["file_path"]
+                target_stream_id = args.get("stream_id")
+                streams = TCPReconstructionEngine.reconstruct_streams(file_path)
+                selected = next((s for s in streams if s.stream_id == target_stream_id or not target_stream_id), streams[0] if streams else None)
+                if not selected:
+                    raise ToolExecutionError(f"Stream '{target_stream_id}' not found.")
+                smtp_res = SMTPAnalyzer.analyze_stream(selected)
+                result_payload = smtp_res.to_dict()
+
+                if smtp_res.starttls_advertised:
+                    ev_id1 = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    ev1 = Evidence(
+                        evidence_id=ev_id1,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.STARTTLS_ADVERTISED,
+                        claim="SMTP Server advertised STARTTLS capability in EHLO response.",
+                        source_tool="SMTPAnalyzer",
+                        tool_version=self.tool_version,
+                        tool_args={"stream_id": selected.stream_id},
+                        raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}/smtp",
+                        confidence=1.0,
+                        severity=SeverityLevel.INFORMATIONAL,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id, "EHLO"],
+                        details={"advertised_extensions": smtp_res.advertised_extensions}
+                    )
+                    self.ledger.record_evidence(ev1)
+                    generated_evidence_ids.append(ev_id1)
+
+                if smtp_res.starttls_requested:
+                    ev_id2 = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    ev2 = Evidence(
+                        evidence_id=ev_id2,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.STARTTLS_REQUESTED,
+                        claim="SMTP Client issued STARTTLS command.",
+                        source_tool="SMTPAnalyzer",
+                        tool_version=self.tool_version,
+                        tool_args={"stream_id": selected.stream_id},
+                        raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}/smtp",
+                        confidence=1.0,
+                        severity=SeverityLevel.INFORMATIONAL,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id, "STARTTLS"],
+                        details={"client_ehlo": smtp_res.client_ehlo}
+                    )
+                    self.ledger.record_evidence(ev2)
+                    generated_evidence_ids.append(ev_id2)
+
+                if smtp_res.plaintext_after_starttls:
+                    ev_id3 = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    ev3 = Evidence(
+                        evidence_id=ev_id3,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.PLAINTEXT_CONTINUATION,
+                        claim="CRITICAL: SMTP traffic continued in cleartext despite STARTTLS negotiation acceptance.",
+                        source_tool="SMTPAnalyzer",
+                        tool_version=self.tool_version,
+                        tool_args={"stream_id": selected.stream_id},
+                        raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}/smtp/fallback",
+                        confidence=0.99,
+                        severity=SeverityLevel.CRITICAL,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id, "MAIL_FROM"],
+                        details={"anomalies": smtp_res.anomalies}
+                    )
+                    self.ledger.record_evidence(ev3)
+                    generated_evidence_ids.append(ev_id3)
+
+            elif tool_name == "tls.handshake":
+                file_path = args["file_path"]
+                target_stream_id = args.get("stream_id")
+                streams = TCPReconstructionEngine.reconstruct_streams(file_path)
+                selected = next((s for s in streams if s.stream_id == target_stream_id or not target_stream_id), streams[0] if streams else None)
+                if not selected:
+                    raise ToolExecutionError(f"Stream '{target_stream_id}' not found.")
+                tls_res = TLSEngine.analyze_stream(selected)
+                result_payload = tls_res.to_dict()
+
+                if tls_res.client_hello_observed:
+                    ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    ev = Evidence(
+                        evidence_id=ev_id,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.TLS_CLIENT_HELLO,
+                        claim=f"TLS ClientHello observed (SNI: {tls_res.sni or 'None'}, Offered Ciphers: {len(tls_res.client_ciphers)}).",
+                        source_tool="TLSEngine",
+                        tool_version=self.tool_version,
+                        tool_args={"stream_id": selected.stream_id},
+                        raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}/tls",
+                        confidence=1.0,
+                        severity=SeverityLevel.INFORMATIONAL,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id, "ClientHello"],
+                        details={"sni": tls_res.sni, "ciphers_count": len(tls_res.client_ciphers)}
+                    )
+                    self.ledger.record_evidence(ev)
+                    generated_evidence_ids.append(ev_id)
+
+                if tls_res.negotiated_version:
+                    ev_id2 = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    ev2 = Evidence(
+                        evidence_id=ev_id2,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.TLS_VERSION_DETECTED,
+                        claim=f"Negotiated TLS Version: {tls_res.negotiated_version} with cipher {tls_res.selected_cipher.get('name') if tls_res.selected_cipher else 'UNKNOWN'}.",
+                        source_tool="TLSEngine",
+                        tool_version=self.tool_version,
+                        tool_args={"stream_id": selected.stream_id},
+                        raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}/tls",
+                        confidence=1.0,
+                        severity=SeverityLevel.HIGH if tls_res.negotiated_version in ("TLS 1.0", "TLS 1.1", "SSL 3.0") else SeverityLevel.INFORMATIONAL,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id, "ServerHello"],
+                        details=result_payload
+                    )
+                    self.ledger.record_evidence(ev2)
+                    generated_evidence_ids.append(ev_id2)
+
+            elif tool_name == "tls.certificate":
+                file_path = args["file_path"]
+                target_stream_id = args.get("stream_id")
+                streams = TCPReconstructionEngine.reconstruct_streams(file_path)
+                selected = next((s for s in streams if s.stream_id == target_stream_id or not target_stream_id), streams[0] if streams else None)
+                if not selected:
+                    raise ToolExecutionError(f"Stream '{target_stream_id}' not found.")
+                tls_res = TLSEngine.analyze_stream(selected)
+                
+                parsed_certs = []
+                for cert_bytes in tls_res.raw_certificates_bytes:
+                    c_res = X509Engine.parse_der_certificate(cert_bytes, expected_hostname=tls_res.sni)
+                    parsed_certs.append(c_res.to_dict())
+
+                result_payload = {
+                    "observable": tls_res.certificate_observable,
+                    "note": tls_res.certificate_note,
+                    "certificates": parsed_certs
+                }
+
+                if parsed_certs:
+                    c0 = parsed_certs[0]
+                    ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    ev = Evidence(
+                        evidence_id=ev_id,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.CERTIFICATE_EXTRACTED,
+                        claim=f"Extracted X.509 Certificate: Subject='{c0['subject']}', Issuer='{c0['issuer']}', Key={c0['public_key_algorithm']}-{c0['public_key_bits']}.",
+                        source_tool="X509Engine",
+                        tool_version=self.tool_version,
+                        tool_args={"stream_id": selected.stream_id},
+                        raw_artifact_ref=f"pcap://{Path(file_path).name}/{selected.stream_id}/x509",
+                        confidence=1.0,
+                        severity=SeverityLevel.HIGH if c0["validation_errors"] else SeverityLevel.INFORMATIONAL,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, Path(file_path).name, selected.stream_id, "Certificate"],
+                        details=c0
+                    )
+                    self.ledger.record_evidence(ev)
+                    generated_evidence_ids.append(ev_id)
+
+            elif tool_name == "rules.evaluate":
+                ctx = args.get("forensic_context", {})
+                eval_results = CryptoRuleEngine.evaluate(ctx)
+                result_payload = {"triggered_rules": [r.to_dict() for r in eval_results if r.triggered]}
+
+                for rule in eval_results:
+                    if rule.triggered:
+                        ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                        ev = Evidence(
+                            evidence_id=ev_id,
+                            investigation_id=investigation_id,
+                            type=EvidenceType.CRYPTO_RULE_TRIGGERED,
+                            claim=f"Rule Triggered [{rule.rule_id}]: {rule.title} - {rule.description}",
+                            source_tool="CryptoRuleEngine",
+                            tool_version=CryptoRuleEngine.RULE_SET_VERSION,
+                            tool_args={"rule_id": rule.rule_id},
+                            raw_artifact_ref=f"rule://{rule.rule_id}",
+                            confidence=1.0,
+                            severity=rule.severity,
+                            hypothesis_id=hypothesis_id,
+                            provenance_chain=[investigation_id, "CryptoRuleEngine", rule.rule_id],
+                            details=rule.to_dict()
+                        )
+                        self.ledger.record_evidence(ev)
+                        generated_evidence_ids.append(ev_id)
+
+            elif tool_name.startswith("intel."):
+                # Controlled threat intel mocks
+                target = args.get("ip") or args.get("domain") or args.get("fingerprint")
+                result_payload = {
+                    "target": target,
+                    "reputation": "KNOWN_LEGITIMATE" if "internal" in str(target) else "PUBLIC_MAIL_GATEWAY",
+                    "cve_exposure": [],
+                    "mta_sts_enforced": False,
+                    "dane_tlsa_valid": False
+                }
+                ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                ev = Evidence(
+                    evidence_id=ev_id,
+                    investigation_id=investigation_id,
+                    type=EvidenceType.EXTERNAL_INTEL,
+                    claim=f"External CTI enrichment for '{target}': Reputation {result_payload['reputation']}.",
+                    source_tool=tool_name,
+                    tool_version=self.tool_version,
+                    tool_args=args,
+                    raw_artifact_ref=f"intel://{tool_name}/{target}",
+                    confidence=0.85,
+                    severity=SeverityLevel.INFORMATIONAL,
+                    hypothesis_id=hypothesis_id,
+                    provenance_chain=[investigation_id, tool_name, str(target)],
+                    details=result_payload
+                )
+                self.ledger.record_evidence(ev)
+                generated_evidence_ids.append(ev_id)
+
+        except Exception as e:
+            status = "ERROR"
+            error_msg = str(e)
+            result_payload = {"error": error_msg}
+
+        end_time_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        duration_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+
+        exec_record = ToolExecution(
+            execution_id=exec_id,
+            investigation_id=investigation_id,
+            tool=tool_name,
+            tool_version=self.tool_version,
+            args=args,
+            status=status,
+            start_time=start_time_iso,
+            end_time=end_time_iso,
+            stdout_summary=f"Completed in {duration_ms}ms with {len(generated_evidence_ids)} evidence items.",
+            stderr=error_msg,
+            evidence_ids=generated_evidence_ids
+        )
+        self.ledger.record_tool_execution(exec_record)
+
+        # Record timeline event
+        tl_event = TimelineEvent(
+            event_id=f"EVT-{uuid.uuid4().hex[:6].upper()}",
+            phase="TOOL_EXECUTION",
+            actor="TOOL_GATEWAY",
+            action=f"Executed {tool_name}",
+            detail=f"{tool_name} returned status '{status}' producing {len(generated_evidence_ids)} evidence item(s).",
+            evidence_id=generated_evidence_ids[0] if generated_evidence_ids else None,
+            hypothesis_id=hypothesis_id
+        )
+        self.ledger.record_timeline_event(tl_event, investigation_id)
+
+        return {
+            "execution_id": exec_id,
+            "tool": tool_name,
+            "status": status,
+            "evidence_ids": generated_evidence_ids,
+            "result": result_payload
+        }

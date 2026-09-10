@@ -1,0 +1,32 @@
+| #    | PS Number    | Organization               | Problem Statement                                            | Type     | Submissions | Theme                      | Deadline    |
+| ---- | ------------ | -------------------------- | ------------------------------------------------------------ | -------- | ----------- | -------------------------- | ----------- |
+| 1    | **SIH26104** | AICTE Cyber Security Cell  | AI-Powered Real-Time Detection and Prevention of Voice Cloning Impersonation Attacks | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 2    | **SIH26105** | AICTE Cyber Security Cell  | AI-Powered Continuous Cyber Risk Quantification and Investment Optimization Platform | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 3    | **SIH26106** | AICTE Cyber Security Cell  | AI-Powered Email Threat Detection, GeoLocation and Forensic Intelligence Platform | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 4    | **SIH26125** | Bharat Electronics Limited | Blockchain-Based Secure Platform for Identity, Access Control, and Digital Asset Management | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 5    | **SIH26141** | Egreen Quanta              | Quantum-Inspired Cyber Threat Detection for Digital Signature Security | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 6    | **SIH26145** | NTRO                       | AI-Based Detection of Cyber Threats in Unidirectional IP Traffic | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 7    | **SIH26146** | NTRO                       | AI-Powered Monitoring & Analysis of Bitcoin Transaction Traffic | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 8    | **SIH26148** | NTRO                       | New Programming Language/Scripts for Computer & Network Forensic Analysis | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 9    | **SIH26149** | NTRO                       | Integrated Secure Data Erasure and Advanced File Recovery Tool for Digital Forensics and Data Sanitization | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 10   | **SIH26150** | NTRO                       | Multi-Vendor DVR/NVR Forensic Analysis Tool for Surveillance Evidence | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 11   | **SIH26151** | NTRO                       | Dark Web Threat Actor De-anonymization                       | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 12   | **SIH26152** | NTRO                       | Social Media Analytics                                       | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 13   | **SIH26153** | NTRO                       | AI-Based Network Attack Forecasting from Network Traffic Data | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 14   | **SIH26154** | NTRO                       | GenAI Platform for Automated Content Transformation          | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 15   | **SIH26155** | NTRO                       | AI-Driven Multi-Vendor Network Security Compliance Auditor   | Software | 3/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 16   | **SIH26156** | NTRO                       | Universal Log Pre-processing Framework                       | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 17   | **SIH26157** | NTRO                       | Supervisory Analytics Tool for SOC Assessment (SAT-SA)       | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 18   | **SIH26159** | NTRO                       | SecureMailScope — AI-Assisted Cryptographic Security Posture Assessment for Secure Email Communications | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 19   | **SIH26160** | NTRO                       | AI-Powered IPsec VPN Protocol Analyzer and Security Assessment Framework | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 20   | **SIH26164** | NTRO                       | Enterprise Cryptographic Discovery & Analysis Tool (ECDAT)   | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 21   | **SIH26182** | Ministry of Home Affairs   | Automated Attribution of Unknown Cryptocurrency Wallets to Nearest VASPs through Blockchain Intelligence APIs | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 22   | **SIH26183** | Ministry of Home Affairs   | Real-Time Identification of Fraud-Linked Cryptocurrency Exchanges through Automated Blockchain Analytics | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 23   | **SIH26184** | Ministry of Home Affairs   | Predictive Analytics Framework for Cybercrime Complaints to Forecast Likely Cash Withdrawal Locations | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 24   | **SIH26187** | Ministry of Home Affairs   | AI-Based Intelligent Video Analytics Platform for Border Surveillance using Existing CCTV Infrastructure | Software | 1/500       | Cyber/AI-related           | 30 Sep 2026 |
+| 25   | **SIH26188** | Ministry of Home Affairs   | AI-Based Fake Identity & Document Screening System           | Software | 3/500       | Cyber/AI-related           | 30 Sep 2026 |
+| 26   | **SIH26189** | Ministry of Home Affairs   | AI-Powered Criminal Network Analysis System                  | Software | 2/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 27   | **SIH26190** | Ministry of Home Affairs   | Secure Digital Document Management System for Legal and Investigation Documents | Software | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 28   | **SIH26194** | AICTE                      | Student Innovation — Decentralized and Distributed Ledger Technology Ideas | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 29   | **SIH26211** | AICTE                      | Student Innovation — Decentralized and Distributed Ledger Technology Ideas | Hardware | **0/500**   | Blockchain & Cybersecurity | 30 Sep 2026 |
+| 30   | **SIH26228** | Ministry of Defence        | Trustworthy Computer Vision Integrity Assurance for Data, Models and Inference Outputs in Multi-Contributor Pipelines | Software | 1/500       | Blockchain & Cybersecurity | 30 Sep 2026 |

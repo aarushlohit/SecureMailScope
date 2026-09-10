@@ -1,0 +1,9 @@
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+reports/*_report.pdf
+reports/*_report.json
+reports/*_report.html
+.DS_Store

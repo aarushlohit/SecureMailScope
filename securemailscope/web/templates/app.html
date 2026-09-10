@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workstation — SecureMailScope</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/design-tokens.css">
+  <link rel="stylesheet" href="/static/app-workstation.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Streamlined Collapsible Sidebar Navigation -->
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar Navigation">
+      <div class="sidebar-header">
+        <div class="sidebar-brand-wrapper">
+          <div class="sidebar-brand-icon" aria-hidden="true">
+            <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
+          </div>
+          <div class="sidebar-brand-meta">
+            <div class="sidebar-brand-name">SECUREMAILSCOPE</div>
+            <div class="sidebar-brand-sub">Cryptographic Forensics</div>
+          </div>
+        </div>
+        <button class="sidebar-toggle-btn" id="sidebar-collapse-toggle" type="button" aria-label="Toggle sidebar collapse (Ctrl+\)" title="Toggle sidebar (Ctrl+\)">
+          <i data-lucide="panel-left" style="width: 14px; height: 14px;"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-action-wrap">
+        <button class="btn-new-investigation" id="btn-sidebar-new-inv" type="button" title="Start new investigation">
+          <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+          <span>New Investigation</span>
+        </button>
+      </div>
+
+      <div class="sidebar-nav-scroll">
+        <!-- Group: Investigate -->
+        <div class="nav-group-label">Investigate</div>
+        <div class="nav-item active" data-view="home" role="button" tabindex="0" title="Home">
+          <i data-lucide="sparkles"></i> <span class="nav-item-label">Home</span>
+        </div>
+        <div class="nav-item" data-view="investigations" role="button" tabindex="0" title="Investigations">
+          <i data-lucide="folder-search"></i> <span class="nav-item-label">Investigations</span>
+        </div>
+        <div class="nav-item" data-view="evidence" role="button" tabindex="0" title="Evidence Ledger">
+          <i data-lucide="database"></i> <span class="nav-item-label">Evidence</span>
+        </div>
+        <div class="nav-item" data-view="findings" role="button" tabindex="0" title="Verified Findings">
+          <i data-lucide="alert-octagon"></i> <span class="nav-item-label">Findings</span>
+        </div>
+        <div class="nav-item" data-view="sessions" role="button" tabindex="0" title="Sessions & Streams">
+          <i data-lucide="binary"></i> <span class="nav-item-label">Sessions</span>
+        </div>
+
+        <div class="sidebar-divider" aria-hidden="true"></div>
+
+        <!-- Group: Analyze -->
+        <div class="nav-group-label">Analyze</div>
+        <div class="nav-item" data-view="reports" role="button" tabindex="0" title="Forensic Reports">
+          <i data-lucide="file-text"></i> <span class="nav-item-label">Reports</span>
+        </div>
+        <div class="nav-item" data-view="ml" role="button" tabindex="0" title="Scientific ML Benchmark">
+          <i data-lucide="cpu"></i> <span class="nav-item-label">ML Benchmark</span>
+        </div>
+        <div class="nav-item" data-view="threat-intel" role="button" tabindex="0" title="Threat Intelligence">
+          <i data-lucide="radar"></i> <span class="nav-item-label">Threat Intel</span>
+        </div>
+        <div class="nav-item" data-view="playground" role="button" tabindex="0" title="Demo Scenarios">
+          <i data-lucide="flask-conical"></i> <span class="nav-item-label">Demo</span>
+        </div>
+
+        <div class="sidebar-divider" aria-hidden="true"></div>
+
+        <!-- Group: System -->
+        <div class="nav-group-label">System</div>
+        <div class="nav-item" data-view="settings" role="button" tabindex="0" title="Settings">
+          <i data-lucide="settings"></i> <span class="nav-item-label">Settings</span>
+        </div>
+        <div class="nav-item" data-view="docs" role="button" tabindex="0" title="Help & Documentation">
+          <i data-lucide="help-circle"></i> <span class="nav-item-label">Help</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="system-status-pill">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="system-status-text">Engine operational</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workstation Column -->
+    <main class="app-main-column">
+      <!-- Restrained Top Toolbar -->
+      <header class="top-toolbar">
+        <div class="toolbar-left">
+          <button class="mobile-menu-btn" id="mobile-menu-toggle" type="button" aria-label="Toggle navigation menu">
+            <i data-lucide="menu" style="width: 18px; height: 18px;"></i>
+          </button>
+          <div class="page-breadcrumb" id="page-breadcrumb">
+            <span id="breadcrumb-parent">SecureMailScope</span>
+            <span style="color: var(--text-quaternary);">&bull;</span>
+            <span id="breadcrumb-current" style="color: #000000; font-weight: 600;">Home</span>
+          </div>
+        </div>
+
+        <!-- Global Search / Command Palette Trigger -->
+        <button class="toolbar-search-btn" id="btn-trigger-cmd" type="button" aria-label="Open command palette">
+          <i data-lucide="search" style="width: 13px; height: 13px;"></i>
+          <span>Search investigations, evidence, IPs...</span>
+          <span class="kbd-shortcut">&#8984; K</span>
+        </button>
+
+        <div class="toolbar-right">
+          <button class="btn-icon-quiet" id="btn-notifications" type="button" aria-label="Notifications" title="System Notifications">
+            <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+          </button>
+
+          <div class="user-profile-badge" title="Active Analyst Profile">
+            <div class="user-avatar" aria-hidden="true">AM</div>
+            <span class="user-name">Alex Morgan</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Workstation Views Scroll Container -->
+      <div class="workspace-content-scroll" id="workspace-scroll">
+
+        <!-- ======================================================= -->
+        <!-- 1. VIEW: HOME / PERPLEXITY-STYLE COMPOSER WORKSPACE     -->
+        <!-- ======================================================= -->
+        <div class="view-pane active" id="view-home">
+          <div class="home-investigation-layout">
+            
+            <!-- Greeting (Hides when conversation is active) -->
+            <div class="home-greeting-section" id="home-greeting-wrap">
+              <h1 class="home-greeting-title">Good morning, Alex.</h1>
+              <p class="home-greeting-sub">What are you investigating?</p>
+            </div>
+
+            <!-- 3 Compact Inline Actions (No Card Borders) -->
+            <div class="inline-quick-actions" id="home-quick-actions">
+              <button class="btn-inline-action" id="qa-upload-pcap" type="button" aria-label="Upload PCAP">
+                <i data-lucide="file-up" style="width: 13px; height: 13px;"></i>
+                <span>Upload PCAP</span>
+              </button>
+              <button class="btn-inline-action" id="qa-analyze-email" type="button" aria-label="Analyze email">
+                <i data-lucide="mail" style="width: 13px; height: 13px;"></i>
+                <span>Analyze email</span>
+              </button>
+              <button class="btn-inline-action" id="qa-open-inv" type="button" aria-label="Open investigation">
+                <i data-lucide="folder-search" style="width: 13px; height: 13px;"></i>
+                <span>Open investigation</span>
+              </button>
+            </div>
+
+            <!-- Active Conversation Thread (Occupies center on query) -->
+            <div id="home-conversation-container" class="conversation-thread" style="display: none;"></div>
+
+            <!-- The Investigation Composer — Visual Center of Product -->
+            <div class="investigation-composer-box" id="composer-box">
+              <div class="composer-chips-row" id="composer-chips"></div>
+
+              <textarea
+                class="composer-textarea"
+                id="composer-input"
+                placeholder="Ask about an investigation..."
+                rows="2"
+              ></textarea>
+
+              <div class="composer-bottom-bar">
+                <div class="composer-tools-left">
+                  <input type="file" id="composer-file-input" accept=".pcap,.pcapng,.eml,.txt,.json,.log" style="display: none;">
+                  <button class="btn-composer-tool" id="btn-attach-file" type="button" title="Attach PCAP, EML, headers, or logs">
+                    <i data-lucide="paperclip" style="width: 14px; height: 14px;"></i>
+                    <span>Attach</span>
+                  </button>
+
+                  <div class="composer-context-pill">
+                    <i data-lucide="shield-check" style="width: 12px; height: 12px; color: var(--low);"></i>
+                    <span>Evidence-constrained</span>
+                  </div>
+
+                  <span class="composer-model-badge">Investigator · v2.6</span>
+                </div>
+
+                <button class="btn-composer-send" id="btn-composer-submit" type="button" aria-label="Send query" title="Send investigation query">
+                  <i data-lucide="arrow-up" style="width: 18px; height: 18px;"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Exactly 3 Suggested Prompts -->
+            <div class="suggested-prompts-row" id="suggested-prompts">
+              <button class="prompt-pill" type="button" data-prompt="Analyze active PCAP capture and verify protocol state.">
+                Analyze a PCAP
+              </button>
+              <button class="prompt-pill" type="button" data-prompt="Find cryptographic issues, STARTTLS stripping, and cipher weaknesses.">
+                Find cryptographic issues
+              </button>
+              <button class="prompt-pill" type="button" data-prompt="Explain this finding and cite supporting Evidence Ledger IDs.">
+                Explain a finding
+              </button>
+            </div>
+
+            <!-- Recent Investigations (Prevents empty vast space) -->
+            <div class="home-recents-section" id="home-recents-wrap">
+              <div class="home-recents-header">
+                <span class="home-recents-title">Recent Forensic Investigations</span>
+                <span class="home-recents-link" onclick="window.workstation.navigate('investigations')">View all &rarr;</span>
+              </div>
+              <div class="recent-inv-list" id="home-recents-list">
+                <div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: 12px;">Loading recent forensic records...</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 2. VIEW: INVESTIGATIONS TABLE                           -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-investigations">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Investigations</h2>
+              <p class="view-header-sub">History of forensic captures, state analyses, and verified findings.</p>
+            </div>
+            <button class="btn-primary-dark" onclick="window.workstation.triggerNewInvestigation()" type="button">
+              <i data-lucide="plus" style="width: 14px; height: 14px;"></i> New Investigation
+            </button>
+          </div>
+
+          <div class="view-body-padding">
+            <div class="data-table-card">
+              <div class="table-filter-bar">
+                <input type="text" id="investigations-search" class="table-search-input" placeholder="Filter investigations by name or ID...">
+                <div class="flex items-center gap-2">
+                  <select id="investigations-risk-filter" class="table-search-input" style="width: 140px; padding: 5px 8px;">
+                    <option value="">All Risk Levels</option>
+                    <option value="CRITICAL">Critical</option>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="SECURE">Secure</option>
+                  </select>
+                </div>
+              </div>
+
+              <table class="table-base">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Protocol</th>
+                    <th>Score</th>
+                    <th>Risk</th>
+                    <th>Confidence</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="investigations-table-body">
+                  <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary);">Loading investigations...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 3. VIEW: INVESTIGATION DETAIL                           -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-investigation-detail">
+          <div class="view-header-strip" id="detail-header-strip">
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="detail-inv-id" class="badge badge-neutral" style="font-family: var(--font-mono);">INV-XXXX</span>
+                <h2 class="view-header-title" id="detail-artifact-name">capture.pcap</h2>
+                <span id="detail-risk-badge" class="badge badge-critical">CRITICAL RISK</span>
+              </div>
+              <div class="view-header-sub" id="detail-meta-text">SHA256: ... &bull; Packets: ...</div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a id="btn-detail-dl-json" href="/api/samples" target="_blank" class="btn-secondary-light">
+                <i data-lucide="file-code" style="width: 13px; height: 13px;"></i> JSON
+              </a>
+              <a id="btn-detail-dl-html" href="/api/samples" target="_blank" class="btn-secondary-light">
+                <i data-lucide="file-check" style="width: 13px; height: 13px;"></i> HTML
+              </a>
+              <a id="btn-detail-dl-pdf" href="/api/samples" target="_blank" class="btn-primary-dark">
+                <i data-lucide="file-down" style="width: 13px; height: 13px;"></i> PDF Report
+              </a>
+            </div>
+          </div>
+
+          <!-- Detail Tabs -->
+          <div style="background: #FFFFFF; border-bottom: 1px solid var(--border-default); padding: 0 32px; display: flex; gap: 8px;">
+            <button class="nav-item active detail-tab-btn" data-detail-tab="overview" type="button">Overview</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="timeline" type="button">Timeline</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="evidence" type="button">Evidence</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="sessions" type="button">Streams</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="tls" type="button">TLS</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="findings" type="button">Findings</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="agent-log" type="button">Agent</button>
+          </div>
+
+          <div class="view-body-padding" id="detail-tab-content"></div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 4. VIEW: EVIDENCE LEDGER                                -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-evidence">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Evidence Ledger</h2>
+              <p class="view-header-sub">Immutable ground-truth claims with cryptographic hashes and tool provenance.</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding">
+            <div class="data-table-card">
+              <div class="table-filter-bar">
+                <input type="text" id="evidence-global-search" class="table-search-input" placeholder="Search claims, IDs, tools...">
+                <select id="evidence-type-filter" class="table-search-input" style="width: 180px; padding: 5px 8px;">
+                  <option value="">All Evidence Types</option>
+                  <option value="capture_completeness">Capture Completeness</option>
+                  <option value="starttls_advertised">STARTTLS Advertised</option>
+                  <option value="plaintext_continuation">Plaintext Continuation</option>
+                  <option value="tls_version_detected">TLS Version Detected</option>
+                  <option value="certificate_extracted">Certificate Extracted</option>
+                  <option value="crypto_rule_triggered">Rule Triggered</option>
+                  <option value="ml_prediction">ML Prediction</option>
+                </select>
+              </div>
+
+              <table class="table-base">
+                <thead>
+                  <tr>
+                    <th>Evidence ID</th>
+                    <th>Type</th>
+                    <th>Observed Claim</th>
+                    <th>Source Tool</th>
+                    <th>Confidence</th>
+                    <th>Investigation</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="evidence-global-table-body">
+                  <tr><td colspan="7" style="text-align: center; color: var(--text-tertiary);">Loading evidence ledger...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 5. VIEW: VERIFIED FINDINGS                              -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-findings">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Verified Findings</h2>
+              <p class="view-header-sub">Validated against Evidence Ledger (No Evidence &rarr; No Finding Gate).</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding" id="findings-cards-container">
+            <div class="flex justify-center" style="padding: 40px; color: var(--text-tertiary);">
+              Loading findings...
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 6. VIEW: SESSIONS & TCP STREAMS                         -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-sessions">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Sessions & Reconstructed Streams</h2>
+              <p class="view-header-sub">Bidirectional transcript viewer for reconstructed email sessions.</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding">
+            <div id="streams-inspector-container">
+              <div class="sessions-split-layout">
+                <div class="sessions-sidebar-list" id="sessions-sidebar-list">
+                  <div class="sessions-list-header">Detected TCP Streams</div>
+                  <div id="sessions-items-list" style="padding: 16px; font-size: 12px; color: var(--text-tertiary);">Loading streams...</div>
+                </div>
+                <div class="sessions-transcript-panel" id="sessions-transcript-panel">
+                  <div class="sessions-transcript-header" id="sessions-transcript-header">
+                    <span>Transcript Viewer</span>
+                    <span id="sessions-stream-info" style="font-family: var(--font-mono); color: var(--text-tertiary);">Select a stream</span>
+                  </div>
+                  <div class="sessions-packet-scroll" id="sessions-packet-scroll">
+                    <div style="text-align: center; padding: 40px; color: var(--text-tertiary); font-size: 13px;">
+                      Select a stream from the left list to inspect reconstructed bidirectional packets.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 7. VIEW: ML BENCHMARK                                   -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-ml">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Scientific ML Benchmark</h2>
+              <p class="view-header-sub">Empirical evaluation: Static Rule Baseline vs Rule + ML (XGBoost) Engine.</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+              <div class="data-table-card" style="padding: 20px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 12px;">
+                  Rule-Only Baseline
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                  <div class="flex justify-between"><span>Accuracy:</span> <strong id="ml-rule-acc" style="font-family: var(--font-mono);">50.5%</strong></div>
+                  <div class="flex justify-between"><span>Precision:</span> <strong id="ml-rule-prec" style="font-family: var(--font-mono);">50.5%</strong></div>
+                  <div class="flex justify-between"><span>Recall:</span> <strong id="ml-rule-rec" style="font-family: var(--font-mono);">50.5%</strong></div>
+                  <div class="flex justify-between"><span>F1 Score:</span> <strong id="ml-rule-f1" style="font-family: var(--font-mono);">40.9%</strong></div>
+                </div>
+              </div>
+
+              <div class="data-table-card" style="padding: 20px; background: var(--low-bg); border-color: var(--low-border);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--low-text); margin-bottom: 12px;">
+                  Rule + ML Engine
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--low-text);">
+                  <div class="flex justify-between"><span>Accuracy:</span> <strong id="ml-engine-acc" style="font-family: var(--font-mono);">100.0%</strong></div>
+                  <div class="flex justify-between"><span>Precision:</span> <strong id="ml-engine-prec" style="font-family: var(--font-mono);">100.0%</strong></div>
+                  <div class="flex justify-between"><span>Recall:</span> <strong id="ml-engine-rec" style="font-family: var(--font-mono);">100.0%</strong></div>
+                  <div class="flex justify-between"><span>F1 Score:</span> <strong id="ml-engine-f1" style="font-family: var(--font-mono);">100.0%</strong></div>
+                </div>
+              </div>
+
+              <div class="data-table-card" style="padding: 20px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 8px;">
+                  F1 Delta Gain
+                </div>
+                <div id="ml-f1-gain" style="font-size: 32px; font-weight: 800; color: var(--low); letter-spacing: -0.02em; margin: 4px 0;">+59.1%</div>
+                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Empirical F1 lift over static signature matching on multi-vector anomalies.</div>
+              </div>
+
+              <div class="data-table-card" style="padding: 20px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 8px;">
+                  Evaluation Dataset
+                </div>
+                <div id="ml-dataset-count" style="font-size: 32px; font-weight: 800; color: #111111; letter-spacing: -0.02em; margin: 4px 0;">200 Sessions</div>
+                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Balanced PCAP fixtures including SMTP, IMAP, and POP3 captures.</div>
+              </div>
+            </div>
+
+            <div class="data-table-card" style="padding: 24px;">
+              <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 16px;">Top Anomaly Attribution Features (SHAP-style)</h3>
+              <div id="ml-top-features-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 8. VIEW: REPORTS                                        -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-reports">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Forensic Reports</h2>
+              <p class="view-header-sub">Document library for JSON dossiers, HTML previews, and NTRO-formatted PDFs.</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding">
+            <div class="data-table-card">
+              <table class="table-base">
+                <thead>
+                  <tr>
+                    <th>Investigation ID</th>
+                    <th>Scenario</th>
+                    <th>Posture Score</th>
+                    <th>Risk</th>
+                    <th>Export Formats</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                  <tr><td colspan="6" style="text-align: center; color: var(--text-tertiary);">Loading report records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 9. VIEW: THREAT INTEL                                   -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-threat-intel">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">External Threat Intelligence</h2>
+              <p class="view-header-sub">Controlled enrichment for IP reputation, MTA-STS/DANE policy, and CT logs.</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding">
+            <div class="data-table-card" style="padding: 20px; max-width: 720px; margin-bottom: 20px;">
+              <div class="flex gap-2" style="margin-bottom: 14px;">
+                <select id="intel-type-select" class="table-search-input" style="width: 140px;">
+                  <option value="ip">IP Address</option>
+                  <option value="domain">Domain</option>
+                  <option value="certificate">Cert Fingerprint</option>
+                </select>
+                <input type="text" id="intel-target-input" class="table-search-input" placeholder="e.g. 198.51.100.25 or mail.domain.com" style="flex: 1;">
+                <button class="btn-primary-dark" id="btn-intel-query" type="button">Query Intel</button>
+              </div>
+
+              <div id="intel-guidance-box" style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; border-top: 1px solid var(--border-default); padding-top: 14px;">
+                <div style="font-weight: 600; color: #111111; margin-bottom: 4px;">Controlled Threat Intelligence Context</div>
+                Query external reputation databases, passive DNS, MTA-STS policy records, and certificate transparency logs for observable entities extracted during PCAP inspection.
+              </div>
+
+              <div id="intel-result-box" style="display: none; margin-top: 14px;" class="drawer-code-block"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 10. VIEW: DEMO PLAYGROUND                               -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-playground">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Demo Lab Scenarios</h2>
+              <p class="view-header-sub">Pre-packaged SIH 2026 PCAP fixtures for automated forensic evaluation.</p>
+            </div>
+          </div>
+
+          <div class="view-body-padding">
+            <div style="display: flex; flex-direction: column; gap: 12px; max-width: 800px;">
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">1. STARTTLS Stripping Attack</strong>
+                    <span class="badge badge-critical">Critical</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    mail_attack_starttls_strip.pcap &bull; Plaintext continuation post-STARTTLS acceptance.
+                  </p>
+                </div>
+                <button class="btn-primary-dark" onclick="window.workstation.runDemoSample('mail_attack_starttls_strip.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">2. Secure Baseline (TLS 1.3 + PFS)</strong>
+                    <span class="badge badge-secure">Secure</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    mail_secure_tls13.pcap &bull; Ephemeral Diffie-Hellman PFS and encrypted TLS 1.3 records.
+                  </p>
+                </div>
+                <button class="btn-secondary-light" onclick="window.workstation.runDemoSample('mail_secure_tls13.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">3. Incomplete Capture (20% Completeness)</strong>
+                    <span class="badge badge-info">Inconclusive</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    mail_partial_capture_inconclusive.pcap &bull; Demonstrates refusal to jump to false conclusions.
+                  </p>
+                </div>
+                <button class="btn-secondary-light" onclick="window.workstation.runDemoSample('mail_partial_capture_inconclusive.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">4. Deprecated TLS 1.0 + RC4</strong>
+                    <span class="badge badge-critical">Critical</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    mail_weak_crypto_tls10_rc4.pcap &bull; Legacy broken stream cipher and static RSA key exchange.
+                  </p>
+                </div>
+                <button class="btn-primary-dark" onclick="window.workstation.runDemoSample('mail_weak_crypto_tls10_rc4.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- 11. VIEW: SETTINGS & HELP                               -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-settings">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Settings</h2>
+              <p class="view-header-sub">Forensic threshold parameters and security policy.</p>
+            </div>
+          </div>
+          <div class="view-body-padding" style="max-width: 600px;">
+            <div class="data-table-card" style="padding: 20px;">
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+                <div class="flex justify-between items-center">
+                  <span>High Completeness Threshold:</span>
+                  <input type="number" value="95" class="table-search-input" style="width: 80px;">
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Incomplete Capture Threshold:</span>
+                  <input type="number" value="60" class="table-search-input" style="width: 80px;">
+                </div>
+                <div class="flex justify-between items-center">
+                  <span>Enforce "No Evidence &rarr; No Finding":</span>
+                  <input type="checkbox" checked disabled style="accent-color: #000;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="view-pane" id="view-docs">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Help & Protocol Rules</h2>
+              <p class="view-header-sub">Reference for deterministic protocol engines and evidence gates.</p>
+            </div>
+          </div>
+          <div class="view-body-padding" style="max-width: 720px;">
+            <div class="data-table-card" style="padding: 24px; font-size: 13px; line-height: 1.6;">
+              <p style="color: var(--text-secondary); margin-bottom: 14px;">
+                SecureMailScope evaluates passive network captures (SMTP, IMAP, POP3) under SIH26159 (NTRO). All conclusions require empirical proof registered in the Evidence Ledger.
+              </p>
+              <div style="font-weight: 700; margin-bottom: 8px;">Active Cryptographic Rules:</div>
+              <ul style="padding-left: 20px; color: var(--text-secondary);">
+                <li><code>RULE-STARTTLS-PLAINTEXT-VIOLATION</code> &bull; Flags cleartext continuation post-STARTTLS.</li>
+                <li><code>RULE-CIPHER-BROKEN</code> &bull; Flags RC4 and weak stream ciphers.</li>
+                <li><code>RULE-TLS-DEPRECATED</code> &bull; Flags deprecated TLS 1.0 / 1.1 handshakes.</li>
+                <li><code>RULE-NO-PFS</code> &bull; Flags static RSA without Forward Secrecy.</li>
+                <li><code>RULE-CERT-EXPIRED</code> &bull; Validates X.509 temporal validity against UTC clock.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Slide-out Evidence Detail Drawer -->
+  <div class="evidence-drawer-overlay" id="drawer-overlay"></div>
+  <div class="evidence-drawer-pane" id="evidence-drawer" aria-label="Evidence Details">
+    <div class="drawer-header">
+      <div class="flex items-center gap-2">
+        <span class="evidence-badge" id="drawer-evidence-id">E000</span>
+        <strong id="drawer-evidence-type" style="font-size: 13px;">Evidence Detail</strong>
+      </div>
+      <button class="btn-icon-quiet" id="btn-close-drawer" type="button" aria-label="Close evidence drawer">
+        <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <div>
+        <div class="drawer-field-label">Observed Claim</div>
+        <div class="drawer-field-val" id="drawer-claim">--</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div>
+          <div class="drawer-field-label">Source</div>
+          <div class="drawer-field-val" id="drawer-tool">--</div>
+        </div>
+        <div>
+          <div class="drawer-field-label">Confidence</div>
+          <div class="drawer-field-val" id="drawer-confidence">--%</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="drawer-field-label">Raw Artifact</div>
+        <div class="drawer-field-val" style="font-family: var(--font-mono); font-size: 12px;" id="drawer-artifact-ref">--</div>
+      </div>
+
+      <div>
+        <div class="drawer-field-label">Provenance</div>
+        <div id="drawer-provenance-list" style="display: flex; flex-direction: column; gap: 3px; font-size: 12px; font-family: var(--font-mono); color: var(--text-secondary);"></div>
+      </div>
+
+      <div>
+        <div class="drawer-field-label">Structured JSON Payload</div>
+        <div class="drawer-code-block" id="drawer-json-details"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command Palette Modal (⌘ K) -->
+  <div class="cmd-palette-modal" id="cmd-palette" aria-label="Command Palette">
+    <div class="cmd-palette-box">
+      <div class="cmd-input-row">
+        <i data-lucide="search" style="width: 16px; height: 16px; color: var(--text-tertiary);"></i>
+        <input type="text" id="cmd-search-input" class="cmd-input" placeholder="Type a command or search..." autofocus>
+        <span class="kbd-shortcut">ESC</span>
+      </div>
+      <div class="cmd-results-list" id="cmd-results">
+        <div class="cmd-item" onclick="window.workstation.navigate('home')"><i data-lucide="sparkles"></i> Home &bull; Investigation Composer</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('investigations')"><i data-lucide="folder-search"></i> Investigations Table</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('evidence')"><i data-lucide="database"></i> Evidence Ledger</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('findings')"><i data-lucide="alert-octagon"></i> Verified Findings</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('sessions')"><i data-lucide="binary"></i> Reconstructed Streams</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('reports')"><i data-lucide="file-text"></i> Reports Library</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('ml')"><i data-lucide="cpu"></i> Scientific ML Benchmark</div>
+        <div class="cmd-item" onclick="window.workstation.navigate('playground')"><i data-lucide="flask-conical"></i> Demo Lab</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app-workstation.js"></script>
+</body>
+</html>

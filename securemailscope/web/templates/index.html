@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureMailScope — Cryptographic Forensics Console</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="cyber-theme">
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <div class="logo-badge">
+        <i data-lucide="shield-alert" class="logo-icon"></i>
+      </div>
+      <div>
+        <div class="app-title">SecureMailScope</div>
+        <div class="app-subtitle">SIH26159 | NTRO &bull; Cryptographic Email Forensics & Investigation Agent</div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span>EVIDENCE-CONSTRAINED AGENT ACTIVE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Workspace -->
+  <div class="workspace-layout">
+    <!-- Left Sidebar: Ingestion & Investigation Queue -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="section-heading"><i data-lucide="upload-cloud"></i> Ingest PCAP Capture</div>
+        
+        <!-- Quick Demo Scenarios Selector -->
+        <div class="form-group">
+          <label for="sample-select">SIH Live Demo Scenario</label>
+          <select id="sample-select" class="cyber-select">
+            <option value="">-- Choose Demo Capture --</option>
+            <option value="mail_attack_starttls_strip.pcap" selected>1. STARTTLS Stripping Attack (SMTP)</option>
+            <option value="mail_secure_tls13.pcap">2. Secure Baseline (TLS 1.3 + PFS)</option>
+            <option value="mail_partial_capture_inconclusive.pcap">3. Incomplete Capture (48% Completeness)</option>
+            <option value="mail_weak_crypto_tls10_rc4.pcap">4. Deprecated TLS 1.0 + RC4 Cipher</option>
+            <option value="mail_imap_cert_expired.pcap">5. IMAP Expired X.509 Certificate</option>
+            <option value="mail_pop3_plaintext_auth.pcap">6. POP3 Plaintext Credential Exposure</option>
+          </select>
+        </div>
+
+        <button id="btn-run-demo" class="btn btn-primary btn-block">
+          <i data-lucide="play"></i> Launch Adaptive Forensic Analysis
+        </button>
+
+        <div class="divider"><span>OR UPLOAD CUSTOM PCAP</span></div>
+
+        <!-- Custom Upload -->
+        <div class="dropzone" id="pcap-dropzone">
+          <i data-lucide="file-up" class="dropzone-icon"></i>
+          <p>Drop <code>.pcap</code> / <code>.pcapng</code> file here</p>
+          <input type="file" id="pcap-file-input" accept=".pcap,.pcapng,.cap" style="display: none;">
+        </div>
+      </div>
+
+      <div class="sidebar-section" style="flex: 1; overflow-y: auto;">
+        <div class="section-heading"><i data-lucide="history"></i> Past Investigations</div>
+        <div id="investigations-list" class="investigation-history-list">
+          <div class="loading-state">Loading investigations...</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center & Right Panel: Investigation Console -->
+    <main class="console-main">
+      <!-- Navigation Tabs -->
+      <div class="tabs-bar">
+        <button class="tab-btn active" data-tab="tab-overview"><i data-lucide="layout-dashboard"></i> Overview & Posture</button>
+        <button class="tab-btn" data-tab="tab-timeline"><i data-lucide="git-branch"></i> Adaptive Agent Timeline</button>
+        <button class="tab-btn" data-tab="tab-evidence"><i data-lucide="database"></i> Evidence Ledger</button>
+        <button class="tab-btn" data-tab="tab-streams"><i data-lucide="terminal"></i> TCP Stream Inspector</button>
+        <button class="tab-btn" data-tab="tab-ml"><i data-lucide="cpu"></i> ML vs Rule Benchmark</button>
+        <button class="tab-btn" data-tab="tab-export"><i data-lucide="download"></i> Reports</button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="tab-content-container">
+        <!-- 1. Overview & Posture Tab -->
+        <div id="tab-overview" class="tab-pane active">
+          <!-- Top Stats Row -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Security Posture Score</span>
+                <i data-lucide="shield-check" class="text-accent"></i>
+              </div>
+              <div class="metric-value-row">
+                <span id="stat-posture-score" class="metric-val score-critical">--</span>
+                <span class="metric-denom">/100</span>
+              </div>
+              <div id="stat-risk-badge" class="badge badge-critical">AWAITING CAPTURE</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Capture Completeness</span>
+                <i data-lucide="activity" class="text-accent"></i>
+              </div>
+              <div class="metric-value-row">
+                <span id="stat-completeness" class="metric-val text-green">--%</span>
+              </div>
+              <div id="stat-completeness-detail" class="metric-subtext">Packet Loss & TCP Sequence Quality</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>Forensic Confidence</span>
+                <i data-lucide="check-circle" class="text-accent"></i>
+              </div>
+              <div class="metric-value-row">
+                <span id="stat-confidence" class="metric-val text-cyan">--%</span>
+              </div>
+              <div class="metric-subtext">Deterministic Chain Provenance</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span>ML Risk Probability</span>
+                <i data-lucide="sparkles" class="text-accent"></i>
+              </div>
+              <div class="metric-value-row">
+                <span id="stat-ml-risk" class="metric-val text-orange">--%</span>
+              </div>
+              <div id="stat-ml-class" class="metric-subtext">XGBoost Anomaly Classifier</div>
+            </div>
+          </div>
+
+          <!-- Protocol & TLS Parameters Panel -->
+          <div class="crypto-params-grid">
+            <div class="panel">
+              <div class="panel-header"><i data-lucide="network"></i> Discovered Protocol & State Transitions</div>
+              <div class="param-row"><span>Protocols Identified:</span> <strong id="param-protocols">--</strong></div>
+              <div class="param-row"><span>STARTTLS Advertised:</span> <strong id="param-starttls-adv">--</strong></div>
+              <div class="param-row"><span>STARTTLS Accepted:</span> <strong id="param-starttls-acc">--</strong></div>
+              <div class="param-row"><span>Plaintext Continuation:</span> <strong id="param-plaintext-after" class="text-critical">--</strong></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><i data-lucide="lock"></i> Cryptographic Suite & Handshake</div>
+              <div class="param-row"><span>TLS Version:</span> <strong id="param-tls-ver">--</strong></div>
+              <div class="param-row"><span>Cipher Suite:</span> <strong id="param-cipher">--</strong></div>
+              <div class="param-row"><span>Perfect Forward Secrecy (PFS):</span> <strong id="param-pfs">--</strong></div>
+              <div class="param-row"><span>Handshake RTT:</span> <strong id="param-rtt">-- ms</strong></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><i data-lucide="badge-check"></i> X.509 Certificate Status</div>
+              <div class="param-row"><span>Observability:</span> <strong id="param-cert-obs">--</strong></div>
+              <div class="param-row"><span>Key Algorithm:</span> <strong id="param-cert-key">--</strong></div>
+              <div class="param-row"><span>Validity Period:</span> <strong id="param-cert-valid">--</strong></div>
+              <div class="param-row"><span>Trust Verification:</span> <strong id="param-cert-trust">--</strong></div>
+            </div>
+          </div>
+
+          <!-- Verified Findings Section -->
+          <div class="panel" style="margin-top: 16px;">
+            <div class="panel-header">
+              <div><i data-lucide="alert-octagon"></i> Verified Forensic Findings (<span style="color: var(--accent);">No Evidence &rarr; No Finding Gate</span>)</div>
+            </div>
+            <div id="findings-container" class="findings-list">
+              <div class="empty-state">Select or upload a PCAP to execute forensic analysis.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Adaptive Agent Timeline Tab -->
+        <div id="tab-timeline" class="tab-pane">
+          <div class="timeline-grid">
+            <div class="panel">
+              <div class="panel-header"><i data-lucide="help-circle"></i> Active Hypotheses & State Engine</div>
+              <div id="hypotheses-container" class="hypotheses-list">
+                <div class="empty-state">No active hypotheses.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><i data-lucide="git-commit"></i> Real-time Adaptive Execution Timeline</div>
+              <div id="timeline-container" class="timeline-log">
+                <div class="empty-state">Timeline log is empty.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Evidence Ledger Tab -->
+        <div id="tab-evidence" class="tab-pane">
+          <div class="panel">
+            <div class="panel-header">
+              <div><i data-lucide="database"></i> Immutable Evidence Ledger</div>
+              <input type="text" id="evidence-filter" placeholder="Filter claims, tools, IDs..." class="cyber-input" style="width: 250px;">
+            </div>
+            <div class="table-container">
+              <table id="evidence-table">
+                <thead>
+                  <tr>
+                    <th>Evidence ID</th>
+                    <th>Type</th>
+                    <th>Observed Claim</th>
+                    <th>Tool & Version</th>
+                    <th>Confidence</th>
+                    <th>Raw Artifact Provenance</th>
+                  </tr>
+                </thead>
+                <tbody id="evidence-tbody">
+                  <tr><td colspan="6" class="text-center">No evidence recorded yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. TCP Stream Inspector Tab -->
+        <div id="tab-streams" class="tab-pane">
+          <div class="panel">
+            <div class="panel-header">
+              <div><i data-lucide="binary"></i> Reconstructed Stream Conversations</div>
+              <div id="stream-selector-container"></div>
+            </div>
+            <div class="stream-inspector">
+              <div id="stream-transcript" class="transcript-container">
+                <div class="empty-state">No stream loaded.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ML Benchmark Tab -->
+        <div id="tab-ml" class="tab-pane">
+          <div class="panel">
+            <div class="panel-header"><i data-lucide="bar-chart-2"></i> Scientific Benchmark: Rule-Only Baseline vs Rule + ML Engine</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+              Empirical demonstration of ML's contribution in detecting complex, multi-feature cryptographic anomalies over held-out test data.
+            </p>
+            <div class="benchmark-grid">
+              <div class="benchmark-card">
+                <div class="card-subtitle">Rule-Only Baseline</div>
+                <div class="stat-row"><span>Accuracy:</span> <strong id="bm-rule-acc">--</strong></div>
+                <div class="stat-row"><span>Precision:</span> <strong id="bm-rule-prec">--</strong></div>
+                <div class="stat-row"><span>Recall:</span> <strong id="bm-rule-rec">--</strong></div>
+                <div class="stat-row"><span>F1 Score:</span> <strong id="bm-rule-f1">--</strong></div>
+              </div>
+
+              <div class="benchmark-card highlight-card">
+                <div class="card-subtitle">Rule + ML (XGBoost) Engine</div>
+                <div class="stat-row"><span>Accuracy:</span> <strong id="bm-ml-acc" class="text-green">--</strong></div>
+                <div class="stat-row"><span>Precision:</span> <strong id="bm-ml-prec" class="text-green">--</strong></div>
+                <div class="stat-row"><span>Recall:</span> <strong id="bm-ml-rec" class="text-green">--</strong></div>
+                <div class="stat-row"><span>F1 Score:</span> <strong id="bm-ml-f1" class="text-green">--</strong></div>
+              </div>
+
+              <div class="benchmark-card">
+                <div class="card-subtitle">Empirical Performance Gain</div>
+                <div class="gain-stat"><span id="bm-gain-f1">+--%</span> F1 Improvement</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                  Captures timing discrepancies and compound protocol vulnerabilities missed by static rule heuristics.
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Feature Contributions -->
+            <div class="panel" style="margin-top: 16px; background: rgba(0,0,0,0.2);">
+              <div class="panel-header"><i data-lucide="list"></i> Top Anomaly Attribution Features (SHAP-Style Importance)</div>
+              <div id="ml-features-container" class="features-list">
+                <div class="loading-state">Load investigation to see active feature attributions.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Reports Export Tab -->
+        <div id="tab-export" class="tab-pane">
+          <div class="panel">
+            <div class="panel-header"><i data-lucide="file-text"></i> Export Forensic Deliverables</div>
+            <div class="export-grid">
+              <div class="export-card">
+                <div class="export-icon"><i data-lucide="file-code"></i></div>
+                <div class="export-title">Deterministic JSON Report</div>
+                <div class="export-desc">Complete machine-readable ledger, hashes, findings, and tool execution logs.</div>
+                <a id="btn-export-json" href="#" target="_blank" class="btn btn-secondary btn-block">Download JSON</a>
+              </div>
+
+              <div class="export-card">
+                <div class="export-icon"><i data-lucide="file-check"></i></div>
+                <div class="export-title">Interactive HTML Dossier</div>
+                <div class="export-desc">Standalone, zero-dependency executive & analyst report with full visual breakdown.</div>
+                <a id="btn-export-html" href="#" target="_blank" class="btn btn-secondary btn-block">View / Download HTML</a>
+              </div>
+
+              <div class="export-card">
+                <div class="export-icon"><i data-lucide="file"></i></div>
+                <div class="export-title">Publication-Ready PDF Report</div>
+                <div class="export-desc">Formal printable forensic artifact formatted for regulatory and NTRO archiving.</div>
+                <a id="btn-export-pdf" href="#" target="_blank" class="btn btn-secondary btn-block">Download PDF</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
