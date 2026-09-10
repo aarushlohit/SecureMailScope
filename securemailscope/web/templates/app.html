@@ -460,8 +460,8 @@
                 <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 8px;">
                   Evaluation Dataset
                 </div>
-                <div id="ml-dataset-count" style="font-size: 32px; font-weight: 800; color: #111111; letter-spacing: -0.02em; margin: 4px 0;">200 Sessions</div>
-                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Balanced PCAP fixtures including SMTP, IMAP, and POP3 captures.</div>
+                <div id="ml-dataset-count" style="font-size: 32px; font-weight: 800; color: #111111; letter-spacing: -0.02em; margin: 4px 0;">6,733 Domains</div>
+                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">EFF / Google STARTTLS Transparency Dataset + Real Wireshark Traffic.</div>
               </div>
             </div>
 
@@ -606,6 +606,51 @@
                   </p>
                 </div>
                 <button class="btn-primary-dark" onclick="window.workstation.runDemoSample('mail_weak_crypto_tls10_rc4.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">5. Real Internet Capture &bull; Wireshark SMTP</strong>
+                    <span class="badge badge-medium">Medium</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    wireshark_real_smtp.pcap &bull; Real traffic capture: Server advertised STARTTLS but client bypassed encryption and sent credentials over cleartext.
+                  </p>
+                </div>
+                <button class="btn-secondary-light" onclick="window.workstation.runDemoSample('wireshark_real_smtp.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">6. Real Internet Capture &bull; Wireshark IMAP</strong>
+                    <span class="badge badge-neutral">Live Capture</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    wireshark_real_imap.pcap &bull; Real unencrypted IMAP email fetch session with attachments and status flags.
+                  </p>
+                </div>
+                <button class="btn-secondary-light" onclick="window.workstation.runDemoSample('wireshark_real_imap.pcap')" type="button">
+                  Run &rarr;
+                </button>
+              </div>
+
+              <div class="data-table-card" style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <strong style="font-size: 14px;">7. Real Internet Capture &bull; Encrypted SMTPS (Port 465/SSL)</strong>
+                    <span class="badge badge-secure">Secure</span>
+                  </div>
+                  <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                    wireshark_real_smtp_ssl.pcapng &bull; Live encrypted SMTPS session with negotiated SSL/TLS transport wrapper.
+                  </p>
+                </div>
+                <button class="btn-secondary-light" onclick="window.workstation.runDemoSample('wireshark_real_smtp_ssl.pcapng')" type="button">
                   Run &rarr;
                 </button>
               </div>

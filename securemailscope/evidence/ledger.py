@@ -154,6 +154,10 @@ class EvidenceLedger:
                     self._investigations[finding.investigation_id].finding_ids.append(finding.finding_id)
             self._save()
 
+    def get_finding(self, finding_id: str) -> Optional[Finding]:
+        with self._lock:
+            return self._findings.get(finding_id)
+
     def get_findings_for_investigation(self, investigation_id: str) -> List[Finding]:
         with self._lock:
             return [f for f in self._findings.values() if f.investigation_id == investigation_id]

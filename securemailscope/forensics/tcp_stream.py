@@ -78,8 +78,8 @@ class TCPReconstructionEngine:
     """
 
     @staticmethod
-    def reconstruct_streams(file_path: str) -> List[TCPStream]:
-        packets = rdpcap(file_path)
+    def reconstruct_streams(file_path: Any) -> List[TCPStream]:
+        packets = rdpcap(str(file_path))
         raw_streams: Dict[str, List[Any]] = {}
         stream_endpoints: Dict[str, Dict[str, str]] = {}
 
