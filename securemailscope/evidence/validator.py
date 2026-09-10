@@ -54,7 +54,8 @@ class FindingValidator:
             msg = f"FINDING REJECTED: Evidence IDs lack valid provenance chains: {missing_provenance}"
             raise EvidenceValidationError(msg)
 
-        # Mark finding as verified once validated against persisted evidence
-        finding.status = FindingStatus.VERIFIED
+        # Mark finding as verified once validated against persisted evidence (unless explicitly inconclusive)
+        if finding.status != FindingStatus.INCONCLUSIVE:
+            finding.status = FindingStatus.VERIFIED
         self.ledger.save_finding(finding)
         return True, f"Finding '{finding.finding_id}' successfully verified with {len(finding.evidence_ids)} evidence items."

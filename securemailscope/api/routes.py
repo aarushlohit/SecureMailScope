@@ -1,26 +1,91 @@
 """
-SecureMailScope - REST API Routes
+SecureMailScope - Production REST & SSE API Routes
 """
 import uuid
 import shutil
+import asyncio
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request, Response, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
+from sse_starlette.sse import EventSourceResponse
+
 from securemailscope.core.config import config, SAMPLES_DIR, REPORTS_DIR, DATA_DIR
 from securemailscope.evidence.ledger import EvidenceLedger
 from securemailscope.agent.investigator import InvestigationAgent
-from securemailscope.agent.intelligence import IntelligenceAdapter
 from securemailscope.ml.benchmark import BenchmarkEngine
 from securemailscope.forensics.tcp_stream import TCPReconstructionEngine
+from securemailscope.forensics.system_tools import SystemToolDiscovery
 from securemailscope.reports.json_reporter import JSONReporter
 from securemailscope.reports.html_reporter import HTMLReporter
 from securemailscope.reports.pdf_reporter import PDFReporter
+from backend.llm.router import LLMRouter
+from backend.llm.schemas import ChatRequest as LLMChatRequest, ChatMessage
+from securemailscope.api.sse import SSEEventBus
+from securemailscope.db.session import SessionLocal
+from securemailscope.db.models import InvestigationModel, AgentStepModel, ArtifactModel, ForensicSessionModel
 
 router = APIRouter(prefix="/api")
 ledger = EvidenceLedger.get_instance()
-agent = InvestigationAgent(ledger)
+llm_router = LLMRouter()
+agent = InvestigationAgent(ledger, router=llm_router)
+
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB limit
+ALLOWED_EXTENSIONS = {".pcap", ".pcapng", ".cap"}
+VALID_MAGIC_PREFIXES = (
+    b"\xd4\xc3\xb2\xa1",  # PCAP LE
+    b"\xa1\xb2\xc3\xd4",  # PCAP BE
+    b"\x4d\x3c\xb2\xa1",  # PCAP-NS LE
+    b"\xa1\xb2\x3c\x4d",  # PCAP-NS BE
+    b"\x0a\x0d\x0d\x0a",  # PCAP-NG Section Header Block
+    b"\x1f\x8b"           # GZIP compressed PCAP
+)
+
+
+def validate_and_save_pcap(upload_file: UploadFile, dest_path: Path) -> int:
+    filename = upload_file.filename or ""
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename: path traversal attempted.")
+
+    clean_name = Path(filename).name
+
+    ext = Path(clean_name).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file extension '{ext}'. Only .pcap, .pcapng, and .cap are permitted."
+        )
+
+    bytes_read = 0
+    with open(dest_path, "wb") as out_f:
+        first_chunk = upload_file.file.read(4096)
+        if not first_chunk:
+            raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+        if not any(first_chunk.startswith(magic) for magic in VALID_MAGIC_PREFIXES):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid file format: file signature does not match PCAP or PCAP-NG."
+            )
+
+        bytes_read += len(first_chunk)
+        out_f.write(first_chunk)
+
+        while True:
+            chunk = upload_file.file.read(65536)
+            if not chunk:
+                break
+            bytes_read += len(chunk)
+            if bytes_read > MAX_UPLOAD_SIZE:
+                dest_path.unlink(missing_ok=True)
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"File exceeds maximum allowed size of {MAX_UPLOAD_SIZE // (1024 * 1024)}MB."
+                )
+            out_f.write(chunk)
+
+    return bytes_read
 
 
 class ChatRequest(BaseModel):
@@ -28,14 +93,47 @@ class ChatRequest(BaseModel):
     deep_research: bool = False
 
 
-class IntelQueryRequest(BaseModel):
-    query_type: str  # "ip", "domain", "certificate"
-    target: str
+class AgentStepRequest(BaseModel):
+    tool_name: Optional[str] = None
+    tool_arguments: Optional[Dict[str, Any]] = None
+    hypothesis_id: Optional[str] = None
 
 
 @router.get("/health")
 def health_check():
-    return {"status": "ok", "platform": "SecureMailScope", "version": "2.6.0"}
+    return {
+        "status": "ok",
+        "platform": config.app_name,
+        "version": config.version,
+        "environment": config.environment,
+        "database": config.database_url.split("://")[0]
+    }
+
+
+@router.get("/system/tools")
+def get_system_tools():
+    """
+    Returns installed, path, version, and health status for system binaries:
+    tshark, capinfos, zeek, and openssl.
+    """
+    return SystemToolDiscovery.discover_all()
+
+
+@router.get("/system/llm/status")
+async def get_system_llm_status():
+    """
+    Returns real status of NVIDIA, Gemini, and Tavily without exposing secrets.
+    """
+    return await llm_router.get_system_llm_status()
+
+
+@router.get("/ml/metrics")
+def get_ml_metrics():
+    """
+    Calculates and returns empirical benchmark and performance metrics:
+    Precision, Recall, F1, Accuracy, and Confusion Matrix.
+    """
+    return BenchmarkEngine.evaluate_benchmark(num_samples=600)
 
 
 @router.get("/samples")
@@ -52,8 +150,10 @@ def list_samples():
 
 @router.post("/investigations")
 async def create_investigation(
+    background_tasks: BackgroundTasks,
     file: Optional[UploadFile] = File(None),
-    sample_name: Optional[str] = Form(None)
+    sample_name: Optional[str] = Form(None),
+    background: bool = Form(False)
 ):
     inv_id = f"INV-{uuid.uuid4().hex[:8].upper()}"
     pcap_dest: Path
@@ -61,23 +161,114 @@ async def create_investigation(
     if file and file.filename:
         safe_name = Path(file.filename).name
         pcap_dest = DATA_DIR / f"{inv_id}_{safe_name}"
-        with open(pcap_dest, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        validate_and_save_pcap(file, pcap_dest)
     elif sample_name:
-        sample_path = SAMPLES_DIR / sample_name
+        clean_sample = Path(sample_name).name
+        if ".." in sample_name or clean_sample != sample_name:
+            raise HTTPException(status_code=400, detail="Invalid sample name: path traversal attempted.")
+        sample_path = SAMPLES_DIR / clean_sample
         if not sample_path.exists():
-            raise HTTPException(status_code=404, detail=f"Sample '{sample_name}' not found.")
-        pcap_dest = DATA_DIR / f"{inv_id}_{sample_name}"
+            raise HTTPException(status_code=404, detail=f"Sample '{clean_sample}' not found.")
+        pcap_dest = DATA_DIR / f"{inv_id}_{clean_sample}"
         shutil.copyfile(sample_path, pcap_dest)
     else:
         raise HTTPException(status_code=400, detail="Must provide either an uploaded PCAP or a sample_name.")
 
-    # Run agent investigation
+    if background:
+        background_tasks.add_task(agent.run_investigation, inv_id, pcap_dest)
+        return JSONResponse(
+            status_code=202,
+            content={
+                "investigation_id": inv_id,
+                "status": "ANALYZING",
+                "message": "Investigation started in background. Subscribe to SSE stream for live updates."
+            }
+        )
+
+    # Run agent investigation synchronously
     try:
         inv = agent.run_investigation(inv_id, pcap_dest)
         return get_investigation(inv.investigation_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Investigation failed: {str(e)}")
+
+
+@router.post("/investigations/{investigation_id}/artifacts")
+async def upload_artifact(investigation_id: str, file: UploadFile = File(...)):
+    inv = ledger.get_investigation(investigation_id)
+    if not inv:
+        raise HTTPException(status_code=404, detail="Investigation not found.")
+
+    safe_name = Path(file.filename).name
+    pcap_dest = config.artifact_dir / f"{investigation_id}_{safe_name}"
+    size = validate_and_save_pcap(file, pcap_dest)
+
+    return {
+        "investigation_id": investigation_id,
+        "artifact_name": safe_name,
+        "artifact_path": str(pcap_dest),
+        "size_bytes": size
+    }
+
+
+@router.post("/investigations/{investigation_id}/analyze")
+async def analyze_investigation(investigation_id: str):
+    inv = ledger.get_investigation(investigation_id)
+    if not inv or not Path(inv.artifact_path).exists():
+        raise HTTPException(status_code=404, detail="Investigation or artifact file not found.")
+
+    try:
+        updated_inv = agent.run_investigation(investigation_id, Path(inv.artifact_path))
+        return get_investigation(updated_inv.investigation_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+@router.get("/investigations/{investigation_id}/replay")
+def replay_investigation(investigation_id: str):
+    """
+    Deterministic Replay of investigation steps without re-executing tools.
+    """
+    db = SessionLocal()
+    try:
+        db_inv = db.query(InvestigationModel).filter_by(investigation_id=investigation_id).first()
+        inv = ledger.get_investigation(investigation_id)
+        if not inv and not db_inv:
+            raise HTTPException(status_code=404, detail="Investigation not found.")
+
+        steps = db.query(AgentStepModel).filter_by(investigation_id=investigation_id).order_by(AgentStepModel.step_number.asc()).all()
+        if not steps:
+            tl = ledger.get_timeline(investigation_id)
+            return {
+                "investigation_id": investigation_id,
+                "step_count": len(tl),
+                "steps": [t.model_dump() for t in tl]
+            }
+
+        return {
+            "investigation_id": investigation_id,
+            "step_count": len(steps),
+            "steps": [
+                {
+                    "step_number": s.step_number,
+                    "state": s.state,
+                    "hypothesis": s.hypothesis,
+                    "tool": s.selected_tool,
+                    "tool_arguments": s.tool_arguments,
+                    "reason": s.reason,
+                    "result": s.result,
+                    "evidence_ids": s.evidence_ids,
+                    "next_action": s.next_action,
+                    "provider": s.provider,
+                    "model": s.model,
+                    "timestamp": s.timestamp.isoformat() if s.timestamp else None,
+                    "duration": s.duration
+                }
+                for s in steps
+            ]
+        }
+    finally:
+        db.close()
 
 
 @router.get("/investigations")
@@ -112,8 +303,8 @@ def get_investigation(investigation_id: str):
     d["findings"] = [f.model_dump() for f in ledger.get_findings_for_investigation(investigation_id)]
     d["evidence_ledger"] = [e.model_dump() for e in ledger.get_evidence_for_investigation(investigation_id)]
     d["investigation_timeline"] = [t.model_dump() for t in ledger.get_timeline(investigation_id)]
+    d["hypotheses"] = [h.model_dump() for h in ledger.get_hypotheses_for_investigation(investigation_id)]
 
-    # Attach reconstructed streams if PCAP available
     if inv.artifact_path and Path(inv.artifact_path).exists():
         try:
             streams = TCPReconstructionEngine.reconstruct_streams(inv.artifact_path)
@@ -132,16 +323,19 @@ def get_evidence(investigation_id: str):
     return [e.model_dump() for e in evs]
 
 
-@router.get("/investigations/{investigation_id}/hypotheses")
-def get_hypotheses(investigation_id: str):
-    hyps = ledger.get_hypotheses_for_investigation(investigation_id)
-    return [h.model_dump() for h in hyps]
-
-
 @router.get("/investigations/{investigation_id}/findings")
 def get_findings(investigation_id: str):
     fnds = ledger.get_findings_for_investigation(investigation_id)
     return [f.model_dump() for f in fnds]
+
+
+@router.get("/investigations/{investigation_id}/sessions")
+def get_sessions(investigation_id: str):
+    inv = ledger.get_investigation(investigation_id)
+    if not inv or not Path(inv.artifact_path).exists():
+        raise HTTPException(status_code=404, detail="Artifact file not found.")
+    streams = TCPReconstructionEngine.reconstruct_streams(inv.artifact_path)
+    return {"sessions": [s.to_dict() for s in streams]}
 
 
 @router.get("/investigations/{investigation_id}/timeline")
@@ -150,188 +344,125 @@ def get_timeline(investigation_id: str):
     return [t.model_dump() for t in tl]
 
 
-@router.get("/investigations/{investigation_id}/streams")
-def get_streams(investigation_id: str):
-    inv = ledger.get_investigation(investigation_id)
-    if not inv or not Path(inv.artifact_path).exists():
-        raise HTTPException(status_code=404, detail="Artifact PCAP file not found.")
-    streams = TCPReconstructionEngine.reconstruct_streams(inv.artifact_path)
-    return {"streams": [s.to_dict() for s in streams]}
-
-
 @router.post("/investigations/{investigation_id}/agent/chat")
-def chat_with_agent(investigation_id: str, req: ChatRequest):
+async def chat_with_agent(investigation_id: str, req: ChatRequest):
     inv = ledger.get_investigation(investigation_id)
     if not inv:
         raise HTTPException(status_code=404, detail="Investigation not found.")
 
     findings = ledger.get_findings_for_investigation(investigation_id)
     evidence = ledger.get_evidence_for_investigation(investigation_id)
-    hypotheses = ledger.get_hypotheses_for_investigation(investigation_id)
 
-    query = req.message.lower()
+    # Grounded evidence summary for LLM prompt
+    evidence_facts = [
+        f"[{e.evidence_id}] ({e.type.value}): {e.claim}"
+        for e in evidence[:15]
+    ]
+    findings_facts = [
+        f"[{f.finding_id}] ({f.severity.value}): {f.title} (Supporting: {', '.join(f.evidence_ids)})"
+        for f in findings
+    ]
 
-    # Evidence-grounded reasoning response
-    reply_lines = []
-    actions_taken = []
-    relevant_evidence_ids = []
+    system_prompt = (
+        "You are the SecureMailScope Forensic AI Agent. You reason strictly OVER provided Evidence IDs.\n"
+        "Rules:\n"
+        "1. Never invent packets, versions, or cipher suites.\n"
+        "2. Always cite matching Evidence IDs (e.g. [E-XXXXXX]) for every factual claim.\n"
+        "3. Explain whether STARTTLS was stripped, if certificates were expired, and capture completeness implications.\n\n"
+        f"ACTIVE INVESTIGATION: {inv.investigation_id} ({inv.artifact_name})\n"
+        f"COMPLETENESS: {inv.completeness_percentage}%\n"
+        f"POSTURE SCORE: {inv.posture.overall_posture_score if inv.posture else 100}/100\n"
+        f"EVIDENCE FACTS:\n" + "\n".join(evidence_facts) + "\n\n"
+        f"FINDINGS:\n" + "\n".join(findings_facts)
+    )
 
-    if "starttls" in query or "downgrade" in query or "stripping" in query:
-        st_ev = [e for e in evidence if "starttls" in e.type.value or "plaintext" in e.type.value]
-        if st_ev:
-            relevant_evidence_ids = [e.evidence_id for e in st_ev]
-            has_pt = any(e.type.value == "plaintext_continuation" for e in st_ev)
-            if has_pt:
-                reply_lines.append("I evaluated the STARTTLS negotiation flow in the capture.")
-                reply_lines.append("• STARTTLS was advertised in the EHLO response.")
-                reply_lines.append("• Client issued STARTTLS and server returned `220 2.0.0 Ready to start TLS`.")
-                reply_lines.append("• However, no TLS ClientHello followed; cleartext SMTP commands (`MAIL FROM`, `RCPT TO`, `DATA`) continued on the wire.")
-                reply_lines.append(f"• Capture completeness is verified at {inv.completeness_percentage}%, refuting packet-loss as a cause.")
-                reply_lines.append("\n**Verdict:** Verified STARTTLS Downgrade / Stripping Protocol Violation (Critical Severity).")
-            else:
-                reply_lines.append("STARTTLS was advertised, accepted, and followed by a valid TLS handshake.")
-        else:
-            reply_lines.append("No STARTTLS anomalies observed in the current session.")
+    llm_req = LLMChatRequest(
+        messages=[
+            ChatMessage(role="system", content=system_prompt),
+            ChatMessage(role="user", content=req.message)
+        ],
+        max_tokens=2048,
+        temperature=0.3
+    )
 
-    elif "cert" in query or "x.509" in query or "chain" in query:
-        cert_ev = [e for e in evidence if "certificate" in e.type.value]
-        if cert_ev:
-            relevant_evidence_ids = [e.evidence_id for e in cert_ev]
-            c_info = cert_ev[0].details
-            reply_lines.append(f"X.509 Certificate Analysis for `{inv.artifact_name}`:")
-            reply_lines.append(f"• Subject: `{c_info.get('subject')}`")
-            reply_lines.append(f"• Issuer: `{c_info.get('issuer')}`")
-            reply_lines.append(f"• Public Key: {c_info.get('public_key_algorithm')} {c_info.get('public_key_bits')} bits")
-            reply_lines.append(f"• Validity: Not After {c_info.get('not_after')}")
-            errs = c_info.get('validation_errors', [])
-            if errs:
-                reply_lines.append(f"\n⚠️ **Validation Deficiencies Detected:**\n" + "\n".join(f"- {err}" for err in errs))
-            else:
-                reply_lines.append("\n✓ Certificate conforms to standard cryptographic validity criteria.")
-        else:
-            if any("TLS 1.3" in e.claim for e in evidence):
-                reply_lines.append("In TLS 1.3, the certificate exchange is encrypted after ServerHello. Passive PCAP inspection cannot extract raw X.509 bytes without session keys.")
-            else:
-                reply_lines.append("No X.509 certificate messages were observed in this capture stream.")
+    llm_resp = await llm_router.chat(llm_req, investigation_id=investigation_id)
 
-    elif "completeness" in query or "packet loss" in query or "quality" in query:
-        comp_ev = [e for e in evidence if e.type.value == "capture_completeness"]
-        if comp_ev:
-            relevant_evidence_ids = [e.evidence_id for e in comp_ev]
-            cd = comp_ev[0].details
-            reply_lines.append(f"Capture Completeness Assessment:")
-            reply_lines.append(f"• Calculated Score: **{cd.get('completeness_percentage')}%** ({cd.get('assessment')})")
-            reply_lines.append(f"• Total TCP Packets: {cd.get('total_tcp_packets')}")
-            reply_lines.append(f"• Sequence Gaps: {cd.get('sequence_gaps')}")
-            reply_lines.append(f"• Retransmissions: {cd.get('retransmissions')}")
-            if cd.get('completeness_percentage', 100) < 60:
-                reply_lines.append("\n⚠️ Due to low capture completeness, some missing protocol segments may represent packet drops rather than active protocol attacks.")
-            else:
-                reply_lines.append("\n✓ High capture completeness provides >95% confidence in forensic observations.")
-
-    elif "report" in query or "summary" in query or "posture" in query:
-        post = inv.posture
-        reply_lines.append(f"**Forensic Executive Summary for {inv.artifact_name}:**")
-        reply_lines.append(f"• **Security Posture Score:** {post.overall_posture_score}/100 ({post.risk_level})")
-        reply_lines.append(f"• **Forensic Confidence:** {post.confidence_score}%")
-        reply_lines.append(f"• **Protocols Detected:** {', '.join(inv.protocols_detected)}")
-        reply_lines.append(f"• **Verified Findings:** {len(findings)}")
-        for f in findings:
-            reply_lines.append(f"  - `[{f.severity.value.upper()}]` {f.title}")
-            relevant_evidence_ids.extend(f.evidence_ids)
-
-    else:
-        # Generic grounding on active investigation
-        reply_lines.append(f"I am actively tracking Investigation `{inv.investigation_id}` (`{inv.artifact_name}`).")
-        reply_lines.append(f"The evidence ledger currently contains **{len(evidence)} verified facts** and **{len(findings)} findings**.")
-        reply_lines.append("You can ask me to inspect STARTTLS transitions, verify certificate validity, analyze TCP streams, or explain score deductions.")
+    # Collect cited evidence IDs from text
+    cited_eids = [e.evidence_id for e in evidence if e.evidence_id in llm_resp.content]
+    if not cited_eids:
+        cited_eids = [e.evidence_id for e in evidence[:4]]
 
     return {
-        "reply": "\n".join(reply_lines),
-        "answer": "\n".join(reply_lines),
-        "evidence_ids": list(set(relevant_evidence_ids))[:5],
-        "evidence_citations": list(set(relevant_evidence_ids))[:5],
+        "reply": llm_resp.content,
+        "answer": llm_resp.content,
+        "provider": llm_resp.provider,
+        "model": llm_resp.model,
+        "evidence_ids": cited_eids,
+        "evidence_citations": cited_eids,
         "investigation_id": investigation_id,
         "deep_research": req.deep_research
     }
 
 
-@router.get("/intel/query")
-@router.post("/intel/query")
-def query_intel(
-    query_type: Optional[str] = None,
-    intel_type: Optional[str] = None,
-    target: Optional[str] = None,
-    req: Optional[IntelQueryRequest] = None
-):
-    q_type = query_type or intel_type or (req.query_type if req else "domain")
-    t_val = target or (req.target if req else "")
+@router.post("/investigations/{investigation_id}/agent/step")
+def execute_agent_step(investigation_id: str, req: AgentStepRequest):
+    inv = ledger.get_investigation(investigation_id)
+    if not inv:
+        raise HTTPException(status_code=404, detail="Investigation not found.")
 
-    if not t_val:
-        raise HTTPException(status_code=400, detail="Missing 'target' parameter for threat intelligence query.")
+    tool_name = req.tool_name or "pcap.completeness"
+    tool_args = req.tool_arguments or {"file_path": inv.artifact_path}
 
-    if q_type == "ip":
-        return IntelligenceAdapter.lookup_ip(t_val)
-    elif q_type == "domain":
-        return IntelligenceAdapter.lookup_domain(t_val)
-    elif q_type in ("certificate", "cert"):
-        return IntelligenceAdapter.lookup_certificate(t_val)
-    else:
-        raise HTTPException(status_code=400, detail="Invalid query_type. Use 'ip', 'domain', or 'certificate'.")
+    res = agent.gateway.execute_tool(investigation_id, tool_name, tool_args, hypothesis_id=req.hypothesis_id)
+    return res
 
 
-@router.get("/all-findings")
-def list_all_findings():
-    invs = ledger.list_investigations()
-    all_f = []
-    for inv in invs:
-        fnds = ledger.get_findings_for_investigation(inv.investigation_id)
-        for f in fnds:
-            fd = f.model_dump()
-            fd["artifact_name"] = inv.artifact_name
-            fd["investigation_id"] = inv.investigation_id
-            all_f.append(fd)
-    return all_f
+@router.get("/investigations/{investigation_id}/events")
+async def stream_investigation_events(investigation_id: str, request: Request):
+    """
+    SSE stream yielding real events:
+    investigation.started, protocol.detected, session.reconstructed, starttls.detected,
+    tls.handshake.detected, certificate.extracted, rule.triggered, ml.prediction.completed,
+    hypothesis.created, agent.tool_selected, tool.started, tool.completed, evidence.created,
+    hypothesis.updated, finding.verified, report.generated.
+    """
+    queue = SSEEventBus.subscribe(investigation_id)
+
+    async def event_generator():
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=20.0)
+                    yield event
+                except asyncio.TimeoutError:
+                    yield {"event": "ping", "data": "heartbeat"}
+        finally:
+            SSEEventBus.unsubscribe(investigation_id, queue)
+
+    return EventSourceResponse(event_generator())
 
 
-@router.get("/all-evidence")
-def list_all_evidence():
-    invs = ledger.list_investigations()
-    all_e = []
-    for inv in invs:
-        evs = ledger.get_evidence_for_investigation(inv.investigation_id)
-        for e in evs:
-            ed = e.model_dump()
-            ed["artifact_name"] = inv.artifact_name
-            ed["investigation_id"] = inv.investigation_id
-            all_e.append(ed)
-    return all_e
-
-
-@router.get("/investigations/{investigation_id}/report/json")
 @router.get("/investigations/{investigation_id}/reports/json")
-def download_json_report(investigation_id: str):
+@router.get("/investigations/{investigation_id}/report/json")
+def get_json_report(investigation_id: str):
     out_path = REPORTS_DIR / f"{investigation_id}_report.json"
     JSONReporter.generate_report(investigation_id, ledger, out_path)
     return FileResponse(out_path, media_type="application/json", filename=f"{investigation_id}_report.json")
 
 
-@router.get("/investigations/{investigation_id}/report/html")
 @router.get("/investigations/{investigation_id}/reports/html")
-def view_html_report(investigation_id: str):
+@router.get("/investigations/{investigation_id}/report/html")
+def get_html_report(investigation_id: str):
     out_path = REPORTS_DIR / f"{investigation_id}_report.html"
     HTMLReporter.generate_report(investigation_id, ledger, out_path)
     return FileResponse(out_path, media_type="text/html", filename=f"{investigation_id}_report.html")
 
 
-@router.get("/investigations/{investigation_id}/report/pdf")
 @router.get("/investigations/{investigation_id}/reports/pdf")
-def download_pdf_report(investigation_id: str):
+@router.get("/investigations/{investigation_id}/report/pdf")
+def get_pdf_report(investigation_id: str):
     out_path = REPORTS_DIR / f"{investigation_id}_report.pdf"
     PDFReporter.generate_report(investigation_id, ledger, out_path)
     return FileResponse(out_path, media_type="application/pdf", filename=f"{investigation_id}_report.pdf")
-
-
-@router.get("/ml/benchmark")
-def get_ml_benchmark():
-    return BenchmarkEngine.evaluate_benchmark(num_samples=800)

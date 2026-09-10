@@ -20,15 +20,15 @@ class PostureScorer:
 
         # Deductions from Rule Triggers
         rule_weights = {
-            "RULE-STARTTLS-PLAINTEXT-VIOLATION": {"points": 45.0, "reason": "STARTTLS plaintext fallback exposed email payloads."},
-            "RULE-CIPHER-BROKEN": {"points": 25.0, "reason": "Use of cryptographically broken cipher (RC4)."},
-            "RULE-TLS-DEPRECATED": {"points": 25.0, "reason": "Use of deprecated TLS protocol (TLS 1.0/1.1)."},
-            "RULE-CLEARTEXT-AUTH": {"points": 20.0, "reason": "Cleartext authentication credentials transmitted."},
-            "RULE-CIPHER-LEGACY": {"points": 15.0, "reason": "Use of legacy 64-bit block cipher (3DES)."},
-            "RULE-NO-PFS": {"points": 15.0, "reason": "Static RSA key exchange lacks Perfect Forward Secrecy."},
-            "RULE-CERT-EXPIRED": {"points": 15.0, "reason": "Expired X.509 server certificate."},
-            "RULE-KEY-WEAK": {"points": 15.0, "reason": "Weak public key length (< 2048 bits)."},
-            "RULE-SIG-WEAK": {"points": 10.0, "reason": "Weak certificate signature algorithm (MD5/SHA1)."}
+            "RULE-STARTTLS-PLAINTEXT-VIOLATION": {"points": 80.0, "reason": "STARTTLS plaintext fallback exposed email payloads."},
+            "RULE-CIPHER-BROKEN": {"points": 40.0, "reason": "Use of cryptographically broken cipher (RC4)."},
+            "RULE-TLS-DEPRECATED": {"points": 35.0, "reason": "Use of deprecated TLS protocol (TLS 1.0/1.1)."},
+            "RULE-CLEARTEXT-AUTH": {"points": 30.0, "reason": "Cleartext authentication credentials transmitted."},
+            "RULE-CIPHER-LEGACY": {"points": 25.0, "reason": "Use of legacy 64-bit block cipher (3DES)."},
+            "RULE-NO-PFS": {"points": 20.0, "reason": "Static RSA key exchange lacks Perfect Forward Secrecy."},
+            "RULE-CERT-EXPIRED": {"points": 25.0, "reason": "Expired X.509 server certificate."},
+            "RULE-KEY-WEAK": {"points": 25.0, "reason": "Weak public key length (< 2048 bits)."},
+            "RULE-SIG-WEAK": {"points": 15.0, "reason": "Weak certificate signature algorithm (MD5/SHA1)."}
         }
 
         applied_rule_ids = set()

@@ -7,3 +7,12 @@ reports/*_report.pdf
 reports/*_report.json
 reports/*_report.html
 .DS_Store
+.env
+*.db
+*.sqlite
+data/*.db
+data/artifacts/
+data/tool-output/
+data/*.pcap
+data/INV-*
+

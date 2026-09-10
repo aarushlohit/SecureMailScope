@@ -5,16 +5,38 @@ from pathlib import Path
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from securemailscope.core.config import config, BASE_DIR
 from securemailscope.api.routes import router as api_router
 from securemailscope.api.ws import ws_manager
+
+import logging
+logger = logging.getLogger("securemailscope.api")
 
 app = FastAPI(
     title=config.app_name,
     version=config.version,
     description="Agentic Cryptographic Forensics for Secure Email Communications (SIH26159 - NTRO)"
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, StarletteHTTPException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": "HTTP Error", "detail": exc.detail, "code": f"HTTP_{exc.status_code}"}
+        )
+    logger.error(f"Unhandled exception on {request.url}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal Server Error",
+            "detail": "An internal forensic processing error occurred.",
+            "code": "INTERNAL_SERVER_ERROR"
+        }
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -85,7 +107,7 @@ async def websocket_endpoint(websocket: WebSocket, investigation_id: str):
         ws_manager.disconnect(websocket, investigation_id)
 
 
-def start_server(host: str = "0.0.0.0", port: int = 8000):
+def start_server(host: str = "127.0.0.1", port: int = 8000):
     import uvicorn
     uvicorn.run(app, host=host, port=port)
 

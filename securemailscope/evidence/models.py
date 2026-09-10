@@ -47,6 +47,17 @@ class SeverityLevel(str, Enum):
 
 
 class EvidenceType(str, Enum):
+    # Standard Evidence Classifications
+    OBSERVED = "OBSERVED"
+    DERIVED = "DERIVED"
+    ML_CLASSIFICATION = "ML_CLASSIFICATION"
+    AGENT_HYPOTHESIS = "AGENT_HYPOTHESIS"
+    EXTERNAL_INTELLIGENCE = "EXTERNAL_INTELLIGENCE"
+    VERIFIED = "VERIFIED"
+    NOT_OBSERVABLE = "NOT_OBSERVABLE"
+    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
+
+    # Specific forensic evidence types
     CAPTURE_METADATA = "capture_metadata"
     CAPTURE_COMPLETENESS = "capture_completeness"
     PROTOCOL_IDENTIFIED = "protocol_identified"
