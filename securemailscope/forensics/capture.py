@@ -51,6 +51,47 @@ class CaptureEngine:
         # Completeness calculation
         completeness_info = CaptureEngine.calculate_completeness(packets)
 
+        # Capinfos and TShark integration for comprehensive forensic capture metrics
+        capinfos_data = {}
+        observed_protocols = set()
+        try:
+            from securemailscope.forensics.system_tools import SafeBinaryRunner
+            cap_res = SafeBinaryRunner.run_capinfos(str(file_path))
+            if cap_res.get("status") == "SUCCESS":
+                capinfos_data = cap_res.get("data", {})
+        except Exception:
+            pass
+
+        try:
+            import subprocess, re
+            info = SystemToolDiscovery.inspect_tool("tshark") if "SystemToolDiscovery" in globals() else None
+            tshark_bin = info["path"] if info and info.get("installed") else shutil.which("tshark")
+            if tshark_bin:
+                phs_res = subprocess.run(
+                    [tshark_bin, "-r", str(file_path), "-q", "-z", "io,phs"],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=15,
+                    shell=False
+                )
+                if phs_res.returncode == 0:
+                    for line in phs_res.stdout.splitlines():
+                        m = re.match(r"^\s*([a-zA-Z0-9_\-]+)\s+frames:", line)
+                        if m:
+                            observed_protocols.add(m.group(1).upper())
+        except Exception:
+            pass
+
+        if not observed_protocols:
+            for p in packets:
+                if p.haslayer(TCP):
+                    observed_protocols.add("TCP")
+                if p.haslayer(IP):
+                    observed_protocols.add("IPV4")
+                if p.haslayer(IPv6):
+                    observed_protocols.add("IPV6")
+
         return {
             "artifact_name": file_path.name,
             "artifact_path": str(file_path.resolve()),
@@ -63,6 +104,10 @@ class CaptureEngine:
             "end_time": end_time,
             "duration_seconds": round(duration, 3),
             "completeness": completeness_info,
+            "capinfos_metadata": capinfos_data,
+            "protocols_observed": sorted(list(observed_protocols)),
+            "snaplen": capinfos_data.get("packet_size_limit", "65535 bytes"),
+            "data_size": capinfos_data.get("data_size", f"{size_bytes} bytes")
         }
 
     @staticmethod

@@ -82,30 +82,43 @@ def main():
         PDFReporter.generate_report(inv_id, ledger, pdf_path)
 
         post = inv.posture
-        print("\n" + "="*60)
-        print(f"      SECUREMAILSCOPE FORENSIC INVESTIGATION VERDICT")
-        print("="*60)
-        print(f"Artifact:            {inv.artifact_name}")
-        print(f"SHA-256:             {inv.artifact_sha256}")
-        print(f"Capture Quality:     {inv.completeness_percentage}%")
-        print(f"Security Posture:    {post.overall_posture_score}/100 [{post.risk_level}]")
-        print(f"Forensic Confidence: {post.confidence_score}%")
-        print(f"ML Anomaly Risk:     {post.ml_risk_probability*100:.1f}%")
-        print("-" * 60)
-
         findings = ledger.get_findings_for_investigation(inv_id)
+        evidence = ledger.get_evidence_for_investigation(inv_id)
+
+        # Detect protocol / TLS / STARTTLS statistics
+        protocols_str = ", ".join(inv.protocols_detected) if inv.protocols_detected else "TCP"
+        smtp_evs = [e for e in evidence if "starttls" in e.claim.lower()]
+        tls_evs = [e for e in evidence if "tls" in e.claim.lower()]
+
+        print("\n" + "="*60)
+        print("SecureMailScope")
+        print("Real PCAP Passive Forensic Analysis")
+        print("="*60)
+        print(f"Artifact:         {inv.artifact_name}")
+        print(f"SHA256:           {inv.artifact_sha256}")
+        print(f"Packets:          {inv.packet_count}")
+        print(f"Protocols:        {protocols_str}")
+        print(f"Email Sessions:   {inv.streams_analyzed}")
+        print(f"Capture Quality:  {inv.completeness_percentage}%")
+        print(f"Security Posture: {post.overall_posture_score}/100 [{post.risk_level}]")
+        print(f"Confidence:       {post.confidence_score}%")
+        print(f"Investigation:    {inv.investigation_id}")
+        print("-" * 60)
+
         print(f"Verified Findings ({len(findings)}):")
+        if not findings:
+            print("  [NONE] No security rule violations detected.")
         for f in findings:
-            print(f"  [{f.severity.value.upper()}] {f.title}")
-            print(f"    - Supporting Evidence: {', '.join(f.evidence_ids)}")
+            print(f"  [{f.severity.value.upper():<6}] {f.title}")
+            print(f"          Supporting Evidence: {', '.join(f.evidence_ids)}")
             if f.remediation:
-                print(f"    - Remediation: {f.remediation}")
+                print(f"          Remediation: {f.remediation}")
 
         print("-" * 60)
-        print(f"[+] Reports Generated:")
-        print(f"    - JSON: {json_path}")
-        print(f"    - HTML: {html_path}")
-        print(f"    - PDF:  {pdf_path}")
+        print("Forensic Reports Generated:")
+        print(f"  - JSON: {json_path}")
+        print(f"  - HTML: {html_path}")
+        print(f"  - PDF:  {pdf_path}")
         print("="*60 + "\n")
 
     elif args.command == "serve":
