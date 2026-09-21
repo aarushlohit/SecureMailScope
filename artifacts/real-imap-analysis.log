@@ -1,0 +1,25 @@
+[*] Analyzing capture: wireshark_real_imap.pcap (Investigation ID: INV-DAFBF280)...
+
+============================================================
+SecureMailScope — Real Forensic Analysis
+============================================================
+Artifact:         wireshark_real_imap.pcap
+SHA256:           fa9a9bcca7b7f2943d740d46b075565b0dbbcc0f60ab321bf577a7be9724b5a8
+Packets:          124
+Protocols:        GENERIC_TCP, IMAP
+Email Sessions:   3
+Capture Quality:  95.04%
+Security Posture: 70.0/100 [MEDIUM RISK]
+Investigation:    INV-DAFBF280
+------------------------------------------------------------
+Verified Findings (1):
+  [HIGH  ] Cleartext Authentication Transmitted
+          Supporting Evidence: E-79A7C3, E-CA3657, E-E7DA56, E-041FE4
+          Remediation: Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH.
+------------------------------------------------------------
+Forensic Reports Generated:
+  - JSON: /home/aarush/Myoffice/hackathons/SIH/reports/INV-DAFBF280_report.json
+  - HTML: /home/aarush/Myoffice/hackathons/SIH/reports/INV-DAFBF280_report.html
+  - PDF:  /home/aarush/Myoffice/hackathons/SIH/reports/INV-DAFBF280_report.pdf
+============================================================
+

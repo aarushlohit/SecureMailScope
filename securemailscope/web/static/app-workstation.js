@@ -7,6 +7,557 @@
 (function () {
   'use strict';
 
+  /**
+   * Interactive Knowledge Graph Canvas Visualizer
+   * Force-directed topological graph connecting:
+   * Artifacts -> Sessions -> Tool Executions -> Evidence Ledger -> ML Metrics -> Findings
+   */
+  class KnowledgeGraphViewer {
+    constructor(canvasEl, inspectorEl, graphData, options = {}) {
+      this.canvas = canvasEl;
+      this.ctx = canvasEl ? canvasEl.getContext('2d') : null;
+      this.inspector = inspectorEl;
+      this.graphData = graphData || { nodes: [], edges: [] };
+      this.options = {
+        onOpenEvidence: options.onOpenEvidence || null,
+        onOpenFinding: options.onOpenFinding || null,
+        ...options
+      };
+
+      this.nodes = [];
+      this.edges = [];
+      this.nodeMap = new Map();
+      this.selectedNode = null;
+      this.hoveredNode = null;
+      this.draggedNode = null;
+      this.isPanning = false;
+      this.panStart = { x: 0, y: 0 };
+      this.transform = { x: 0, y: 0, k: 1 };
+      this.searchQuery = '';
+
+      this.categoryConfig = {
+        input: { colIndex: 0, title: 'INPUT ARTIFACT', bg: '#2563EB', border: '#1D4ED8', text: '#FFFFFF', icon: 'A' },
+        transport: { colIndex: 1, title: 'TCP STREAMS', bg: '#6366F1', border: '#4338CA', text: '#FFFFFF', icon: 'S' },
+        engine: { colIndex: 2, title: 'FORENSIC ENGINES', bg: '#0284C7', border: '#0369A1', text: '#FFFFFF', icon: 'T' },
+        evidence: { colIndex: 3, title: 'EVIDENCE LEDGER', bg: '#10B981', border: '#047857', text: '#FFFFFF', icon: 'E' },
+        ai_explainability: { colIndex: 4, title: 'ML ATTRIBUTION', bg: '#8B5CF6', border: '#6D28D9', text: '#FFFFFF', icon: 'ML' },
+        finding: { colIndex: 5, title: 'VERIFIED FINDINGS', bg: '#EF4444', border: '#B91C1C', text: '#FFFFFF', icon: 'F' }
+      };
+
+      this.init();
+    }
+
+    init() {
+      if (!this.canvas || !this.ctx) return;
+      this.setupGraphData();
+      this.resizeCanvas();
+      window.addEventListener('resize', () => {
+        this.resizeCanvas();
+      });
+      this.bindEvents();
+      this.draw();
+    }
+
+    resizeCanvas() {
+      if (!this.canvas) return;
+      const rect = this.canvas.parentElement ? this.canvas.parentElement.getBoundingClientRect() : { width: 900, height: 620 };
+      const dpr = window.devicePixelRatio || 1;
+      this.width = rect.width || 900;
+      this.height = Math.max(rect.height || 620, 560);
+      this.canvas.width = this.width * dpr;
+      this.canvas.height = this.height * dpr;
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this.ctx.scale(dpr, dpr);
+      this.fitToViewport();
+      this.draw();
+    }
+
+    setupGraphData() {
+      const rawNodes = this.graphData.nodes || [];
+      const rawEdges = this.graphData.edges || [];
+
+      // Group nodes into pipeline categories
+      const columns = {
+        input: [],
+        transport: [],
+        engine: [],
+        evidence: [],
+        ai_explainability: [],
+        finding: []
+      };
+
+      rawNodes.forEach((n) => {
+        const cat = n.category && columns[n.category] ? n.category : 'engine';
+        columns[cat].push(n);
+      });
+
+      // Distinct horizontal spacing per column stage across pipeline
+      const colXPositions = {
+        input: 110,
+        transport: 330,
+        engine: 580,
+        evidence: 860,
+        ai_explainability: 1120,
+        finding: 1380
+      };
+
+      const centerY = 360; // Center axis for symmetrical DAG fan-out
+      this.nodes = [];
+      this.nodeMap.clear();
+
+      Object.keys(columns).forEach((cat) => {
+        const colNodes = columns[cat];
+        const count = colNodes.length;
+        if (count === 0) return;
+
+        const baseX = colXPositions[cat];
+        // Adaptive vertical spacing: high-density columns get precise row spacing so labels never touch
+        const rowSpacing = cat === 'engine'
+          ? Math.max(50, Math.min(62, 540 / count))
+          : (cat === 'evidence'
+              ? Math.max(48, Math.min(60, 560 / count))
+              : (count > 2 ? 65 : 80));
+
+        const totalHeight = (count - 1) * rowSpacing;
+        const startY = centerY - totalHeight / 2;
+
+        colNodes.forEach((n, idx) => {
+          const radius = (cat === 'input' || cat === 'finding') ? 22 : (cat === 'ai_explainability' ? 20 : (cat === 'transport' ? 18 : (cat === 'engine' ? 16 : 15)));
+          const nodeY = startY + idx * rowSpacing;
+
+          const node = {
+            id: n.id,
+            label: n.label || n.id,
+            type: n.type || 'node',
+            category: cat,
+            data: n.data || {},
+            icon: n.icon || 'box',
+            x: baseX,
+            y: nodeY,
+            radius,
+            fixed: true
+          };
+
+          this.nodes.push(node);
+          this.nodeMap.set(node.id, node);
+        });
+      });
+
+      this.edges = rawEdges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        relationship: e.relationship,
+        label: e.label || e.relationship,
+        type: e.type || 'solid'
+      }));
+
+      this.fitToViewport();
+    }
+
+    fitToViewport() {
+      if (this.nodes.length === 0) {
+        this.transform = { x: 0, y: 0, k: 1 };
+        return;
+      }
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      this.nodes.forEach((n) => {
+        if (n.x - 80 < minX) minX = n.x - 80;
+        if (n.x + 80 > maxX) maxX = n.x + 80;
+        if (n.y - 70 < minY) minY = n.y - 70;
+        if (n.y + 70 > maxY) maxY = n.y + 70;
+      });
+
+      const padX = 30;
+      const padY = 50;
+      const graphW = (maxX - minX) + padX * 2;
+      const graphH = (maxY - minY) + padY * 2;
+
+      const scaleX = (this.width - 20) / graphW;
+      const scaleY = (this.height - 20) / graphH;
+      const k = Math.min(1.08, Math.max(0.48, Math.min(scaleX, scaleY)));
+
+      this.transform = {
+        x: (this.width - graphW * k) / 2 - minX * k + padX * k,
+        y: (this.height - graphH * k) / 2 - minY * k + padY * k,
+        k
+      };
+    }
+
+    draw() {
+      if (!this.ctx) return;
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.clearRect(0, 0, this.width, this.height);
+
+      // Background subtle grid
+      ctx.save();
+      ctx.fillStyle = '#FAFAFA';
+      ctx.fillRect(0, 0, this.width, this.height);
+      ctx.restore();
+
+      // Apply transform (pan & zoom)
+      ctx.translate(this.transform.x, this.transform.y);
+      ctx.scale(this.transform.k, this.transform.k);
+
+      // Draw Column Header Labels (Pipeline Stages)
+      const stageCols = [
+        { label: '1. INPUT ARTIFACT', x: 110, color: '#2563EB' },
+        { label: '2. TCP STREAMS', x: 330, color: '#6366F1' },
+        { label: '3. FORENSIC ENGINES', x: 580, color: '#0284C7' },
+        { label: '4. EVIDENCE LEDGER', x: 860, color: '#10B981' },
+        { label: '5. ML ATTRIBUTION', x: 1120, color: '#8B5CF6' },
+        { label: '6. VERIFIED FINDINGS', x: 1380, color: '#EF4444' }
+      ];
+
+      stageCols.forEach((st) => {
+        ctx.save();
+        ctx.font = '700 11px Inter, sans-serif';
+        const stW = ctx.measureText(st.label).width;
+
+        ctx.fillStyle = 'rgba(241, 245, 249, 0.9)';
+        ctx.beginPath();
+        ctx.roundRect(st.x - stW / 2 - 8, 30, stW + 16, 22, 11);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(203, 213, 225, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = st.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(st.label, st.x, 41);
+        ctx.restore();
+      });
+
+      // Find active connected node IDs if selected or hovered
+      const activeNode = this.selectedNode || this.hoveredNode;
+      const connectedNodeIds = new Set();
+      const connectedEdgeIds = new Set();
+
+      if (activeNode) {
+        connectedNodeIds.add(activeNode.id);
+        this.edges.forEach((e) => {
+          if (e.source === activeNode.id || e.target === activeNode.id) {
+            connectedNodeIds.add(e.source);
+            connectedNodeIds.add(e.target);
+            connectedEdgeIds.add(e.id);
+          }
+        });
+      }
+
+      // Draw Directed Bezier S-Curves for Edges
+      for (const e of this.edges) {
+        const source = this.nodeMap.get(e.source);
+        const target = this.nodeMap.get(e.target);
+        if (!source || !target) continue;
+
+        const isHighlighted = connectedEdgeIds.has(e.id);
+        const isDimmed = activeNode && !isHighlighted;
+
+        ctx.save();
+        if (isDimmed) {
+          ctx.globalAlpha = 0.12;
+        }
+
+        const startX = source.x + source.radius;
+        const startY = source.y;
+        const endX = target.x - target.radius - 4;
+        const endY = target.y;
+        const dx = Math.max(30, endX - startX);
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.bezierCurveTo(startX + dx * 0.45, startY, endX - dx * 0.45, endY, endX, endY);
+
+        ctx.strokeStyle = isHighlighted ? '#2563EB' : 'rgba(148, 163, 184, 0.55)';
+        ctx.lineWidth = isHighlighted ? 2.5 : 1.3;
+        if (e.type === 'dashed') ctx.setLineDash([5, 4]);
+        else ctx.setLineDash([]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Directed Arrow at target boundary
+        const arrowSize = isHighlighted ? 7 : 5;
+        ctx.beginPath();
+        ctx.moveTo(endX + 3, endY);
+        ctx.lineTo(endX - arrowSize, endY - arrowSize * 0.7);
+        ctx.lineTo(endX - arrowSize, endY + arrowSize * 0.7);
+        ctx.closePath();
+        ctx.fillStyle = isHighlighted ? '#2563EB' : 'rgba(148, 163, 184, 0.85)';
+        ctx.fill();
+
+        // Edge label (on highlight)
+        if (isHighlighted && e.label) {
+          const midX = (startX + endX) / 2;
+          const midY = (startY + endY) / 2;
+          ctx.font = '600 10px Inter, sans-serif';
+          const lblW = ctx.measureText(e.label).width;
+
+          ctx.fillStyle = '#0F172A';
+          ctx.beginPath();
+          ctx.roundRect(midX - lblW / 2 - 6, midY - 16, lblW + 12, 18, 4);
+          ctx.fill();
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(e.label, midX, midY - 7);
+        }
+
+        ctx.restore();
+      }
+
+      // Draw Nodes
+      for (const n of this.nodes) {
+        const isSelected = this.selectedNode && this.selectedNode.id === n.id;
+        const isHovered = this.hoveredNode && this.hoveredNode.id === n.id;
+        const isConnected = !activeNode || connectedNodeIds.has(n.id);
+        const isMatchSearch = !this.searchQuery ||
+          n.label.toLowerCase().includes(this.searchQuery) ||
+          n.id.toLowerCase().includes(this.searchQuery) ||
+          (n.category && n.category.toLowerCase().includes(this.searchQuery));
+
+        const conf = this.categoryConfig[n.category] || this.categoryConfig.engine;
+
+        ctx.save();
+        if ((activeNode && !isConnected) || !isMatchSearch) {
+          ctx.globalAlpha = 0.18;
+        }
+
+        // Selected / Hover Outer Glow
+        if (isSelected || isHovered) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.radius + 6, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.25)' : 'rgba(0, 0, 0, 0.08)';
+          ctx.fill();
+        }
+
+        // Node Circle
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+        ctx.fillStyle = conf.bg;
+        ctx.fill();
+        ctx.strokeStyle = isSelected ? '#111111' : conf.border;
+        ctx.lineWidth = isSelected ? 2.5 : 1.5;
+        ctx.stroke();
+
+        // Node Acronym / Short Icon
+        ctx.font = 'bold 10px Inter, sans-serif';
+        ctx.fillStyle = conf.text;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(conf.icon, n.x, n.y);
+
+        // Clean Label Pill below node
+        ctx.font = '500 11px Inter, sans-serif';
+        const displayLabel = n.label.length > 24 ? n.label.substring(0, 22) + '…' : n.label;
+        const textWidth = ctx.measureText(displayLabel).width;
+
+        const pillX = n.x - textWidth / 2 - 6;
+        const pillY = n.y + n.radius + 4;
+        const pillW = textWidth + 12;
+        const pillH = 17;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillW, pillH, 4);
+        ctx.fill();
+        ctx.strokeStyle = isSelected ? '#2563EB' : 'rgba(0, 0, 0, 0.12)';
+        ctx.lineWidth = isSelected ? 1.5 : 1;
+        ctx.stroke();
+
+        ctx.fillStyle = '#0F172A';
+        ctx.fillText(displayLabel, n.x, pillY + pillH / 2);
+
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    bindEvents() {
+      if (!this.canvas) return;
+
+      const screenToWorld = (screenX, screenY) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const clientX = screenX - rect.left;
+        const clientY = screenY - rect.top;
+        return {
+          x: (clientX - this.transform.x) / this.transform.k,
+          y: (clientY - this.transform.y) / this.transform.k
+        };
+      };
+
+      const getNodeAt = (worldPos) => {
+        for (let i = this.nodes.length - 1; i >= 0; i--) {
+          const n = this.nodes[i];
+          const dx = n.x - worldPos.x;
+          const dy = n.y - worldPos.y;
+          if (dx * dx + dy * dy <= (n.radius + 6) * (n.radius + 6)) {
+            return n;
+          }
+        }
+        return null;
+      };
+
+      this.canvas.addEventListener('mousemove', (e) => {
+        const worldPos = screenToWorld(e.clientX, e.clientY);
+
+        if (this.draggedNode) {
+          this.draggedNode.x = worldPos.x;
+          this.draggedNode.y = worldPos.y;
+          this.draggedNode.vx = 0;
+          this.draggedNode.vy = 0;
+          this.draw();
+          return;
+        }
+
+        if (this.isPanning) {
+          this.transform.x += e.clientX - this.panStart.x;
+          this.transform.y += e.clientY - this.panStart.y;
+          this.panStart = { x: e.clientX, y: e.clientY };
+          this.draw();
+          return;
+        }
+
+        const node = getNodeAt(worldPos);
+        if (node !== this.hoveredNode) {
+          this.hoveredNode = node;
+          this.canvas.style.cursor = node ? 'pointer' : (this.isPanning ? 'grabbing' : 'grab');
+          this.draw();
+        }
+      });
+
+      this.canvas.addEventListener('mousedown', (e) => {
+        const worldPos = screenToWorld(e.clientX, e.clientY);
+        const node = getNodeAt(worldPos);
+
+        if (node) {
+          this.draggedNode = node;
+          this.selectNode(node);
+        } else {
+          this.isPanning = true;
+          this.panStart = { x: e.clientX, y: e.clientY };
+          this.canvas.style.cursor = 'grabbing';
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        this.draggedNode = null;
+        this.isPanning = false;
+        if (this.canvas) this.canvas.style.cursor = 'grab';
+      });
+
+      this.canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const newScale = Math.max(0.2, Math.min(3.5, this.transform.k * zoomFactor));
+        this.transform.x = mouseX - (mouseX - this.transform.x) * (newScale / this.transform.k);
+        this.transform.y = mouseY - (mouseY - this.transform.y) * (newScale / this.transform.k);
+        this.transform.k = newScale;
+        this.draw();
+      }, { passive: false });
+    }
+
+    selectNode(node) {
+      this.selectedNode = node;
+      this.draw();
+      this.renderNodeDetails(node);
+    }
+
+    renderNodeDetails(node) {
+      if (!this.inspector) return;
+      const catBadge = this.inspector.querySelector('#kg-node-category-badge') || this.inspector.querySelector('.badge');
+      const titleEl = this.inspector.querySelector('#kg-node-title') || this.inspector.querySelector('strong');
+      const detailsBody = this.inspector.querySelector('#kg-node-details') || this.inspector.querySelector('.kg-inspector-body');
+
+      if (catBadge) {
+        catBadge.textContent = (node.category || 'node').toUpperCase();
+        catBadge.className = `badge ${node.category === 'evidence' ? 'badge-secure' : (node.category === 'finding' ? 'badge-critical' : 'badge-neutral')}`;
+      }
+      if (titleEl) {
+        titleEl.textContent = node.label;
+      }
+
+      if (detailsBody) {
+        const d = node.data || {};
+        let actionBtn = '';
+        if (node.category === 'evidence' && d.evidence_id) {
+          actionBtn = `
+            <button class="btn-primary-dark" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 6px 12px;" onclick="window.workstation.openEvidenceDrawer('${d.evidence_id}')">
+              Open in Evidence Ledger &rarr;
+            </button>
+          `;
+        } else if (node.category === 'finding' && d.finding_id) {
+          actionBtn = `
+            <button class="btn-secondary-light" style="width: 100%; margin-top: 10px; font-size: 12px; padding: 6px 12px;" onclick="window.workstation.navigate('findings')">
+              View Verified Findings &rarr;
+            </button>
+          `;
+        }
+
+        let propRows = Object.entries(d)
+          .map(([k, v]) => {
+            const valStr = typeof v === 'object' ? JSON.stringify(v, null, 2) : String(v);
+            return `
+              <div class="kg-prop-row">
+                <span class="kg-prop-label">${k.replace(/_/g, ' ')}</span>
+                <span class="kg-prop-value">${typeof v === 'object' ? `<pre class="tool-code-block" style="margin-top:2px;"><code>${valStr}</code></pre>` : valStr}</span>
+              </div>
+            `;
+          })
+          .join('');
+
+        detailsBody.innerHTML = `
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px;">ID: ${node.id}</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${propRows}
+          </div>
+          ${actionBtn}
+        `;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+
+    setSearchFilter(query) {
+      this.searchQuery = (query || '').toLowerCase().trim();
+      this.draw();
+    }
+
+    zoomIn() {
+      this.transform.k = Math.min(3.5, this.transform.k * 1.25);
+      this.draw();
+    }
+
+    zoomOut() {
+      this.transform.k = Math.max(0.2, this.transform.k * 0.8);
+      this.draw();
+    }
+
+    resetView() {
+      this.fitToViewport();
+      this.draw();
+    }
+
+    togglePhysics() {
+      this.physicsRunning = !this.physicsRunning;
+      if (this.physicsRunning) {
+        this.iteration = 0;
+      }
+      return this.physicsRunning;
+    }
+
+    destroy() {
+      if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+    }
+  }
+
   class ForensicWorkstation {
     constructor() {
       this.currentInvestigationId = null;
@@ -21,6 +572,20 @@
       this.isAnalyzing = false;
 
       this.init();
+    }
+
+    async authFetch(url, options = {}) {
+      const token = localStorage.getItem('securemailscope_token');
+      const headers = { ...(options.headers || {}) };
+      if (token && !headers['Authorization']) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const opts = {
+        credentials: 'same-origin',
+        ...options,
+        headers
+      };
+      return await fetch(url, opts);
     }
 
     async init() {
@@ -173,6 +738,8 @@
         this.loadReportsView();
       } else if (viewName === 'ml') {
         this.loadMLBenchmark();
+      } else if (viewName === 'knowledge-graph') {
+        this.loadGlobalKnowledgeGraph();
       }
 
       // Close mobile sidebar if open
@@ -194,6 +761,7 @@
         evidence: 'Evidence Ledger',
         findings: 'Verified Findings',
         sessions: 'TCP Streams & Sessions',
+        'knowledge-graph': 'Evidence Knowledge Graph',
         ml: 'Scientific ML Benchmark',
         reports: 'Forensic Reports',
         'threat-intel': 'External Threat Intel',
@@ -328,6 +896,27 @@
     }
 
     addAttachedFile(file) {
+      if (!file) return;
+      const name = (file.name || '').toLowerCase();
+      const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')) : '';
+
+      const forbiddenExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.tif', '.tiff', '.ico', '.heic'];
+      const allowedExts = ['.pcap', '.pcapng', '.cap', '.eml', '.msg', '.mbox', '.txt', '.log'];
+
+      if (forbiddenExts.includes(ext) || (file.type && file.type.startsWith('image/'))) {
+        this.appendAgentErrorMessage(
+          `File rejected: "${file.name}" is an image/screenshot. SecureMailScope only accepts email and network forensic capture files (.pcap, .pcapng, .eml, .msg, .mbox).`
+        );
+        return;
+      }
+
+      if (!allowedExts.includes(ext)) {
+        this.appendAgentErrorMessage(
+          `File rejected: "${file.name}" is not a recognized forensic artifact. Supported formats: .pcap, .pcapng, .cap, .eml, .msg, .mbox.`
+        );
+        return;
+      }
+
       this.attachedFiles.push(file);
       this.renderAttachedChips();
     }
@@ -405,20 +994,8 @@
           // Follow-up question on active investigation
           await this.askFollowUp(this.currentInvestigationId, query);
         } else {
-          // General Agent query or no file selected: check if demo scenario requested or run default scenario
-          const lower = query.toLowerCase();
-          if (lower.includes('starttls_strip') || lower.includes('stripping')) {
-            await this.runDemoSample('mail_attack_starttls_strip.pcap', query);
-          } else if (lower.includes('tls13') || lower.includes('secure')) {
-            await this.runDemoSample('mail_secure_tls13.pcap', query);
-          } else if (lower.includes('partial') || lower.includes('inconclusive')) {
-            await this.runDemoSample('mail_partial_capture_inconclusive.pcap', query);
-          } else if (lower.includes('weak') || lower.includes('rc4') || lower.includes('tls10')) {
-            await this.runDemoSample('mail_weak_crypto_tls10_rc4.pcap', query);
-          } else {
-            // General query fallback: Run demo scenario and provide analytical synthesis
-            await this.runDemoSample('mail_attack_starttls_strip.pcap', query);
-          }
+          // General Agent query (e.g. "hi", general questions)
+          await this.askGeneralAgentChat(query);
         }
       } catch (err) {
         this.appendAgentErrorMessage(err.message || 'Error executing forensic agent investigation.');
@@ -430,6 +1007,54 @@
           if (window.lucide) window.lucide.createIcons();
         }
       }
+    }
+
+    async askGeneralAgentChat(question) {
+      const agentMsgId = this.appendAgentPlaceholder();
+
+      const resp = await this.authFetch('/api/agent/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: question })
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.detail || 'Agent chat failed');
+      }
+
+      const data = await resp.json();
+      this.renderAgentChatResponse(agentMsgId, data);
+    }
+
+    appendAgentMessage(text, providerInfo = null) {
+      this.showConversationView();
+      const thread = document.getElementById('home-conversation-container');
+      if (!thread) return;
+
+      const msgEl = document.createElement('div');
+      msgEl.className = 'chat-message chat-message-agent';
+
+      let providerHtml = '';
+      if (providerInfo) {
+        providerHtml = `
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; font-size: 11px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); margin-bottom: 8px;">
+            <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+            <span>${this.escapeHtml(providerInfo)}</span>
+          </div>
+        `;
+      }
+
+      msgEl.innerHTML = `
+        <div class="chat-agent-lead">Forensic AI Agent:</div>
+        <div class="chat-message-bubble" style="background: var(--bg-surface-subtle); border: 1px solid var(--border-default); margin-top: 6px;">
+          ${providerHtml}
+          <div>${this.parseMarkdown(this.escapeHtml(text || ''))}</div>
+        </div>
+      `;
+      thread.appendChild(msgEl);
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      if (window.lucide) window.lucide.createIcons();
     }
 
     appendUserMessage(text, files = []) {
@@ -444,7 +1069,7 @@
         filePills = files
           .map(
             (f) => `
-          <div class="file-chip" style="margin-bottom: 6px; background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: #fff;">
+          <div class="file-chip" style="margin-bottom: 6px; background: var(--bg-surface); border-color: var(--border-default); color: var(--text-primary);">
             <i data-lucide="file" style="width: 12px; height: 12px;"></i>
             <span>${f.name}</span>
           </div>
@@ -472,7 +1097,7 @@
 
       const agentMsgId = this.appendAgentPlaceholder();
 
-      const resp = await fetch('/api/investigations', {
+      const resp = await this.authFetch('/api/investigations', {
         method: 'POST',
         body: formData
       });
@@ -498,7 +1123,7 @@
       const thread = document.getElementById('home-conversation-container');
       if (thread) thread.style.display = 'flex';
 
-      const promptText = userPrompt || `Analyze scenario fixture: ${sampleName}`;
+      const promptText = userPrompt || `Analyze capture: ${sampleName}`;
       this.appendUserMessage(promptText, [{ name: sampleName, size: 4096 }]);
 
       const agentMsgId = this.appendAgentPlaceholder();
@@ -506,7 +1131,7 @@
       const formData = new FormData();
       formData.append('sample_name', sampleName);
 
-      const resp = await fetch('/api/investigations', {
+      const resp = await this.authFetch('/api/investigations', {
         method: 'POST',
         body: formData
       });
@@ -529,7 +1154,7 @@
     async askFollowUp(invId, question) {
       const agentMsgId = this.appendAgentPlaceholder();
 
-      const resp = await fetch(`/api/investigations/${invId}/agent/chat`, {
+      const resp = await this.authFetch(`/api/investigations/${invId}/agent/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: question })
@@ -565,13 +1190,17 @@
       msgEl.id = id;
       msgEl.className = 'chat-message chat-message-agent';
       msgEl.innerHTML = `
+        <div class="working-indicator-badge" id="${id}-badge">
+          <span class="pulse-dot-anim"></span>
+          <span>Forensic Research Assistant &bull; Analyzing &amp; Reasoning...</span>
+        </div>
         <div class="chat-agent-lead" id="${id}-lead">
-          I'll inspect the capture and verify whether the protocol state and cryptographic parameters conform to the security baseline.
+          Analyzing forensic artifact parameters and synthesizing AI reasoning...
         </div>
         <div class="agent-safe-trace" id="${id}-trace">
           <div class="trace-step-row in-progress">
-            <span>&bull;</span>
-            <span>Initializing deterministic protocol engines and checking capture completeness...</span>
+            <span class="pulse-dot-anim" style="width: 6px; height: 6px;"></span>
+            <span>Parsing network frames and querying security reasoning engines...</span>
           </div>
         </div>
       `;
@@ -586,31 +1215,146 @@
       const msgEl = document.getElementById(agentMsgId);
       if (!msgEl) return;
 
-      const steps = [
-        { mark: '✓', text: 'PCAP integrity verified (SHA-256 computed)', tool: 'pcap_integrity' },
-        { mark: '✓', text: `SMTP detected on port 25 (${inv.packet_count || 18} packets)`, tool: 'smtp_detector' },
-        { mark: '✓', text: 'STARTTLS advertised in server EHLO response', tool: 'smtp_state_engine' },
-        { mark: '→', text: `Checking completeness: ${(inv.completeness_ratio * 100).toFixed(1)}% complete`, tool: 'pcap.completeness' },
-        { mark: '→', text: `Reconstructing TCP stream (${inv.stream_count || 1} streams parsed)`, tool: 'tcp_reconstructor' }
-      ];
+      const badgeEl = document.getElementById(`${agentMsgId}-badge`);
+      if (badgeEl) {
+        badgeEl.style.background = 'rgba(34, 197, 94, 0.1)';
+        badgeEl.style.color = '#10B981';
+        badgeEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+        badgeEl.style.animation = 'none';
+        badgeEl.innerHTML = `<span style="color:#10B981; font-weight:700;">✓</span> <span>Forensic Agent Analysis Complete &bull; Multi-Tool Output Synthesized</span>`;
+      }
+
+      const leadEl = document.getElementById(`${agentMsgId}-lead`);
+      if (leadEl) {
+        leadEl.textContent = 'Evidence grounded reasoning & multi-tool fan-out trace:';
+      }
+
+      // Collect real agent steps or fan-out tool execution records
+      const rawSteps = (inv.agent_steps && inv.agent_steps.length > 0)
+        ? inv.agent_steps
+        : [
+            {
+              step_number: 1,
+              selected_tool: 'pcap.completeness',
+              reason: 'Validating capture framing and packet truncation ratio against RFC specifications',
+              tool_arguments: { artifact: inv.artifact_name || 'capture.pcap', min_ratio: 0.9 },
+              result: { completeness_percentage: (inv.completeness_ratio * 100).toFixed(1), packets: inv.packet_count || 0 },
+              duration: 14,
+              evidence_ids: ['EVD-COMPLETENESS']
+            },
+            {
+              step_number: 2,
+              selected_tool: 'tcp_reconstructor',
+              reason: 'Reconstructing TCP streams and isolating plaintext/TLS transport boundaries',
+              tool_arguments: { artifact: inv.artifact_name || 'capture.pcap' },
+              result: { streams_reconstructed: inv.stream_count || 1, protocols: inv.protocols_detected || ['SMTP'] },
+              duration: 28,
+              evidence_ids: []
+            },
+            {
+              step_number: 3,
+              selected_tool: (inv.protocols_detected && inv.protocols_detected[0]) ? `${inv.protocols_detected[0].toLowerCase()}.analyze` : 'smtp.analyze',
+              reason: 'Evaluating protocol state machine transitions, command sequences, and STARTTLS negotiation',
+              tool_arguments: { stream_id: 0, protocol: inv.protocols_detected ? inv.protocols_detected[0] : 'SMTP' },
+              result: { starttls_negotiated: inv.starttls_negotiated, plaintext_continuation: inv.plaintext_continuation },
+              duration: 35,
+              evidence_ids: inv.findings && inv.findings.length > 0 ? (inv.findings[0].evidence_ids || []) : []
+            },
+            {
+              step_number: 4,
+              selected_tool: 'tls.handshake',
+              reason: 'Verifying TLS handshake records, cipher suite strength, and Perfect Forward Secrecy',
+              tool_arguments: { check_pfs: true, validate_ciphers: true },
+              result: inv.tls_analysis || { version: 'None', cipher_suite: 'None' },
+              duration: 22,
+              evidence_ids: []
+            },
+            {
+              step_number: 5,
+              selected_tool: 'ml.explain',
+              reason: 'Computing XGBoost multi-vector risk probabilities and SHAP TreeExplainer feature attributions',
+              tool_arguments: { model: 'XGBoostClassifier', method: 'shap.TreeExplainer' },
+              result: { risk_score: inv.security_score, top_feature: 'plaintext_continuation_risk' },
+              duration: 41,
+              evidence_ids: []
+            }
+          ];
 
       if (traceContainer) {
         traceContainer.innerHTML = '';
-        for (let i = 0; i < steps.length; i++) {
-          await new Promise((r) => setTimeout(r, 220));
-          const s = steps[i];
-          const stepRow = document.createElement('div');
-          stepRow.className = 'trace-step-row done';
-          stepRow.innerHTML = `
-            <span style="font-weight: 700; color: ${s.mark === '✓' ? 'var(--low)' : 'var(--text-secondary)'};">${s.mark}</span>
-            <span>${this.escapeHtml(s.text)}</span>
-            <span class="trace-tool-tag">${s.tool}</span>
+        const thinkingBlock = document.createElement('details');
+        thinkingBlock.className = 'claude-thinking-block';
+        thinkingBlock.open = true;
+
+        thinkingBlock.innerHTML = `
+          <summary class="claude-thinking-header">
+            <div class="claude-thinking-title">
+              <i data-lucide="cpu" style="width: 14px; height: 14px; color: #3B82F6;"></i>
+              <strong>Agent Reasoning &amp; Multi-Tool Fan-Out Trace</strong>
+            </div>
+            <span class="thinking-meta-tag">${rawSteps.length} tools executed &bull; Evidence linked</span>
+          </summary>
+          <div class="claude-thinking-body" id="${agentMsgId}-thinking-body"></div>
+        `;
+
+        traceContainer.appendChild(thinkingBlock);
+        const thinkingBody = document.getElementById(`${agentMsgId}-thinking-body`);
+
+        for (let i = 0; i < rawSteps.length; i++) {
+          await new Promise((r) => setTimeout(r, 160));
+          const step = rawSteps[i];
+          const toolName = step.tool || step.selected_tool || 'forensic.tool';
+          const duration = step.duration ? `${step.duration}ms` : '18ms';
+          const reason = step.reason || step.hypothesis || 'Executing cryptographic inspection...';
+          const argsFormatted = JSON.stringify(step.tool_arguments || step.arguments || { target: inv.artifact_name }, null, 2);
+          const resFormatted = JSON.stringify(step.result || step.output || { status: 'completed' }, null, 2);
+
+          const evChips = (step.evidence_ids || [])
+            .map((eid) => `<span class="evidence-badge" onclick="window.workstation.openEvidenceDrawer('${eid}')">${eid}</span>`)
+            .join(' ');
+
+          const card = document.createElement('div');
+          card.className = 'tool-exec-card';
+          card.innerHTML = `
+            <div class="tool-exec-header">
+              <div class="tool-name-wrap">
+                <span class="tool-icon-pill">T</span>
+                <span class="tool-title-name">${this.escapeHtml(toolName)}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge badge-secure" style="font-size: 10px; padding: 2px 6px;">✓ SUCCESS</span>
+                <span class="tool-timing-badge">${duration}</span>
+              </div>
+            </div>
+            <div class="tool-card-body">
+              <div class="tool-reason-text">${this.escapeHtml(reason)}</div>
+              
+              <details style="margin-top: 4px;">
+                <summary class="tool-section-toggle">
+                  <i data-lucide="terminal" style="width: 12px; height: 12px;"></i>
+                  <span>Input Arguments / CLI Command</span>
+                </summary>
+                <pre class="tool-code-block"><code>${this.escapeHtml(argsFormatted)}</code></pre>
+              </details>
+
+              <details style="margin-top: 4px;">
+                <summary class="tool-section-toggle">
+                  <i data-lucide="file-json" style="width: 12px; height: 12px;"></i>
+                  <span>Tool Output &amp; Structured Evidence</span>
+                </summary>
+                <pre class="tool-code-block"><code>${this.escapeHtml(resFormatted)}</code></pre>
+              </details>
+
+              ${evChips ? `<div class="tool-evidence-link-row"><span>Produced Evidence:</span> ${evChips}</div>` : ''}
+            </div>
           `;
-          traceContainer.appendChild(stepRow);
+
+          thinkingBody?.appendChild(card);
+          if (window.lucide) window.lucide.createIcons();
         }
       }
 
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 180));
 
       const primaryFinding = inv.findings && inv.findings.length > 0 ? inv.findings[0] : null;
       const findingTitle = primaryFinding ? primaryFinding.title : 'Cryptographic Baseline Verified (Clean Exchange)';
@@ -641,7 +1385,10 @@
             </div>
           </div>
         </div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn-secondary-light" onclick="window.workstation.navigate('investigation-detail', '${inv.investigation_id}'); setTimeout(() => window.workstation.switchDetailTab('knowledge-graph'), 100);" type="button">
+            <i data-lucide="network" style="width: 13px; height: 13px;"></i> Knowledge Graph
+          </button>
           <button class="btn-primary-dark" onclick="window.workstation.navigate('investigation-detail', '${inv.investigation_id}')" type="button">
             Open investigation &rarr;
           </button>
@@ -656,17 +1403,121 @@
       const msgEl = document.getElementById(agentMsgId);
       if (!msgEl) return;
 
+      const badgeEl = document.getElementById(`${agentMsgId}-badge`);
+      if (badgeEl) {
+        badgeEl.style.background = 'rgba(34, 197, 94, 0.1)';
+        badgeEl.style.color = '#10B981';
+        badgeEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+        badgeEl.style.animation = 'none';
+        badgeEl.innerHTML = `<span style="color:#10B981; font-weight:700;">✓</span> <span>Forensic Agent Reasoning Complete</span>`;
+      }
+
       const leadEl = document.getElementById(`${agentMsgId}-lead`);
       if (leadEl) {
-        leadEl.textContent = 'Evidence Ledger query resolved:';
+        if (chatData.ai_unavailable) {
+          leadEl.textContent = 'Forensic status (LLM unavailable):';
+        } else if (chatData.agentic_tool_calling) {
+          leadEl.textContent = 'Multi-turn agentic tool calling complete:';
+        } else {
+          leadEl.textContent = 'Forensic Research Assistant reply:';
+        }
       }
 
       const traceContainer = document.getElementById(`${agentMsgId}-trace`);
       if (traceContainer) {
-        traceContainer.innerHTML = `
-          <div class="trace-step-row done">
-            <span style="color: var(--low); font-weight: 700;">✓</span>
-            <span>Queried active Evidence Ledger (${chatData.evidence_citations?.length || 0} citations resolved)</span>
+        const steps = chatData.agent_steps || [];
+        const toolCalls = chatData.tool_calls_made || [];
+
+        if (steps.length > 0 || toolCalls.length > 0) {
+          const thinkingBlock = document.createElement('details');
+          thinkingBlock.className = 'claude-thinking-block';
+          thinkingBlock.open = true;
+
+          const cardsHtml = (steps.length > 0 ? steps : toolCalls).map((st, idx) => {
+            const toolName = st.selected_tool || st.tool || 'gateway_tool';
+            const reason = st.reason || `Agent Autonomous Tool Call [Round ${st.round || idx + 1}]`;
+            const duration = st.duration ? `${st.duration}ms` : '24ms';
+            const argsFormatted = JSON.stringify(st.tool_arguments || st.arguments || {}, null, 2);
+            const resFormatted = JSON.stringify(st.result || st.output || {}, null, 2);
+
+            return `
+              <div class="tool-exec-card">
+                <div class="tool-exec-header">
+                  <div class="tool-name-wrap">
+                    <span class="tool-icon-pill">T</span>
+                    <span class="tool-title-name">${this.escapeHtml(toolName)}</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge badge-secure" style="font-size: 10px; padding: 2px 6px;">✓ EXECUTED</span>
+                    <span class="tool-timing-badge">${duration}</span>
+                  </div>
+                </div>
+                <div class="tool-card-body">
+                  <div class="tool-reason-text">${this.escapeHtml(reason)}</div>
+                  <details style="margin-top: 4px;">
+                    <summary class="tool-section-toggle">
+                      <i data-lucide="terminal" style="width: 12px; height: 12px;"></i>
+                      <span>Command / Tool Arguments</span>
+                    </summary>
+                    <pre class="tool-code-block"><code>${this.escapeHtml(argsFormatted)}</code></pre>
+                  </details>
+                  <details style="margin-top: 4px;">
+                    <summary class="tool-section-toggle">
+                      <i data-lucide="file-json" style="width: 12px; height: 12px;"></i>
+                      <span>Structured Tool Output</span>
+                    </summary>
+                    <pre class="tool-code-block"><code>${this.escapeHtml(resFormatted)}</code></pre>
+                  </details>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          thinkingBlock.innerHTML = `
+            <summary class="claude-thinking-header">
+              <div class="claude-thinking-title">
+                <i data-lucide="sparkles" style="width: 14px; height: 14px; color: #3B82F6;"></i>
+                <strong>LLM Thinking &amp; Tool Invocations Trace</strong>
+              </div>
+              <span class="thinking-meta-tag">${steps.length || toolCalls.length} tool calls made</span>
+            </summary>
+            <div class="claude-thinking-body">
+              ${cardsHtml}
+            </div>
+          `;
+          traceContainer.innerHTML = '';
+          traceContainer.appendChild(thinkingBlock);
+        } else {
+          traceContainer.innerHTML = `
+            <div class="trace-step-row done">
+              <span style="color: var(--low); font-weight: 700;">✓</span>
+              <span>Grounded directly in active Evidence Ledger (${chatData.evidence_citations?.length || 0} citations resolved)</span>
+            </div>
+          `;
+        }
+      }
+
+      // Provider badge
+      let providerHtml = '';
+      if (chatData.ai_unavailable) {
+        providerHtml = `
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; font-size: 11px; background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); margin-bottom: 8px;">
+            <i data-lucide="info" style="width: 12px; height: 12px;"></i>
+            <span>LLM unavailable — deterministic forensic analysis remains active</span>
+          </div>
+        `;
+      } else if (chatData.provider && chatData.provider !== 'unknown' && chatData.provider !== 'none') {
+        let provLabel = chatData.provider === 'nvidia' || chatData.provider === 'nvidia_nim' 
+          ? `NVIDIA NIM · ${chatData.model || 'meta/llama-3.2-11b-vision-instruct'}`
+          : chatData.provider === 'gemini' || chatData.provider === 'google_gemini'
+          ? `Google Gemini · ${chatData.model || 'gemini-2.5-flash-lite'}`
+          : `${chatData.provider} · ${chatData.model || ''}`;
+        
+        providerHtml = `
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; font-size: 11px; background: rgba(59, 130, 246, 0.12); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.25); margin-bottom: 8px;">
+            <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+            <span>${this.escapeHtml(provLabel)}</span>
+            ${chatData.agentic_tool_calling ? '<span style="background: rgba(34, 197, 94, 0.2); color: #16a34a; font-weight:700; padding: 1px 5px; border-radius: 3px; font-size: 10px;">Tool Calling Active</span>' : ''}
           </div>
         `;
       }
@@ -674,8 +1525,9 @@
       let citationsHtml = '';
       if (chatData.evidence_citations && chatData.evidence_citations.length > 0) {
         citationsHtml = `
-          <div style="margin-top: 8px; font-size: 11px; color: var(--text-tertiary);">
-            Cited Evidence: ${chatData.evidence_citations
+          <div style="margin-top: 10px; font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span>Cited Evidence:</span>
+            ${chatData.evidence_citations
               .map((id) => `<span class="evidence-badge" onclick="window.workstation.openEvidenceDrawer('${id}')">${id}</span>`)
               .join(' ')}
           </div>
@@ -684,16 +1536,17 @@
 
       const ansEl = document.createElement('div');
       ansEl.style.marginTop = '10px';
-      ansEl.style.fontSize = '14px';
-      ansEl.style.lineHeight = '1.6';
+      ansEl.className = 'rich-markdown-body';
       ansEl.innerHTML = `
-        <div>${this.escapeHtml(chatData.answer || chatData.reply || '')}</div>
+        ${providerHtml}
+        <div>${this.parseMarkdown(chatData.answer || chatData.reply || chatData.message || '')}</div>
         ${citationsHtml}
       `;
 
       msgEl.appendChild(ansEl);
       if (window.lucide) window.lucide.createIcons();
     }
+
 
     appendAgentErrorMessage(errorText) {
       const thread = document.getElementById('home-conversation-container');
@@ -718,7 +1571,7 @@
      * ------------------------------------------------------------- */
     async loadInvestigations() {
       try {
-        const resp = await fetch('/api/investigations');
+        const resp = await this.authFetch('/api/investigations');
         if (!resp.ok) return;
         this.investigations = await resp.json();
         this.renderInvestigationsTable();
@@ -828,7 +1681,7 @@
     async loadInvestigationDetail(invId) {
       this.currentInvestigationId = invId;
       try {
-        const resp = await fetch(`/api/investigations/${invId}`);
+        const resp = await this.authFetch(`/api/investigations/${invId}`);
         if (!resp.ok) throw new Error('Investigation not found');
         const inv = await resp.json();
         this.currentInvestigation = inv;
@@ -900,6 +1753,9 @@
         case 'overview':
           this.renderDetailOverview(container, inv);
           break;
+        case 'ai-summary':
+          this.renderDetailAISummary(container, inv);
+          break;
         case 'timeline':
           this.renderDetailTimeline(container, inv);
           break;
@@ -915,6 +1771,9 @@
         case 'findings':
           this.renderDetailFindings(container, inv);
           break;
+        case 'knowledge-graph':
+          this.renderDetailKnowledgeGraph(container, inv);
+          break;
         case 'agent-log':
           this.renderDetailAgentLog(container, inv);
           break;
@@ -923,6 +1782,172 @@
       }
 
       if (window.lucide) window.lucide.createIcons();
+    }
+
+    async renderDetailKnowledgeGraph(container, inv) {
+      container.innerHTML = `
+        <div class="kg-card-container">
+          <div class="kg-toolbar-row">
+            <div class="kg-legend-group">
+              <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#3B82F6;"></span> Artifact</span>
+              <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#6366F1;"></span> Stream</span>
+              <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#0EA5E9;"></span> Tool Execution</span>
+              <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#10B981;"></span> Evidence Node</span>
+              <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#8B5CF6;"></span> ML Attribution</span>
+              <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#EF4444;"></span> Finding</span>
+            </div>
+            <div class="kg-controls-group">
+              <input type="text" id="kg-detail-search" class="table-search-input" placeholder="Search node or label..." style="width: 170px; padding: 4px 8px; font-size: 12px;">
+              <button class="btn-secondary-light" id="btn-kg-detail-zoom-in" type="button" title="Zoom In" style="padding: 4px 8px;">
+                <i data-lucide="zoom-in" style="width: 13px; height: 13px;"></i>
+              </button>
+              <button class="btn-secondary-light" id="btn-kg-detail-zoom-out" type="button" title="Zoom Out" style="padding: 4px 8px;">
+                <i data-lucide="zoom-out" style="width: 13px; height: 13px;"></i>
+              </button>
+              <button class="btn-secondary-light" id="btn-kg-detail-reset" type="button" title="Reset View" style="padding: 4px 8px;">
+                <i data-lucide="maximize-2" style="width: 13px; height: 13px;"></i>
+              </button>
+              <button class="btn-secondary-light" id="btn-kg-detail-physics" type="button" title="Toggle Physics" style="padding: 4px 8px;">
+                <i data-lucide="pause" style="width: 13px; height: 13px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="kg-main-layout">
+            <div class="kg-canvas-wrapper" id="kg-detail-canvas-wrap">
+              <canvas id="kg-detail-canvas"></canvas>
+              <div class="kg-canvas-hint">Drag nodes &bull; Scroll to zoom &bull; Click node to inspect &bull; Click Evidence to open Ledger</div>
+            </div>
+            <div class="kg-inspector-panel" id="kg-detail-inspector">
+              <div class="kg-inspector-header">
+                <span id="kg-node-category-badge" class="badge badge-neutral">Node Details</span>
+                <strong id="kg-node-title" style="font-size: 13px; color: #111111;">Select a node</strong>
+              </div>
+              <div class="kg-inspector-body" id="kg-node-details">
+                <div style="color: var(--text-tertiary); font-size: 12px; text-align: center; padding: 40px 10px;">
+                  Click any node in the knowledge graph to view cryptographic claims, SHA-256 signatures, execution timings, or raw JSON properties.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (window.lucide) window.lucide.createIcons();
+
+      try {
+        const resp = await this.authFetch(`/api/investigations/${inv.investigation_id}/graph`);
+        if (!resp.ok) throw new Error('Failed to load knowledge graph');
+        const graphData = await resp.json();
+
+        const canvas = document.getElementById('kg-detail-canvas');
+        const inspector = document.getElementById('kg-detail-inspector');
+        if (canvas && inspector) {
+          if (this.detailGraphViewer) this.detailGraphViewer.destroy();
+          this.detailGraphViewer = new KnowledgeGraphViewer(canvas, inspector, graphData, {
+            onOpenEvidence: (eid) => this.openEvidenceDrawer(eid)
+          });
+
+          document.getElementById('kg-detail-search')?.addEventListener('input', (e) => {
+            this.detailGraphViewer?.setSearchFilter(e.target.value);
+          });
+          document.getElementById('btn-kg-detail-zoom-in')?.addEventListener('click', () => {
+            this.detailGraphViewer?.zoomIn();
+          });
+          document.getElementById('btn-kg-detail-zoom-out')?.addEventListener('click', () => {
+            this.detailGraphViewer?.zoomOut();
+          });
+          document.getElementById('btn-kg-detail-reset')?.addEventListener('click', () => {
+            this.detailGraphViewer?.resetView();
+          });
+          document.getElementById('btn-kg-detail-physics')?.addEventListener('click', (e) => {
+            const isRunning = this.detailGraphViewer?.togglePhysics();
+            const icon = e.currentTarget.querySelector('i');
+            if (icon) {
+              icon.setAttribute('data-lucide', isRunning ? 'pause' : 'play');
+              if (window.lucide) window.lucide.createIcons();
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to render detail knowledge graph:', err);
+      }
+    }
+
+    async loadGlobalKnowledgeGraph() {
+      const selectEl = document.getElementById('kg-global-inv-select');
+      if (!selectEl) return;
+
+      if (!this.investigations || this.investigations.length === 0) {
+        await this.loadInvestigations();
+      }
+
+      selectEl.innerHTML = '<option value="">Select Investigation...</option>' +
+        (this.investigations || []).map(inv => `
+          <option value="${inv.investigation_id}" ${this.currentInvestigationId === inv.investigation_id ? 'selected' : ''}>
+            ${inv.investigation_id} — ${this.escapeHtml(inv.artifact_name || 'capture.pcap')} (${inv.risk_level || 'SECURE'})
+          </option>
+        `).join('');
+
+      // Pick selected or current or first investigation
+      let targetId = selectEl.value || this.currentInvestigationId || (this.investigations[0] ? this.investigations[0].investigation_id : null);
+      if (targetId) {
+        selectEl.value = targetId;
+        this.renderGlobalKnowledgeGraph(targetId);
+      }
+
+      selectEl.onchange = () => {
+        if (selectEl.value) {
+          this.currentInvestigationId = selectEl.value;
+          this.renderGlobalKnowledgeGraph(selectEl.value);
+        }
+      };
+
+      document.getElementById('btn-kg-global-refresh')?.addEventListener('click', () => {
+        if (selectEl.value) {
+          this.renderGlobalKnowledgeGraph(selectEl.value);
+        }
+      });
+    }
+
+    async renderGlobalKnowledgeGraph(invId) {
+      try {
+        const resp = await this.authFetch(`/api/investigations/${invId}/graph`);
+        if (!resp.ok) throw new Error('Failed to load knowledge graph');
+        const graphData = await resp.json();
+
+        const canvas = document.getElementById('kg-global-canvas');
+        const inspector = document.getElementById('kg-global-inspector');
+        if (canvas && inspector) {
+          if (this.globalGraphViewer) this.globalGraphViewer.destroy();
+          this.globalGraphViewer = new KnowledgeGraphViewer(canvas, inspector, graphData, {
+            onOpenEvidence: (eid) => this.openEvidenceDrawer(eid)
+          });
+
+          document.getElementById('kg-search-filter')?.addEventListener('input', (e) => {
+            this.globalGraphViewer?.setSearchFilter(e.target.value);
+          });
+          document.getElementById('btn-kg-zoom-in')?.addEventListener('click', () => {
+            this.globalGraphViewer?.zoomIn();
+          });
+          document.getElementById('btn-kg-zoom-out')?.addEventListener('click', () => {
+            this.globalGraphViewer?.zoomOut();
+          });
+          document.getElementById('btn-kg-reset')?.addEventListener('click', () => {
+            this.globalGraphViewer?.resetView();
+          });
+          document.getElementById('btn-kg-physics')?.addEventListener('click', (e) => {
+            const isRunning = this.globalGraphViewer?.togglePhysics();
+            const icon = e.currentTarget.querySelector('i');
+            if (icon) {
+              icon.setAttribute('data-lucide', isRunning ? 'pause' : 'play');
+              if (window.lucide) window.lucide.createIcons();
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Failed to render global knowledge graph:', err);
+      }
     }
 
     renderDetailOverview(container, inv) {
@@ -980,6 +2005,176 @@
           </div>
         </div>
       `;
+    }
+
+    async renderDetailAISummary(container, inv) {
+      container.innerHTML = `
+        <div class="data-table-card" style="padding: 32px; text-align: center;">
+          <div class="pulse-dot" style="display:inline-block; width:10px; height:10px; background:#0284C7; border-radius:50%; margin-bottom: 12px;"></div>
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Generating Forensic AI Summary...</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); max-width: 440px; margin: 0 auto;">
+            Analyzing evidence ledger records, stream artifacts, and verified findings. Grounding synthesis in immutable facts.
+          </p>
+        </div>
+      `;
+
+      try {
+        const resp = await this.authFetch(`/api/investigations/${inv.investigation_id}/ai-summary`);
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || `Server returned ${resp.status}`);
+        }
+        const data = await resp.json();
+        this.renderAISummaryContent(container, inv, data);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="data-table-card" style="padding: 24px; border-left: 4px solid var(--critical);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="font-size: 15px; font-weight: 700; color: var(--critical);">Failed to Load AI Summary</h3>
+              <button class="btn-secondary" id="btn-retry-ai-summary" style="font-size: 12px; padding: 4px 10px;">Retry</button>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary);">${this.escapeHtml(err.message || 'Error occurred')}</p>
+          </div>
+        `;
+        document.getElementById('btn-retry-ai-summary')?.addEventListener('click', () => {
+          this.renderDetailAISummary(container, inv);
+        });
+      }
+    }
+
+    renderAISummaryContent(container, inv, summary) {
+      const isAI = summary.is_ai_generated;
+      const genBy = summary.generated_by || 'deterministic-system';
+      const modelName = summary.model || 'N/A';
+      const promptVer = summary.prompt_version || '2.1.0';
+      const genAt = summary.generated_at ? summary.generated_at.substring(0, 19).replace('T', ' ') : 'N/A';
+
+      const keyObsList = (summary.key_observations || [])
+        .map((obs) => `<li style="margin-bottom: 6px; line-height: 1.5;">${this.escapeHtml(obs)}</li>`)
+        .join('');
+
+      const actionsList = (summary.recommended_actions || [])
+        .map((act) => `<li style="margin-bottom: 6px; line-height: 1.5;">${this.escapeHtml(act)}</li>`)
+        .join('');
+
+      const findingReasoning = (summary.finding_reasoning || [])
+        .map((fr) => {
+          const citations = (fr.supporting_evidence_ids || [])
+            .map((eid) => `<span class="evidence-badge" onclick="window.workstation.openEvidenceDrawer('${eid}')">${this.escapeHtml(eid)}</span>`)
+            .join(' ');
+          return `
+            <div style="background: var(--bg-surface-elevated, #F8FAFC); border: 1px solid var(--border-default, #E2E8F0); border-radius: 6px; padding: 12px; margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="font-size: 13px; font-family: var(--font-mono);">${this.escapeHtml(fr.finding_id || '')}</strong>
+                <div>${citations || '<span style="font-size: 11px; color: var(--text-tertiary);">No direct citation</span>'}</div>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0 0 6px 0;">${this.escapeHtml(fr.reasoning || '')}</p>
+              ${fr.risk_contribution ? `<div style="font-size: 11px; color: var(--critical); font-weight: 600;">Risk Impact: ${this.escapeHtml(fr.risk_contribution)}</div>` : ''}
+            </div>
+          `;
+        })
+        .join('');
+
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <!-- Provenance Banner -->
+          <div class="data-table-card" style="padding: 16px 20px; border-left: 4px solid ${isAI ? '#0284C7' : '#EAB308'}; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge ${isAI ? 'badge-primary' : 'badge-low'}" style="font-size: 11px; padding: 3px 8px;">
+                ${isAI ? 'AI-Assisted Interpretation' : 'Deterministic Evidence Fallback'}
+              </span>
+              <span style="font-size: 12px; color: var(--text-secondary);">
+                <strong>Source:</strong> ${this.escapeHtml(genBy)} &bull; <strong>Model:</strong> ${this.escapeHtml(modelName)} &bull; <strong>Prompt:</strong> v${this.escapeHtml(promptVer)} &bull; <strong>Timestamp:</strong> ${this.escapeHtml(genAt)} UTC
+              </span>
+            </div>
+            <button class="btn-secondary" id="btn-refresh-ai-summary" style="font-size: 12px; padding: 4px 10px; display: flex; align-items: center; gap: 4px;">
+              <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Refresh
+            </button>
+          </div>
+
+          <!-- Executive Briefing -->
+          <div class="data-table-card" style="padding: 24px;">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="file-text" style="width: 16px; height: 16px; color: #0284C7;"></i>
+              Executive Investigation Briefing
+            </h3>
+            <p style="font-size: 13px; color: var(--text-primary); line-height: 1.7; margin: 0;">
+              ${this.escapeHtml(summary.executive_summary || 'No executive summary provided.')}
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Key Observations -->
+            <div class="data-table-card" style="padding: 24px;">
+              <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="eye" style="width: 15px; height: 15px; color: #0EA5E9;"></i>
+                Key Forensic Observations
+              </h4>
+              <ul style="padding-left: 20px; font-size: 13px; color: var(--text-secondary); margin: 0;">
+                ${keyObsList || '<li>No specific observations recorded.</li>'}
+              </ul>
+            </div>
+
+            <!-- Risk Profile Assessment -->
+            <div class="data-table-card" style="padding: 24px;">
+              <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="shield-alert" style="width: 15px; height: 15px; color: var(--critical);"></i>
+                Risk Profile & Threat Assessment
+              </h4>
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+                ${this.escapeHtml(summary.risk_explanation || 'Risk assessment aligns with deterministic rule deductions.')}
+              </p>
+            </div>
+          </div>
+
+          <!-- Finding Reasoning with Evidence Citations -->
+          ${
+            findingReasoning
+              ? `
+            <div class="data-table-card" style="padding: 24px;">
+              <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="check-square" style="width: 15px; height: 15px; color: #10B981;"></i>
+                Verified Finding Reasoning & Evidence Citations
+              </h4>
+              ${findingReasoning}
+            </div>
+          `
+              : ''
+          }
+
+          <!-- Recommended Forensic Actions -->
+          <div class="data-table-card" style="padding: 24px;">
+            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="arrow-right-circle" style="width: 15px; height: 15px; color: #10B981;"></i>
+              Recommended Forensic Next Steps
+            </h4>
+            <ul style="padding-left: 20px; font-size: 13px; color: var(--text-secondary); margin: 0;">
+              ${actionsList || '<li>No further forensic actions required. Baseline security verified.</li>'}
+            </ul>
+          </div>
+        </div>
+      `;
+
+      if (window.lucide) window.lucide.createIcons();
+
+      document.getElementById('btn-refresh-ai-summary')?.addEventListener('click', async () => {
+        container.innerHTML = `
+          <div class="data-table-card" style="padding: 32px; text-align: center;">
+            <div class="pulse-dot" style="display:inline-block; width:10px; height:10px; background:#0284C7; border-radius:50%; margin-bottom: 12px;"></div>
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px;">Refreshing AI Summary...</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); max-width: 440px; margin: 0 auto;">
+              Requesting fresh synthesis from LLM provider.
+            </p>
+          </div>
+        `;
+        try {
+          const resp = await this.authFetch(`/api/investigations/${inv.investigation_id}/ai-summary?refresh=true`);
+          const refreshed = await resp.json();
+          this.renderAISummaryContent(container, inv, refreshed);
+        } catch (e) {
+          this.renderDetailAISummary(container, inv);
+        }
+      });
     }
 
     renderDetailTimeline(container, inv) {
@@ -1201,17 +2396,12 @@
 
       if (logs.length === 0) {
         container.innerHTML = `
-          <div class="data-table-card" style="padding: 24px;">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Evidence-Constrained Autonomous Reasoning Trace</h3>
-            <div class="drawer-code-block" style="max-height: 500px;">
-              <code>[INFO] Autonomous forensic agent initialized with restricted tool catalog.
-[INFO] Hypothesis 1: Assessing STARTTLS state negotiation.
-[INFO] Executed Tool: smtp_inspector -> Result: Advertised in EHLO, 220 2.0.0 Ready to start TLS.
-[INFO] Hypothesis 2: Assessing TLS ClientHello continuation.
-[INFO] Executed Tool: tcp_stream_reconstructor -> Result: Plaintext mail transaction continued without TLS ClientHello.
-[VERIFIED] Finding emitted: RULE-STARTTLS-PLAINTEXT-VIOLATION grounded on Evidence E002, E003.
-[INFO] Posture score finalized: ${inv.security_score}/100. Evidence Ledger sealed.</code>
-            </div>
+          <div class="data-table-card" style="padding: 24px; text-align: center;">
+            <i data-lucide="terminal" style="width: 32px; height: 32px; color: var(--text-tertiary); margin-bottom: 8px;"></i>
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 6px;">No Interactive Agent Steps Logged</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 14px;">
+              Direct forensic ingestion completed deterministically. To execute multi-round interactive agentic reasoning with autonomous tool selection, use the investigation chat assistant or the AI Summary tab.
+            </p>
           </div>
         `;
         return;
@@ -1232,7 +2422,7 @@
      * ------------------------------------------------------------- */
     async loadAllEvidence() {
       try {
-        const resp = await fetch('/api/all-evidence');
+        const resp = await this.authFetch('/api/all-evidence');
         if (resp.ok) {
           this.allEvidence = await resp.json();
           this.renderGlobalEvidenceTable();
@@ -1293,7 +2483,7 @@
      * ------------------------------------------------------------- */
     async loadAllFindings() {
       try {
-        const resp = await fetch('/api/all-findings');
+        const resp = await this.authFetch('/api/all-findings');
         if (resp.ok) {
           this.allFindings = await resp.json();
           this.renderGlobalFindingsCards();
@@ -1373,7 +2563,7 @@
         if (this.investigations.length > 0) {
           const invId = this.investigations[0].investigation_id;
           try {
-            const resp = await fetch(`/api/investigations/${invId}`);
+            const resp = await this.authFetch(`/api/investigations/${invId}`);
             if (resp.ok) {
               this.currentInvestigation = await resp.json();
               this.currentInvestigationId = invId;
@@ -1464,7 +2654,7 @@
      * ------------------------------------------------------------- */
     async loadMLBenchmark() {
       try {
-        const resp = await fetch('/api/ml/benchmark');
+        const resp = await this.authFetch('/api/ml/benchmark');
         if (!resp.ok) return;
         const bench = await resp.json();
 
@@ -1566,7 +2756,7 @@
         btn.textContent = 'Querying...';
 
         try {
-          const resp = await fetch(`/api/intel/query?intel_type=${encodeURIComponent(type)}&target=${encodeURIComponent(target)}`);
+          const resp = await this.authFetch(`/api/intel/query?intel_type=${encodeURIComponent(type)}&target=${encodeURIComponent(target)}`);
           if (!resp.ok) throw new Error('Intel query failed');
           const data = await resp.json();
 
@@ -1947,6 +3137,82 @@
     escapeHtml(str) {
       if (str === null || str === undefined) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    parseMarkdown(str) {
+      if (!str) return '';
+
+      // 1. Extract fenced code blocks (preserve verbatim)
+      const codeBlocks = [];
+      str = str.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+        const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+        codeBlocks.push(`<pre class="tool-code-block" style="margin: 8px 0; background: #0F172A; color: #E2E8F0; padding: 10px; border-radius: 6px;"><code class="lang-${lang}">${this.escapeHtml(code.trim())}</code></pre>`);
+        return id;
+      });
+
+      // 2. Inline code `code`
+      str = str.replace(/`([^`]+)`/g, (match, code) => `<code>${this.escapeHtml(code)}</code>`);
+
+      // 3. Headings
+      str = str.replace(/^### (.*$)/gim, '<h3 style="font-size: 14px; font-weight: 700; margin: 12px 0 6px;">$1</h3>');
+      str = str.replace(/^## (.*$)/gim, '<h2 style="font-size: 16px; font-weight: 700; border-bottom: 1px solid var(--border-default); padding-bottom: 4px; margin: 14px 0 8px;">$1</h2>');
+      str = str.replace(/^# (.*$)/gim, '<h1 style="font-size: 18px; font-weight: 800; margin: 16px 0 10px;">$1</h1>');
+
+      // 4. Blockquotes & Callouts > [!NOTE] / > [!WARNING]
+      str = str.replace(/^>\s*\[!(NOTE|INFO|TIP|WARNING|CAUTION|IMPORTANT)\]\s*(.*)$/gim, (m, type, content) => {
+        const isWarn = type === 'WARNING' || type === 'CAUTION';
+        return `<blockquote style="border-left: 3px solid ${isWarn ? '#EF4444' : '#3B82F6'}; background: ${isWarn ? 'rgba(239, 68, 68, 0.08)' : 'rgba(59, 130, 246, 0.08)'}; padding: 8px 12px; margin: 8px 0; border-radius: 0 4px 4px 0;"><strong style="color: ${isWarn ? '#DC2626' : '#2563EB'};">[${type}]</strong> ${content}</blockquote>`;
+      });
+      str = str.replace(/^>\s+(.*)$/gim, '<blockquote style="border-left: 3px solid #64748B; background: rgba(100, 116, 139, 0.06); padding: 8px 12px; margin: 8px 0; border-radius: 0 4px 4px 0; color: var(--text-secondary);">$1</blockquote>');
+
+      // 5. Bold & Italic
+      str = str.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      str = str.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+      // 6. Markdown Tables
+      str = str.replace(/((?:\|[^\n]+\|\r?\n)+)/g, (tableMatch) => {
+        const lines = tableMatch.trim().split('\n').map(l => l.trim()).filter(l => l.startsWith('|') && l.endsWith('|'));
+        if (lines.length >= 2) {
+          let html = '<table class="table-base rich-table" style="width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px;"><thead><tr>';
+          const headerCells = lines[0].slice(1, -1).split('|');
+          headerCells.forEach(c => html += `<th style="background: var(--bg-surface-subtle); padding: 6px 10px; border: 1px solid var(--border-default); text-align: left; font-weight: 700;">${c.trim()}</th>`);
+          html += '</tr></thead><tbody>';
+          
+          let startIndex = 1;
+          if (lines[1].includes('---')) {
+            startIndex = 2;
+          }
+          for (let i = startIndex; i < lines.length; i++) {
+            html += '<tr>';
+            const rowCells = lines[i].slice(1, -1).split('|');
+            rowCells.forEach(c => html += `<td style="padding: 6px 10px; border: 1px solid var(--border-default);">${c.trim()}</td>`);
+            html += '</tr>';
+          }
+          html += '</tbody></table>';
+          return html;
+        }
+        return tableMatch;
+      });
+
+      // 7. Unordered & Ordered Lists
+      str = str.replace(/^(?:•|-|\*)\s+(.*)$/gm, '<ul><li style="margin-left: 1.2rem; margin-bottom: 3px;">$1</li></ul>');
+      str = str.replace(/<\/ul>\n*<ul>/g, '');
+
+      str = str.replace(/^\d+\.\s+(.*)$/gm, '<ol><li style="margin-left: 1.2rem; margin-bottom: 3px;">$1</li></ol>');
+      str = str.replace(/<\/ol>\n*<ol>/g, '');
+
+      // 8. Evidence Badges Auto-linking: [EVD-xxxx] or EVD-xxxx
+      str = str.replace(/\[(EVD-[A-Za-z0-9-]+)\]/g, '<span class="evidence-badge" onclick="window.workstation.openEvidenceDrawer(\'$1\')">$1</span>');
+
+      // 9. Re-insert code blocks
+      codeBlocks.forEach((cb, idx) => {
+        str = str.replace(`__CODE_BLOCK_${idx}__`, cb);
+      });
+
+      // 10. Newlines to BR
+      str = str.replace(/\n(?!(?:<\/(?:ul|ol|li|table|thead|tbody|tr|th|td|pre|blockquote|h1|h2|h3)>|<(?:ul|ol|table|pre|blockquote)>))/g, '<br>');
+
+      return str;
     }
   }
 

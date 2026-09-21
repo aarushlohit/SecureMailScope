@@ -60,6 +60,9 @@
 
         <!-- Group: Analyze -->
         <div class="nav-group-label">Analyze</div>
+        <div class="nav-item" data-view="knowledge-graph" role="button" tabindex="0" title="Evidence Knowledge Graph">
+          <i data-lucide="network"></i> <span class="nav-item-label">Knowledge Graph</span>
+        </div>
         <div class="nav-item" data-view="reports" role="button" tabindex="0" title="Forensic Reports">
           <i data-lucide="file-text"></i> <span class="nav-item-label">Reports</span>
         </div>
@@ -174,7 +177,7 @@
 
               <div class="composer-bottom-bar">
                 <div class="composer-tools-left">
-                  <input type="file" id="composer-file-input" accept=".pcap,.pcapng,.eml,.txt,.json,.log" style="display: none;">
+                  <input type="file" id="composer-file-input" accept=".pcap,.pcapng,.cap,.eml,.msg,.mbox" style="display: none;">
                   <button class="btn-composer-tool" id="btn-attach-file" type="button" title="Attach PCAP, EML, headers, or logs">
                     <i data-lucide="paperclip" style="width: 14px; height: 14px;"></i>
                     <span>Attach</span>
@@ -301,11 +304,13 @@
           <!-- Detail Tabs -->
           <div style="background: #FFFFFF; border-bottom: 1px solid var(--border-default); padding: 0 32px; display: flex; gap: 8px;">
             <button class="nav-item active detail-tab-btn" data-detail-tab="overview" type="button">Overview</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="ai-summary" type="button"><i data-lucide="sparkles" style="width: 12px; height: 12px; margin-right: 4px; display: inline-block; vertical-align: -1px;"></i>AI Summary</button>
             <button class="nav-item detail-tab-btn" data-detail-tab="timeline" type="button">Timeline</button>
             <button class="nav-item detail-tab-btn" data-detail-tab="evidence" type="button">Evidence</button>
             <button class="nav-item detail-tab-btn" data-detail-tab="sessions" type="button">Streams</button>
             <button class="nav-item detail-tab-btn" data-detail-tab="tls" type="button">TLS</button>
             <button class="nav-item detail-tab-btn" data-detail-tab="findings" type="button">Findings</button>
+            <button class="nav-item detail-tab-btn" data-detail-tab="knowledge-graph" type="button"><i data-lucide="network" style="width: 12px; height: 12px; margin-right: 4px; display: inline-block; vertical-align: -1px;"></i>Knowledge Graph</button>
             <button class="nav-item detail-tab-btn" data-detail-tab="agent-log" type="button">Agent</button>
           </div>
 
@@ -468,6 +473,76 @@
             <div class="data-table-card" style="padding: 24px;">
               <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 16px;">Top Anomaly Attribution Features (SHAP-style)</h3>
               <div id="ml-top-features-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- VIEW: EVIDENCE KNOWLEDGE GRAPH                          -->
+        <!-- ======================================================= -->
+        <div class="view-pane" id="view-knowledge-graph">
+          <div class="view-header-strip">
+            <div>
+              <h2 class="view-header-title">Forensic Evidence Knowledge Graph</h2>
+              <p class="view-header-sub">Interactive topological graph linking Artifacts &rarr; Streams &rarr; Tool Executions &rarr; Evidence Nodes &rarr; ML Metrics &rarr; Findings.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="kg-global-inv-select" class="table-search-input" style="width: 260px; padding: 6px 10px; font-weight: 600;">
+                <option value="">Select Investigation...</option>
+              </select>
+              <button class="btn-secondary-light" id="btn-kg-global-refresh" type="button" title="Refresh Graph">
+                <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Refresh
+              </button>
+            </div>
+          </div>
+
+          <div class="view-body-padding" style="padding-top: 16px;">
+            <div class="kg-card-container">
+              <!-- Controls Bar -->
+              <div class="kg-toolbar-row">
+                <div class="kg-legend-group">
+                  <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#3B82F6;"></span> Artifact</span>
+                  <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#6366F1;"></span> Stream</span>
+                  <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#0EA5E9;"></span> Tool Execution</span>
+                  <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#10B981;"></span> Evidence Node</span>
+                  <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#8B5CF6;"></span> ML Attribution</span>
+                  <span class="kg-legend-item"><span class="kg-legend-dot" style="background:#EF4444;"></span> Finding</span>
+                </div>
+                <div class="kg-controls-group">
+                  <input type="text" id="kg-search-filter" class="table-search-input" placeholder="Search node or label..." style="width: 180px; padding: 4px 8px; font-size: 12px;">
+                  <button class="btn-secondary-light" id="btn-kg-zoom-in" type="button" title="Zoom In" style="padding: 4px 8px;">
+                    <i data-lucide="zoom-in" style="width: 13px; height: 13px;"></i>
+                  </button>
+                  <button class="btn-secondary-light" id="btn-kg-zoom-out" type="button" title="Zoom Out" style="padding: 4px 8px;">
+                    <i data-lucide="zoom-out" style="width: 13px; height: 13px;"></i>
+                  </button>
+                  <button class="btn-secondary-light" id="btn-kg-reset" type="button" title="Reset View" style="padding: 4px 8px;">
+                    <i data-lucide="maximize-2" style="width: 13px; height: 13px;"></i>
+                  </button>
+                  <button class="btn-secondary-light" id="btn-kg-physics" type="button" title="Toggle Physics" style="padding: 4px 8px;">
+                    <i data-lucide="pause" style="width: 13px; height: 13px;"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Canvas & Node Inspector Split -->
+              <div class="kg-main-layout">
+                <div class="kg-canvas-wrapper" id="kg-global-canvas-wrap">
+                  <canvas id="kg-global-canvas"></canvas>
+                  <div class="kg-canvas-hint">Drag nodes &bull; Scroll to zoom &bull; Click node to inspect details &bull; Click Evidence to open Drawer</div>
+                </div>
+                <div class="kg-inspector-panel" id="kg-global-inspector">
+                  <div class="kg-inspector-header">
+                    <span id="kg-node-category-badge" class="badge badge-neutral">Node Details</span>
+                    <strong id="kg-node-title" style="font-size: 13px; color: #111111;">Select a node</strong>
+                  </div>
+                  <div class="kg-inspector-body" id="kg-node-details">
+                    <div style="color: var(--text-tertiary); font-size: 12px; text-align: center; padding: 40px 10px;">
+                      Click any node in the knowledge graph to view cryptographic claims, SHA-256 signatures, execution timings, or raw JSON properties.
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

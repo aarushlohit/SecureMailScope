@@ -26,3 +26,14 @@ class ToolExecutionError(SecureMailScopeException):
 class HypothesisStateError(SecureMailScopeException):
     """Raised on invalid hypothesis state transitions."""
     pass
+
+
+class EvidenceMutationError(SecureMailScopeException):
+    """Raised when an illegal attempt to modify, overwrite, or delete immutable evidence occurs."""
+    pass
+
+
+class LedgerTamperError(SecureMailScopeException):
+    """Raised when evidence ledger hash-chain tampering or corruption is detected."""
+    pass
+

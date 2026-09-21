@@ -28,7 +28,14 @@ class FindingValidator:
 
         missing_evidence = []
         mismatched_investigation = []
+        mismatched_user = []
         missing_provenance = []
+        tampered_evidence = []
+
+        inv = self.ledger.get_investigation(finding.investigation_id)
+        finding_user_id = getattr(inv, "user_id", None) if inv else None
+
+        from securemailscope.evidence.hasher import compute_hash_for_evidence, GENESIS_HASH
 
         for eid in finding.evidence_ids:
             ev = self.ledger.get_evidence(eid)
@@ -39,8 +46,17 @@ class FindingValidator:
             if ev.investigation_id != finding.investigation_id:
                 mismatched_investigation.append(eid)
 
+            if finding_user_id and ev.user_id and ev.user_id != finding_user_id:
+                mismatched_user.append((eid, ev.user_id, finding_user_id))
+
             if not ev.provenance_chain or len(ev.provenance_chain) == 0:
                 missing_provenance.append(eid)
+
+            # Cryptographic hash verification if present
+            if ev.entry_hash:
+                expected_hash = compute_hash_for_evidence(ev, ev.previous_entry_hash or GENESIS_HASH)
+                if ev.entry_hash != expected_hash:
+                    tampered_evidence.append(eid)
 
         if missing_evidence:
             msg = f"FINDING REJECTED: Evidence IDs do not exist in Ledger: {missing_evidence}"
@@ -50,8 +66,16 @@ class FindingValidator:
             msg = f"FINDING REJECTED: Evidence IDs belong to a different investigation: {mismatched_investigation}"
             raise EvidenceValidationError(msg)
 
+        if mismatched_user:
+            msg = f"FINDING REJECTED: Cross-user evidence citation detected: {mismatched_user}"
+            raise EvidenceValidationError(msg)
+
         if missing_provenance:
             msg = f"FINDING REJECTED: Evidence IDs lack valid provenance chains: {missing_provenance}"
+            raise EvidenceValidationError(msg)
+
+        if tampered_evidence:
+            msg = f"FINDING REJECTED: Supporting evidence failed cryptographic integrity verification: {tampered_evidence}"
             raise EvidenceValidationError(msg)
 
         # Mark finding as verified once validated against persisted evidence (unless explicitly inconclusive)
@@ -59,3 +83,4 @@ class FindingValidator:
             finding.status = FindingStatus.VERIFIED
         self.ledger.save_finding(finding)
         return True, f"Finding '{finding.finding_id}' successfully verified with {len(finding.evidence_ids)} evidence items."
+

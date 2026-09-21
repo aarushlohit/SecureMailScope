@@ -1,0 +1,17 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+
+=================================================================
+      SECUREMAILSCOPE — DATABASE INTEGRITY AUDIT
+=================================================================
+[PASS] User email uniqueness: No duplicate accounts.
+[PASS] User-Investigation FK integrity: No orphan investigations.
+[PASS] Evidence-Investigation FK integrity: Zero orphan evidence records.
+[PASS] Finding-Investigation FK integrity: Zero orphan findings.
+[PASS] Finding Evidence Grounding: All findings cite valid Evidence IDs.
+[PASS] Investigation Isolation: No cross-investigation evidence leakage.
+[PASS] Forensic Session FK integrity: Zero orphan sessions.
+-----------------------------------------------------------------
+[SUCCESS] All database referential integrity checks passed cleanly.
+=================================================================
+

@@ -3,6 +3,7 @@ SecureMailScope - Google Gemini Fallback LLM Provider
 """
 import json
 import time
+import uuid
 import asyncio
 from typing import AsyncIterator, Dict, Any, Optional
 import httpx
@@ -32,6 +33,20 @@ class GeminiProvider(LLMProvider):
         self.api_key = api_key or config.gemini_api_key
         self.model = model or config.gemini_model or "gemini-1.5-flash"
         self.timeout = timeout
+
+    async def health(self) -> HealthStatus:
+        if not self.api_key:
+            return HealthStatus(provider="gemini", model=self.model, configured=False, healthy=False)
+        try:
+            t0 = time.perf_counter()
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}?key={self.api_key}"
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                res = await client.get(url)
+                lat = (time.perf_counter() - t0) * 1000
+                is_ok = res.status_code == 200
+                return HealthStatus(provider="gemini", model=self.model, configured=True, healthy=is_ok, latency_ms=lat)
+        except Exception:
+            return HealthStatus(provider="gemini", model=self.model, configured=True, healthy=False)
 
     def _convert_messages(self, messages):
         contents = []
@@ -63,8 +78,16 @@ class GeminiProvider(LLMProvider):
                 "maxOutputTokens": request.max_tokens
             }
         }
-        if system_instruction:
-            payload["systemInstruction"] = system_instruction
+        if request.tools:
+            func_decls = []
+            for t in request.tools:
+                fn = t.get("function", t)
+                func_decls.append({
+                    "name": fn.get("name"),
+                    "description": fn.get("description", ""),
+                    "parameters": fn.get("parameters", {"type": "object", "properties": {}})
+                })
+            payload["tools"] = [{"functionDeclarations": func_decls}]
 
         start_time = time.perf_counter()
         try:
@@ -77,9 +100,22 @@ class GeminiProvider(LLMProvider):
                     candidates = data.get("candidates", [])
                     text = ""
                     finish_reason = "stop"
+                    tool_calls = []
                     if candidates:
                         parts = candidates[0].get("content", {}).get("parts", [])
-                        text = "".join(p.get("text", "") for p in parts)
+                        for p in parts:
+                            if "text" in p:
+                                text += p.get("text", "")
+                            if "functionCall" in p:
+                                fc = p["functionCall"]
+                                tool_calls.append({
+                                    "id": f"call_{uuid.uuid4().hex[:8]}",
+                                    "type": "function",
+                                    "function": {
+                                        "name": fc.get("name"),
+                                        "arguments": json.dumps(fc.get("args", {}))
+                                    }
+                                })
                         finish_reason = candidates[0].get("finishReason", "stop")
 
                     usage_meta = data.get("usageMetadata", {})
@@ -90,6 +126,7 @@ class GeminiProvider(LLMProvider):
                         model=model,
                         provider="gemini",
                         latency_ms=latency,
+                        tool_calls=tool_calls if tool_calls else None,
                         usage=TokenUsage(
                             prompt_tokens=usage_meta.get("promptTokenCount", 0),
                             completion_tokens=usage_meta.get("candidatesTokenCount", 0),

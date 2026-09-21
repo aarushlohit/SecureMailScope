@@ -45,6 +45,14 @@ class SeverityLevel(str, Enum):
     LOW = "low"
     INFORMATIONAL = "informational"
 
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.lower() == value.lower() or member.name.lower() == value.lower():
+                    return member
+        return None
+
 
 class EvidenceType(str, Enum):
     # Standard Evidence Classifications
@@ -57,7 +65,17 @@ class EvidenceType(str, Enum):
     NOT_OBSERVABLE = "NOT_OBSERVABLE"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
 
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value.lower() == value.lower() or member.name.lower() == value.lower():
+                    return member
+        return None
+
     # Specific forensic evidence types
+    PROTOCOL_ANOMALY = "protocol_anomaly"
+    CRYPTO_RULE_TRIGGERED = "crypto_rule_triggered"
     CAPTURE_METADATA = "capture_metadata"
     CAPTURE_COMPLETENESS = "capture_completeness"
     PROTOCOL_IDENTIFIED = "protocol_identified"
@@ -74,7 +92,6 @@ class EvidenceType(str, Enum):
     KEY_EXCHANGE_DETECTED = "key_exchange_detected"
     CERTIFICATE_EXTRACTED = "certificate_extracted"
     CERTIFICATE_VALIDATION = "certificate_validation"
-    CRYPTO_RULE_TRIGGERED = "crypto_rule_triggered"
     ML_PREDICTION = "ml_prediction"
     EXTERNAL_INTEL = "external_intel"
 
@@ -82,18 +99,23 @@ class EvidenceType(str, Enum):
 class Evidence(BaseModel):
     evidence_id: str
     investigation_id: str
+    user_id: Optional[str] = None
     type: EvidenceType
     claim: str
     source_tool: str
-    tool_version: str
+    tool_version: str = "1.0"
     tool_args: Dict[str, Any] = Field(default_factory=dict)
-    raw_artifact_ref: str
+    raw_artifact_ref: str = ""
     timestamp: str = Field(default_factory=utc_now_iso)
+
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
     severity: SeverityLevel = SeverityLevel.INFORMATIONAL
     hypothesis_id: Optional[str] = None
     provenance_chain: List[str] = Field(default_factory=list)
     details: Dict[str, Any] = Field(default_factory=dict)
+    previous_entry_hash: Optional[str] = None
+    entry_hash: Optional[str] = None
+
 
 
 class ToolExecution(BaseModel):

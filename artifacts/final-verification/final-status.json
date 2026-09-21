@@ -1,0 +1,67 @@
+{
+  "status": "COMPLETE",
+  "verified_at": "2026-09-18",
+  "test_suite": {
+    "total_collected": 81,
+    "passed": 81,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 6,
+    "duration_seconds": 429.57,
+    "status": "PASS"
+  },
+  "ledger": {
+    "status": "VALID",
+    "evidence_rows_checked": 1163,
+    "invalid_hashes": 0,
+    "broken_links": 0,
+    "orphan_evidence": 0,
+    "invalid_finding_citations": 0,
+    "cross_investigation_citations": 0,
+    "cross_user_citations": 0
+  },
+  "providers": {
+    "nvidia_nim_roundtrip": {
+      "model": "meta/llama-3.2-11b-vision-instruct",
+      "status": "PASS",
+      "tool_calling": "check_completeness",
+      "local_tool_execution": "verified",
+      "final_model_synthesis": "verified"
+    },
+    "gemini_roundtrip": {
+      "model": "gemini-2.5-flash-lite",
+      "status": "PASS",
+      "function_calling": "check_completeness",
+      "local_tool_execution": "verified",
+      "final_model_synthesis": "verified"
+    }
+  },
+  "security_and_auth": {
+    "authentication_status": "PASS",
+    "database_backed_sessions": "PASS",
+    "session_revocation_on_logout": "PASS",
+    "cross_user_idor_isolation": "PASS",
+    "websocket_authentication": "PASS",
+    "evidence_ledger_immutability_triggers": "PASS",
+    "cors_status": "PASS"
+  },
+  "reports": {
+    "json_report_status": "PASS",
+    "html_report_status": "PASS",
+    "pdf_report_status": "PASS"
+  },
+  "limitations": [
+    "External OSINT intel query (/api/intel/query) and ML benchmark endpoints are publicly accessible for demonstration and diagnostic testing without bearer tokens.",
+    "Session cookies omit secure=True by default to allow local development over HTTP; production deployments must configure secure=True behind an HTTPS reverse proxy.",
+    "Third-party external LLM providers are subject to upstream network latency and quota policies; the system automatically falls back to local deterministic forensics if unavailable."
+  ],
+  "exact_commands_used": {
+    "full_test_suite": ".venv/bin/pytest tests/ -v",
+    "ledger_audit": ".venv/bin/python -m securemailscope.cli verify-ledger",
+    "nvidia_live_validation": ".venv/bin/python scripts/live_nvidia_validation.py",
+    "gemini_live_validation": ".venv/bin/python scripts/live_gemini_validation.py",
+    "json_report": ".venv/bin/python -m securemailscope.cli report INV-REAL-SMTP-01 --format json",
+    "html_report": ".venv/bin/python -m securemailscope.cli report INV-REAL-SMTP-01 --format html",
+    "pdf_report": ".venv/bin/python -m securemailscope.cli report INV-REAL-SMTP-01 --format pdf"
+  }
+}

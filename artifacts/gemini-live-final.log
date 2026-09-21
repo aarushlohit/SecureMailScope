@@ -1,0 +1,19 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+=================================================================
+     SECUREMAILSCOPE — LIVE GOOGLE GEMINI VALIDATION
+=================================================================
+API Key:       AQ.Ab8...JUQQ (53 chars)
+Model:         gemini-3.6-flash
+-----------------------------------------------------------------
+[1/3] Testing Gemini API health...
+      Connectivity: OK (healthy=True, latency=924.3ms)
+[2/3] Sending minimal test completion...
+      Response received in 7166.6ms from gemini-3.6-flash
+      Snippet: ...
+[3/3] Testing structured function/tool calling...
+      Tool calls returned: 1
+      [CALL] Tool: check_completeness | Args: {"file_path": "samples/wireshark_real_smtp.pcap"}
+
+[SUCCESS] Google Gemini passed all 3 live validation stages.
+=================================================================

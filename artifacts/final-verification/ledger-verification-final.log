@@ -1,0 +1,17 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+
+=================================================================
+      SECUREMAILSCOPE — EVIDENCE LEDGER INTEGRITY AUDIT
+=================================================================
+Ledger entries checked: 1163
+Hash-chain entries checked: 1163
+Invalid hashes: 0
+Broken links: 0
+Orphan evidence: 0
+Invalid finding citations: 0
+Cross-investigation citations: 0
+Cross-user citations: 0
+Status: VALID
+=================================================================
+

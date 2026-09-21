@@ -23,10 +23,41 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class UserModel(Base):
+    __tablename__ = "users"
+
+    user_id = Column(String(64), primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    full_name = Column(String(255), nullable=False)
+    role = Column(String(32), default="analyst")  # analyst, admin, auditor
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=utc_now)
+
+    investigations = relationship("InvestigationModel", back_populates="user")
+    auth_sessions = relationship("AuthSessionModel", back_populates="user", cascade="all, delete-orphan")
+
+
+class AuthSessionModel(Base):
+    __tablename__ = "auth_sessions"
+
+    session_id = Column(String(64), primary_key=True, index=True)
+    token_hash = Column(String(64), unique=True, nullable=False, index=True)
+    user_id = Column(String(64), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    last_used_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True, index=True)
+    user_agent = Column(String(255), nullable=True)
+
+    user = relationship("UserModel", back_populates="auth_sessions")
+
+
 class InvestigationModel(Base):
     __tablename__ = "investigations"
 
     investigation_id = Column(String(64), primary_key=True, index=True)
+    user_id = Column(String(64), ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True, index=True)
     artifact_name = Column(String(255), nullable=False)
     artifact_path = Column(String(512), nullable=False)
     artifact_sha256 = Column(String(64), default="")
@@ -53,6 +84,7 @@ class InvestigationModel(Base):
     recommendations = Column(JSON, default=list)
 
     # Relationships
+    user = relationship("UserModel", back_populates="investigations")
     artifacts = relationship("ArtifactModel", back_populates="investigation", cascade="all, delete-orphan")
     sessions = relationship("ForensicSessionModel", back_populates="investigation", cascade="all, delete-orphan")
     evidence = relationship("EvidenceModel", back_populates="investigation", cascade="all, delete-orphan")
@@ -68,6 +100,7 @@ class EvidenceModel(Base):
 
     evidence_id = Column(String(64), primary_key=True, index=True)
     investigation_id = Column(String(64), ForeignKey("investigations.investigation_id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(64), ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True, index=True)
     type = Column(String(64), nullable=False, index=True)  # OBSERVED, DERIVED, ML_CLASSIFICATION, etc.
     claim = Column(Text, nullable=False)
     source_tool = Column(String(64), nullable=False)
@@ -80,8 +113,12 @@ class EvidenceModel(Base):
     hypothesis_id = Column(String(64), nullable=True, index=True)
     provenance_chain = Column(JSON, default=list)
     details = Column(JSON, default=dict)
+    previous_entry_hash = Column(String(64), nullable=True, index=True)
+    entry_hash = Column(String(64), nullable=True, index=True)
 
     investigation = relationship("InvestigationModel", back_populates="evidence")
+    user = relationship("UserModel")
+
 
 
 class FindingModel(Base):
@@ -276,4 +313,3 @@ class ForensicSessionModel(Base):
     details = Column(JSON, default=dict)
 
     investigation = relationship("InvestigationModel", back_populates="sessions")
-

@@ -124,9 +124,15 @@ def test_real_wireshark_smtps_ssl_handshake(tmp_path):
 
 
 def test_api_upload_rejects_non_pcap():
-    """Upload endpoint must reject non-pcap files with 400 Bad Request."""
+    """Upload endpoint must reject non-pcap files with 400 Bad Request.
+    Auth is required first; an unauthenticated request returns 401, not 400.
+    We authenticate and then submit invalid files to verify the security validation layer.
+    """
+    from tests.conftest import make_authed_client
+    authed = make_authed_client()
+
     fake_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
-    resp = client.post(
+    resp = authed.post(
         "/api/investigations",
         files={"file": ("screenshot.png", fake_png, "image/png")},
     )
@@ -134,7 +140,7 @@ def test_api_upload_rejects_non_pcap():
     assert "Invalid file extension" in resp.text or "Only .pcap" in resp.text or "invalid" in resp.text.lower()
 
     fake_text = b"This is a plain text file pretending to be network traffic."
-    resp2 = client.post(
+    resp2 = authed.post(
         "/api/investigations",
         files={"file": ("fake.pcap", fake_text, "application/octet-stream")},
     )

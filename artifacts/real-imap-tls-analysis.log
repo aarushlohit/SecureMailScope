@@ -1,0 +1,25 @@
+[*] Analyzing capture: wireshark_real_imap_ssl.pcapng (Investigation ID: INV-0EC316C8)...
+
+============================================================
+SecureMailScope — Real Forensic Analysis
+============================================================
+Artifact:         wireshark_real_imap_ssl.pcapng
+SHA256:           c988a888d2a6f93d70d383eef4b8cd0c27e440266d0f61980f33b94da9a3ad61
+Packets:          41
+Protocols:        IMAP
+Email Sessions:   1
+Capture Quality:  80.0%
+Security Posture: 75.0/100 [LOW RISK]
+Investigation:    INV-0EC316C8
+------------------------------------------------------------
+Verified Findings (1):
+  [HIGH  ] Expired X.509 Certificate
+          Supporting Evidence: E-14616D, E-86D2C9, E-476C20, E-B8CBCB, E-A583F8
+          Remediation: Renew and deploy a valid SSL/TLS certificate from an accredited Certificate Authority.
+------------------------------------------------------------
+Forensic Reports Generated:
+  - JSON: /home/aarush/Myoffice/hackathons/SIH/reports/INV-0EC316C8_report.json
+  - HTML: /home/aarush/Myoffice/hackathons/SIH/reports/INV-0EC316C8_report.html
+  - PDF:  /home/aarush/Myoffice/hackathons/SIH/reports/INV-0EC316C8_report.pdf
+============================================================
+

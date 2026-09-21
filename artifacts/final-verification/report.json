@@ -1,0 +1,1557 @@
+{
+  "meta": {
+    "report_format": "SecureMailScope-Forensic-Dossier-v1.0",
+    "problem_statement": "SIH26159",
+    "organization": "National Technical Research Organisation (NTRO)",
+    "generated_at": "2026-09-18T11:58:08.652368+00:00",
+    "investigation_id": "INV-6D9C84A0"
+  },
+  "investigation": {
+    "investigation_id": "INV-6D9C84A0",
+    "artifact_name": "INV-6D9C84A0_wireshark_real_smtp.pcap",
+    "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+    "artifact_sha256": "17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab",
+    "artifact_md5": "c06e944f3cc2c3f305bb37e23cfd6908",
+    "artifact_size": 27850,
+    "file_type": "pcap",
+    "status": "COMPLETED",
+    "created_at": "2026-09-18T11:58:08.652368+00:00",
+    "completed_at": null,
+    "packet_count": 60,
+    "duration_seconds": 9.198,
+    "completeness_percentage": 80.0,
+    "protocols_detected": [
+      "SMTP"
+    ],
+    "streams_analyzed": 1,
+    "posture": {
+      "overall_posture_score": 70.0,
+      "risk_level": "MEDIUM RISK",
+      "confidence_score": 78.4,
+      "score_deductions": [
+        {
+          "source": "Rule: RULE-CLEARTEXT-AUTH",
+          "points": -30.0,
+          "reason": "Cleartext authentication credentials transmitted."
+        }
+      ],
+      "bonus_points": [],
+      "ml_risk_probability": 0.9994,
+      "ml_anomaly_contribution": 10.0
+    },
+    "evidence_ids": [
+      "E-9CDF83",
+      "E-8B46A8",
+      "E-10AE45",
+      "E-F03E56",
+      "E-A7D7F7",
+      "E-6A0386",
+      "E-75BB18",
+      "E-F311B3"
+    ],
+    "finding_ids": [
+      "FND-8A38A5"
+    ],
+    "hypothesis_ids": [],
+    "limitations": [],
+    "recommendations": [
+      "Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH."
+    ]
+  },
+  "scorecard": {
+    "overall_posture_score": 70.0,
+    "risk_level": "MEDIUM RISK",
+    "confidence_score": 78.4,
+    "score_deductions": [
+      {
+        "source": "Rule: RULE-CLEARTEXT-AUTH",
+        "points": -30.0,
+        "reason": "Cleartext authentication credentials transmitted."
+      }
+    ],
+    "bonus_points": [],
+    "ml_risk_probability": 0.9994,
+    "ml_anomaly_contribution": 10.0
+  },
+  "findings": [
+    {
+      "finding_id": "FND-8A38A5",
+      "investigation_id": "INV-6D9C84A0",
+      "title": "Cleartext Authentication Transmitted",
+      "description": "User credentials (LOGIN/AUTH/USER/PASS) were observed unencrypted across the network wire.",
+      "severity": "high",
+      "status": "VERIFIED",
+      "confidence": 1.0,
+      "evidence_ids": [
+        "E-9CDF83",
+        "E-8B46A8",
+        "E-10AE45",
+        "E-F03E56",
+        "E-A7D7F7"
+      ],
+      "rule_id": "RULE-CLEARTEXT-AUTH",
+      "hypothesis_id": null,
+      "remediation": "Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH.",
+      "created_at": "2026-09-18T11:59:01.071889+00:00"
+    }
+  ],
+  "hypotheses": [],
+  "evidence_ledger": [
+    {
+      "evidence_id": "E-9CDF83",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "OBSERVED",
+      "claim": "PCAP capture 'INV-6D9C84A0_wireshark_real_smtp.pcap' loaded: 60 packets, SHA256 17ad230db1b6fd5d...",
+      "source_tool": "CaptureEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-6D9C84A0_wireshark_real_smtp.pcap",
+      "timestamp": "2026-09-18T11:58:09.069879+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "pcap.inspect"
+      ],
+      "details": {
+        "artifact_name": "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "artifact_sha256": "17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab",
+        "artifact_md5": "c06e944f3cc2c3f305bb37e23cfd6908",
+        "artifact_size": 27850,
+        "file_type": "pcap",
+        "packet_count": 60,
+        "start_time": 1254722767.49206,
+        "end_time": 1254722776.690444,
+        "duration_seconds": 9.198,
+        "completeness": {
+          "completeness_percentage": 80.0,
+          "total_tcp_packets": 53,
+          "tcp_streams_count": 1,
+          "sequence_gaps": 0,
+          "retransmissions": 18,
+          "truncated_packets": 0,
+          "is_complete": false,
+          "assessment": "MODERATE_PARTIAL"
+        },
+        "capinfos_metadata": {
+          "file_name": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+          "number_of_packets": "60",
+          "file_size": "27 kB",
+          "data_size": "26 kB",
+          "capture_duration": "9.198384 seconds"
+        },
+        "protocols_observed": [
+          "IPV4",
+          "TCP"
+        ],
+        "snaplen": "65535 bytes",
+        "data_size": "26 kB"
+      },
+      "previous_entry_hash": "c2b390c4182ddff40cd385ef807333032939b778bbdbfea812fed1f246abdc05",
+      "entry_hash": "359d88570148ceeb663d3bd39c749ead24fc101d13ef1c948f65af878ff3425c"
+    },
+    {
+      "evidence_id": "E-8B46A8",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "OBSERVED",
+      "claim": "Discovered 1 TCP stream(s) with protocols: SMTP.",
+      "source_tool": "TCPReconstructionEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/streams",
+      "timestamp": "2026-09-18T11:58:10.437720+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "pcap.sessions"
+      ],
+      "details": {
+        "protocols": [
+          "SMTP"
+        ],
+        "stream_count": 1
+      },
+      "previous_entry_hash": "359d88570148ceeb663d3bd39c749ead24fc101d13ef1c948f65af878ff3425c",
+      "entry_hash": "f1e35988d517a1d97ccaa7fd5ac4526613630c74c2625e1965aebae99c3da4fb"
+    },
+    {
+      "evidence_id": "E-10AE45",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "starttls_advertised",
+      "claim": "SMTP Server advertised STARTTLS capability in EHLO response.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-18T11:58:11.579095+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "TCP-0001",
+        "EHLO"
+      ],
+      "details": {
+        "advertised_extensions": [
+          "Hello GP [122.162.143.157]",
+          "52428800",
+          "PLAIN LOGIN",
+          "HELP",
+          "OK",
+          "Accepted",
+          "OK id=1Mugho-0003Dg-Un"
+        ]
+      },
+      "previous_entry_hash": "f1e35988d517a1d97ccaa7fd5ac4526613630c74c2625e1965aebae99c3da4fb",
+      "entry_hash": "0a4869bae01f8de744397ce8e1a6ff1107ce5147c645d57183286ea3c6cc0498"
+    },
+    {
+      "evidence_id": "E-F03E56",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "OBSERVED",
+      "claim": "PCAP capture 'INV-6D9C84A0_wireshark_real_smtp.pcap' loaded: 60 packets, SHA256 17ad230db1b6fd5d...",
+      "source_tool": "CaptureEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-6D9C84A0_wireshark_real_smtp.pcap",
+      "timestamp": "2026-09-18T11:58:14.994851+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "pcap.inspect"
+      ],
+      "details": {
+        "artifact_name": "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "artifact_sha256": "17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab",
+        "artifact_md5": "c06e944f3cc2c3f305bb37e23cfd6908",
+        "artifact_size": 27850,
+        "file_type": "pcap",
+        "packet_count": 60,
+        "start_time": 1254722767.49206,
+        "end_time": 1254722776.690444,
+        "duration_seconds": 9.198,
+        "completeness": {
+          "completeness_percentage": 80.0,
+          "total_tcp_packets": 53,
+          "tcp_streams_count": 1,
+          "sequence_gaps": 0,
+          "retransmissions": 18,
+          "truncated_packets": 0,
+          "is_complete": false,
+          "assessment": "MODERATE_PARTIAL"
+        },
+        "capinfos_metadata": {
+          "file_name": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+          "number_of_packets": "60",
+          "file_size": "27 kB",
+          "data_size": "26 kB",
+          "capture_duration": "9.198384 seconds"
+        },
+        "protocols_observed": [
+          "IPV4",
+          "TCP"
+        ],
+        "snaplen": "65535 bytes",
+        "data_size": "26 kB"
+      },
+      "previous_entry_hash": "0a4869bae01f8de744397ce8e1a6ff1107ce5147c645d57183286ea3c6cc0498",
+      "entry_hash": "58be3a0d802c8861e6cb6b4f88c30ae699163055e18ee53b0fc631ad4911c81c"
+    },
+    {
+      "evidence_id": "E-A7D7F7",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "OBSERVED",
+      "claim": "Discovered 1 TCP stream(s) with protocols: SMTP.",
+      "source_tool": "TCPReconstructionEngine",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "raw_artifact_ref": "pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/streams",
+      "timestamp": "2026-09-18T11:58:23.187179+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "pcap.sessions"
+      ],
+      "details": {
+        "protocols": [
+          "SMTP"
+        ],
+        "stream_count": 1
+      },
+      "previous_entry_hash": "58be3a0d802c8861e6cb6b4f88c30ae699163055e18ee53b0fc631ad4911c81c",
+      "entry_hash": "b15d429ab7059d0f96f82bc11a626b4734917f3aca6ea7c2b310f402808cf62a"
+    },
+    {
+      "evidence_id": "E-6A0386",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "starttls_advertised",
+      "claim": "SMTP Server advertised STARTTLS capability in EHLO response.",
+      "source_tool": "SMTPAnalyzer",
+      "tool_version": "2.6.0",
+      "tool_args": {
+        "stream_id": "TCP-0001"
+      },
+      "raw_artifact_ref": "pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/TCP-0001/smtp",
+      "timestamp": "2026-09-18T11:58:28.757294+00:00",
+      "confidence": 1.0,
+      "severity": "informational",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "TCP-0001",
+        "EHLO"
+      ],
+      "details": {
+        "advertised_extensions": [
+          "Hello GP [122.162.143.157]",
+          "52428800",
+          "PLAIN LOGIN",
+          "HELP",
+          "OK",
+          "Accepted",
+          "OK id=1Mugho-0003Dg-Un"
+        ]
+      },
+      "previous_entry_hash": "b15d429ab7059d0f96f82bc11a626b4734917f3aca6ea7c2b310f402808cf62a",
+      "entry_hash": "25efd8aece4fd37c27e77091122cad3cb7230a3b56d348ad28f21cde3bfa83e6"
+    },
+    {
+      "evidence_id": "E-75BB18",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "crypto_rule_triggered",
+      "claim": "Rule Triggered [RULE-CLEARTEXT-AUTH]: Cleartext Authentication Transmitted - User credentials (LOGIN/AUTH/USER/PASS) were observed unencrypted across the network wire.",
+      "source_tool": "CryptoRuleEngine",
+      "tool_version": "2026.1",
+      "tool_args": {
+        "rule_id": "RULE-CLEARTEXT-AUTH"
+      },
+      "raw_artifact_ref": "rule://RULE-CLEARTEXT-AUTH",
+      "timestamp": "2026-09-18T11:58:59.185064+00:00",
+      "confidence": 1.0,
+      "severity": "high",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "CryptoRuleEngine",
+        "RULE-CLEARTEXT-AUTH"
+      ],
+      "details": {
+        "rule_id": "RULE-CLEARTEXT-AUTH",
+        "title": "Cleartext Authentication Transmitted",
+        "description": "User credentials (LOGIN/AUTH/USER/PASS) were observed unencrypted across the network wire.",
+        "severity": "high",
+        "triggered": true,
+        "details": {
+          "auth_in_plaintext": true
+        },
+        "remediation": "Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH."
+      },
+      "previous_entry_hash": "25efd8aece4fd37c27e77091122cad3cb7230a3b56d348ad28f21cde3bfa83e6",
+      "entry_hash": "f85356006ea07313e1c380b421707d1955d735f7fc7d998aee94690ee4dc57d8"
+    },
+    {
+      "evidence_id": "E-F311B3",
+      "investigation_id": "INV-6D9C84A0",
+      "user_id": null,
+      "type": "ML_CLASSIFICATION",
+      "claim": "XGBoost Classifier classified session as 'DEPRECATED_TLS' (Risk Probability: 99.9%, Confidence: 96.6%).",
+      "source_tool": "CryptoRiskClassifier (XGBoost)",
+      "tool_version": "3.4",
+      "tool_args": {
+        "predicted_class": "DEPRECATED_TLS"
+      },
+      "raw_artifact_ref": "ml://prediction/INV-6D9C84A0_wireshark_real_smtp.pcap",
+      "timestamp": "2026-09-18T11:59:00.318061+00:00",
+      "confidence": 0.9662,
+      "severity": "high",
+      "hypothesis_id": null,
+      "provenance_chain": [
+        "INV-6D9C84A0",
+        "INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "XGBoost",
+        "DEPRECATED_TLS"
+      ],
+      "details": {
+        "predicted_class": "DEPRECATED_TLS",
+        "class_confidence": 0.9662,
+        "risk_probability": 0.9994,
+        "is_anomalous": true,
+        "class_probabilities": {
+          "SECURE_BASELINE": 0.0006,
+          "DEPRECATED_TLS": 0.9662,
+          "WEAK_CIPHER": 0.0009,
+          "WEAK_CERTIFICATE": 0.0008,
+          "CERTIFICATE_ANOMALY": 0.0006,
+          "STARTTLS_STRIPPING": 0.0006,
+          "PLAINTEXT_FALLBACK": 0.0007,
+          "INCOMPLETE_HANDSHAKE": 0.0296
+        },
+        "top_features": [
+          {
+            "feature": "tls_version_num",
+            "value": 0.0,
+            "shap_value": 2.2001,
+            "contribution": 2.2001,
+            "direction": "risk"
+          },
+          {
+            "feature": "handshake_rtt_ms",
+            "value": 45.0,
+            "shap_value": 1.7362,
+            "contribution": 1.7362,
+            "direction": "risk"
+          },
+          {
+            "feature": "has_weak_sig",
+            "value": 0.0,
+            "shap_value": -0.0446,
+            "contribution": 0.0446,
+            "direction": "safe"
+          },
+          {
+            "feature": "cipher_strength_score",
+            "value": 0.0,
+            "shap_value": 0.0115,
+            "contribution": 0.0115,
+            "direction": "risk"
+          },
+          {
+            "feature": "has_pfs",
+            "value": 0.0,
+            "shap_value": 0.0,
+            "contribution": 0.0,
+            "direction": "safe"
+          }
+        ],
+        "extracted_features": {
+          "tls_version_num": 0.0,
+          "cipher_strength_score": 0.0,
+          "has_pfs": 0.0,
+          "cert_key_bits": 0.0,
+          "is_self_signed": 0.0,
+          "is_cert_expired": 0.0,
+          "has_weak_sig": 0.0,
+          "starttls_advertised": 1.0,
+          "starttls_requested": 0.0,
+          "starttls_accepted": 0.0,
+          "plaintext_after_starttls": 0.0,
+          "auth_in_plaintext": 1.0,
+          "capture_completeness": 80.0,
+          "handshake_rtt_ms": 45.0,
+          "stream_total_bytes": 21083.0
+        },
+        "shap": {
+          "explanation_available": true,
+          "method": "shap.TreeExplainer",
+          "top_contributors": [
+            {
+              "feature": "tls_version_num",
+              "value": 0.0,
+              "shap_value": 2.2001,
+              "contribution": 2.2001,
+              "direction": "risk"
+            },
+            {
+              "feature": "handshake_rtt_ms",
+              "value": 45.0,
+              "shap_value": 1.7362,
+              "contribution": 1.7362,
+              "direction": "risk"
+            },
+            {
+              "feature": "has_weak_sig",
+              "value": 0.0,
+              "shap_value": -0.0446,
+              "contribution": 0.0446,
+              "direction": "safe"
+            },
+            {
+              "feature": "cipher_strength_score",
+              "value": 0.0,
+              "shap_value": 0.0115,
+              "contribution": 0.0115,
+              "direction": "risk"
+            },
+            {
+              "feature": "has_pfs",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            }
+          ],
+          "all_contributors": [
+            {
+              "feature": "tls_version_num",
+              "value": 0.0,
+              "shap_value": 2.2001,
+              "contribution": 2.2001,
+              "direction": "risk"
+            },
+            {
+              "feature": "handshake_rtt_ms",
+              "value": 45.0,
+              "shap_value": 1.7362,
+              "contribution": 1.7362,
+              "direction": "risk"
+            },
+            {
+              "feature": "has_weak_sig",
+              "value": 0.0,
+              "shap_value": -0.0446,
+              "contribution": 0.0446,
+              "direction": "safe"
+            },
+            {
+              "feature": "cipher_strength_score",
+              "value": 0.0,
+              "shap_value": 0.0115,
+              "contribution": 0.0115,
+              "direction": "risk"
+            },
+            {
+              "feature": "has_pfs",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "cert_key_bits",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "is_self_signed",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "is_cert_expired",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "starttls_advertised",
+              "value": 1.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "starttls_requested",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "starttls_accepted",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "plaintext_after_starttls",
+              "value": 0.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "auth_in_plaintext",
+              "value": 1.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "capture_completeness",
+              "value": 80.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            },
+            {
+              "feature": "stream_total_bytes",
+              "value": 21083.0,
+              "shap_value": 0.0,
+              "contribution": 0.0,
+              "direction": "safe"
+            }
+          ]
+        },
+        "model_version": "CryptoRiskClassifier-v1",
+        "feature_schema_version": "v1"
+      },
+      "previous_entry_hash": "f85356006ea07313e1c380b421707d1955d735f7fc7d998aee94690ee4dc57d8",
+      "entry_hash": "a49fa0edaafea19d2ba3cfda46e0aa2491fd3c8e8c3b0f70e379a09b437a6778"
+    }
+  ],
+  "timeline": [
+    {
+      "event_id": "EVT-B4168C",
+      "timestamp": "2026-09-18T11:58:09.825071+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed pcap.inspect",
+      "detail": "pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-9CDF83",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-2A7317",
+      "timestamp": "2026-09-18T11:58:11.106819+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed pcap.sessions",
+      "detail": "pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-8B46A8",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-976650",
+      "timestamp": "2026-09-18T11:58:12.226085+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed smtp.analyze",
+      "detail": "smtp.analyze returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-10AE45",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-5CEF4E",
+      "timestamp": "2026-09-18T11:58:12.699271+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed tls.handshake",
+      "detail": "tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-1F682B",
+      "timestamp": "2026-09-18T11:58:13.169929+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed tls.certificate",
+      "detail": "tls.certificate returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-E65A11",
+      "timestamp": "2026-09-18T11:58:15.614502+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed pcap.inspect",
+      "detail": "pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-F03E56",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-B6C875",
+      "timestamp": "2026-09-18T11:58:23.944326+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed pcap.sessions",
+      "detail": "pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-A7D7F7",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-A37406",
+      "timestamp": "2026-09-18T11:58:29.707158+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed smtp.analyze",
+      "detail": "smtp.analyze returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-6A0386",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-35CD0F",
+      "timestamp": "2026-09-18T11:58:34.942329+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed imap.analyze",
+      "detail": "imap.analyze returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-E78724",
+      "timestamp": "2026-09-18T11:58:48.741973+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed pop3.analyze",
+      "detail": "pop3.analyze returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-9AACB5",
+      "timestamp": "2026-09-18T11:58:58.389430+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed tls.handshake",
+      "detail": "tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-AD4658",
+      "timestamp": "2026-09-18T11:58:59.948850+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed rules.evaluate",
+      "detail": "rules.evaluate returned status 'SUCCESS' producing 1 evidence item(s).",
+      "evidence_id": "E-75BB18",
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-1B37B4",
+      "timestamp": "2026-09-18T11:59:01.781852+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed report.generate_json",
+      "detail": "report.generate_json returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-A4C60C",
+      "timestamp": "2026-09-18T11:59:02.245138+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed report.generate_html",
+      "detail": "report.generate_html returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    },
+    {
+      "event_id": "EVT-4508A0",
+      "timestamp": "2026-09-18T11:59:02.875131+00:00",
+      "phase": "TOOL_EXECUTION",
+      "actor": "TOOL_GATEWAY",
+      "action": "Executed report.generate_pdf",
+      "detail": "report.generate_pdf returned status 'SUCCESS' producing 0 evidence item(s).",
+      "evidence_id": null,
+      "hypothesis_id": null
+    }
+  ],
+  "tool_executions": [
+    {
+      "execution_id": "EXEC-20FF8C7F",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "pcap.inspect",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:09Z",
+      "end_time": "2026-09-18T11:58:09Z",
+      "stdout_summary": "Completed in 407.05ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-9CDF83"
+      ]
+    },
+    {
+      "execution_id": "EXEC-6856BFE2",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "pcap.sessions",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:10Z",
+      "end_time": "2026-09-18T11:58:10Z",
+      "stdout_summary": "Completed in 409.62ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-8B46A8"
+      ]
+    },
+    {
+      "execution_id": "EXEC-D9A9D437",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "smtp.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:11Z",
+      "end_time": "2026-09-18T11:58:11Z",
+      "stdout_summary": "Completed in 238.27ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-10AE45"
+      ]
+    },
+    {
+      "execution_id": "EXEC-1757DC6D",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "tls.handshake",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:12Z",
+      "end_time": "2026-09-18T11:58:12Z",
+      "stdout_summary": "Completed in 10.92ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-597160BD",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "tls.certificate",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:12Z",
+      "end_time": "2026-09-18T11:58:12Z",
+      "stdout_summary": "Completed in 11.0ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-BD39636D",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "pcap.inspect",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:14Z",
+      "end_time": "2026-09-18T11:58:15Z",
+      "stdout_summary": "Completed in 254.4ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-F03E56"
+      ]
+    },
+    {
+      "execution_id": "EXEC-5B93B8C0",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "pcap.sessions",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:23Z",
+      "end_time": "2026-09-18T11:58:23Z",
+      "stdout_summary": "Completed in 396.78ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-A7D7F7"
+      ]
+    },
+    {
+      "execution_id": "EXEC-9EDF0155",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "smtp.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:28Z",
+      "end_time": "2026-09-18T11:58:29Z",
+      "stdout_summary": "Completed in 396.33ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-6A0386"
+      ]
+    },
+    {
+      "execution_id": "EXEC-70A18C4C",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "imap.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:34Z",
+      "end_time": "2026-09-18T11:58:34Z",
+      "stdout_summary": "Completed in 16.64ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-B30BCB78",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "pop3.analyze",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:48Z",
+      "end_time": "2026-09-18T11:58:48Z",
+      "stdout_summary": "Completed in 15.87ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-1C484021",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "tls.handshake",
+      "tool_version": "2.6.0",
+      "args": {
+        "file_path": "/home/aarush/Myoffice/hackathons/SIH/data/INV-6D9C84A0_wireshark_real_smtp.pcap",
+        "stream_id": "TCP-0001"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:57Z",
+      "end_time": "2026-09-18T11:58:57Z",
+      "stdout_summary": "Completed in 19.24ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-C8941E2C",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "rules.evaluate",
+      "tool_version": "2.6.0",
+      "args": {
+        "forensic_context": {
+          "tls": {
+            "handshake_observed": false,
+            "client_hello_observed": false,
+            "server_hello_observed": false,
+            "handshake_completed": false,
+            "record_version": null,
+            "negotiated_version": null,
+            "client_offered_versions": [],
+            "client_cipher_count": 0,
+            "selected_cipher": null,
+            "sni": null,
+            "alpn": [],
+            "supported_groups": [],
+            "key_share_group": null,
+            "has_forward_secrecy": false,
+            "certificate_observable": false,
+            "certificate_count": 0,
+            "certificate_note": "",
+            "handshake_rtt_ms": null
+          },
+          "smtp": {
+            "states_traversed": [
+              "CONNECTED",
+              "GREETING",
+              "EHLO",
+              "STARTTLS_ADVERTISED",
+              "AUTH",
+              "MAIL_TRANSACTION"
+            ],
+            "banner": "220-xc90.websitewelcome.com ESMTP Exim 4.69 #1 Mon, 05 Oct 2009 01:05:54 -0500",
+            "client_ehlo": "EHLO GP",
+            "advertised_extensions": [
+              "Hello GP [122.162.143.157]",
+              "52428800",
+              "PLAIN LOGIN",
+              "HELP",
+              "OK",
+              "Accepted",
+              "OK id=1Mugho-0003Dg-Un"
+            ],
+            "starttls_advertised": true,
+            "starttls_requested": false,
+            "starttls_accepted": false,
+            "starttls_stripped": false,
+            "tls_handshake_observed": false,
+            "plaintext_after_starttls": false,
+            "auth_in_plaintext": true,
+            "mail_from": "MAIL FROM: <gurpartap@patriots.in>",
+            "rcpt_to": [
+              "RCPT TO: <raj_deol2002in@yahoo.co.in>"
+            ],
+            "anomalies": [
+              "Cleartext SMTP AUTH attempted over unencrypted channel.",
+              "Client bypassed advertised STARTTLS; sent credentials/mail in cleartext."
+            ],
+            "transition_log": [
+              {
+                "state": "GREETING",
+                "line": "220-xc90.websitewelcome.com ESMTP Exim 4.69 #1 Mon, 05 Oct 2009 01:05:54 -0500",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "EHLO GP",
+                "dir": "C->S"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-xc90.websitewelcome.com Hello GP [122.162.143.157]",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-SIZE 52428800",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-PIPELINING",
+                "dir": "S->C"
+              },
+              {
+                "state": "EHLO",
+                "line": "250-AUTH PLAIN LOGIN",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250-STARTTLS",
+                "dir": "S->C"
+              },
+              {
+                "state": "STARTTLS_ADVERTISED",
+                "line": "250 HELP",
+                "dir": "S->C"
+              },
+              {
+                "state": "AUTH",
+                "line": "AUTH ***",
+                "dir": "C->S"
+              },
+              {
+                "state": "MAIL_TRANSACTION",
+                "line": "MAIL FROM: <gurpartap@patriots.in>",
+                "dir": "C->S"
+              },
+              {
+                "state": "MAIL_TRANSACTION",
+                "line": "250 OK",
+                "dir": "S->C"
+              },
+              {
+                "state": "MAIL_TRANSACTION",
+                "line": "RCPT TO: <raj_deol2002in@yahoo.co.in>",
+                "dir": "C->S"
+              },
+              {
+                "state": "MAIL_TRANSACTION",
+                "line": "250 Accepted",
+                "dir": "S->C"
+              },
+              {
+                "state": "MAIL_TRANSACTION",
+                "line": "250 OK id=1Mugho-0003Dg-Un",
+                "dir": "S->C"
+              }
+            ]
+          },
+          "imap": {},
+          "pop3": {},
+          "certificate": {},
+          "completeness": {
+            "completeness_percentage": 80.0,
+            "total_tcp_packets": 53,
+            "tcp_streams_count": 1,
+            "sequence_gaps": 0,
+            "retransmissions": 18,
+            "truncated_packets": 0,
+            "is_complete": false,
+            "assessment": "MODERATE_PARTIAL"
+          },
+          "stream": {
+            "stream_id": "TCP-0001",
+            "client_endpoint": "10.10.1.4:1470",
+            "server_endpoint": "74.53.140.153:25",
+            "protocol_hint": "SMTP",
+            "segment_count": 33,
+            "total_bytes": 21083,
+            "duration_seconds": 7.5777,
+            "transcript": [
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727088,
+                "timestamp": 1254722768.2197,
+                "length": 181,
+                "preview": "220-xc90.websitewelcome.com ESMTP Exim 4.69 #1 Mon, 05 Oct 2009 01:05:54 -0500 \r\n220-We do not authorize the use of this system to transport unsolicited, \r\n220 and/or bulk e-mail.\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795697,
+                "timestamp": 1254722768.2248,
+                "length": 9,
+                "preview": "EHLO GP\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727269,
+                "timestamp": 1254722768.5662,
+                "length": 137,
+                "preview": "250-xc90.websitewelcome.com Hello GP [122.162.143.157]\r\n250-SIZE 52428800\r\n250-PIPELINING\r\n250-AUTH PLAIN LOGIN\r\n250-STARTTLS\r\n250 HELP\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795706,
+                "timestamp": 1254722768.5687,
+                "length": 12,
+                "preview": "AUTH LOGIN\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727406,
+                "timestamp": 1254722768.9111,
+                "length": 18,
+                "preview": "334 VXNlcm5hbWU6\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795718,
+                "timestamp": 1254722768.9117,
+                "length": 30,
+                "preview": "Z3VycGFydGFwQHBhdHJpb3RzLmlu\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727424,
+                "timestamp": 1254722769.2535,
+                "length": 18,
+                "preview": "334 UGFzc3dvcmQ6\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795748,
+                "timestamp": 1254722769.2541,
+                "length": 18,
+                "preview": "cHVuamFiQDEyMw==\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727442,
+                "timestamp": 1254722769.6138,
+                "length": 30,
+                "preview": "235 Authentication succeeded\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795766,
+                "timestamp": 1254722769.6144,
+                "length": 36,
+                "preview": "MAIL FROM: <gurpartap@patriots.in>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727472,
+                "timestamp": 1254722769.9568,
+                "length": 8,
+                "preview": "250 OK\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795802,
+                "timestamp": 1254722769.9573,
+                "length": 39,
+                "preview": "RCPT TO: <raj_deol2002in@yahoo.co.in>\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727480,
+                "timestamp": 1254722770.3197,
+                "length": 14,
+                "preview": "250 Accepted\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795841,
+                "timestamp": 1254722770.3202,
+                "length": 6,
+                "preview": "DATA\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727494,
+                "timestamp": 1254722770.6617,
+                "length": 56,
+                "preview": "354 Enter message, ending with \".\" on a line by itself\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795847,
+                "timestamp": 1254722770.6927,
+                "length": 1460,
+                "preview": "From: \"Gurpartap Singh\" <gurpartap@patriots.in>\r\nTo: <raj_deol2002in@yahoo.co.in>\r\nSubject: SMTP\r\nDate: Mon, 5 Oct 2009 11:36:07 +0530\r\nMessage-ID: <000301ca4581$ef9e57f0$cedb07d0$@in>\r\nMIME-Version: ",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126797307,
+                "timestamp": 1254722770.6928,
+                "length": 1460,
+                "preview": "ft-com:office:word\" =\r\nxmlns:m=3D\"http://schemas.microsoft.com/office/2004/12/omml\" =\r\nxmlns=3D\"http://www.w3.org/TR/REC-html40\">\r\n\r\n<head>\r\n<META HTTP-EQUIV=3D\"Content-Type\" CONTENT=3D\"text/html; =\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126798767,
+                "timestamp": 1254722770.6928,
+                "length": 1460,
+                "preview": "\n\r\n<p class=3DMsoNormal>Hello<o:p></o:p></p>\r\n\r\n<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>\r\n\r\n<p class=3DMsoNormal>I send u smtp pcap file <o:p></o:p></p>\r\n\r\n<p class=3DMsoNormal>Find the attachment<o",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126800227,
+                "timestamp": 1254722770.6928,
+                "length": 1460,
+                "preview": ", athlon, athlon-tbird, athlon-4, athlon-xp, =\r\nathlon-mp, winchip-c6, winchip2, k8, c3 and c3-2)\r\n  - Enable use of processor specific built-in functions (mmmx, sse, =\r\nsse2, pni, 3dnow)\r\n* \"Default\"",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126795847,
+                "timestamp": 1254722770.6952,
+                "length": 1452,
+                "preview": "From: \"Gurpartap Singh\" <gurpartap@patriots.in>\r\nTo: <raj_deol2002in@yahoo.co.in>\r\nSubject: SMTP\r\nDate: Mon, 5 Oct 2009 11:36:07 +0530\r\nMessage-ID: <000301ca4581$ef9e57f0$cedb07d0$@in>\r\nMIME-Version: ",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126797299,
+                "timestamp": 1254722771.105,
+                "length": 1452,
+                "preview": "-microsoft-com:office:word\" =\r\nxmlns:m=3D\"http://schemas.microsoft.com/office/2004/12/omml\" =\r\nxmlns=3D\"http://www.w3.org/TR/REC-html40\">\r\n\r\n<head>\r\n<META HTTP-EQUIV=3D\"Content-Type\" CONTENT=3D\"text/h",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126798751,
+                "timestamp": 1254722771.105,
+                "length": 1452,
+                "preview": "ass=3DSection1>\r\n\r\n<p class=3DMsoNormal>Hello<o:p></o:p></p>\r\n\r\n<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>\r\n\r\n<p class=3DMsoNormal>I send u smtp pcap file <o:p></o:p></p>\r\n\r\n<p class=3DMsoNormal>Find ",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126800203,
+                "timestamp": 1254722771.4698,
+                "length": 1452,
+                "preview": ",=20\r\n    k6, k6-2, k6-3, athlon, athlon-tbird, athlon-4, athlon-xp, =\r\nathlon-mp, winchip-c6, winchip2, k8, c3 and c3-2)\r\n  - Enable use of processor specific built-in functions (mmmx, sse, =\r\nsse2, ",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126801655,
+                "timestamp": 1254722771.4698,
+                "length": 1452,
+                "preview": "ll can be overriden by using \"-c\" command line parameter).\r\n* Lots of bug fixes.\r\n\r\nVersion 4.9.8.1\r\n* When creating a DLL, the created static lib respects now the =\r\nproject-defined output directory\r",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126803107,
+                "timestamp": 1254722771.4942,
+                "length": 1452,
+                "preview": " \"Classes\" toolbar\r\n* Fixed pre-compilation dependency checks to work correctly\r\n* Added new file menu entry: Save Project As\r\n* Bug-fix for double quotes in devcpp.cfg file read by vUpdate\r\n* Other b",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126804559,
+                "timestamp": 1254722771.4942,
+                "length": 1452,
+                "preview": "dded support for macros in the \"default source code\" (Tools/Editor =\r\nOptions/Code)\r\n* Separated layout info from project file. It is now kept in a different =\r\nfile\r\n  (the same filename as the proje",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126806011,
+                "timestamp": 1254722771.8346,
+                "length": 1452,
+                "preview": "port for the '::' member access operator in code-completion\r\n* Added *working* function arguments hint\r\n* Added bracket highlighting. When the caret is on a bracket, that =\r\nbracket and\r\n  its counter",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126807463,
+                "timestamp": 1254722771.8347,
+                "length": 1452,
+                "preview": "re.\r\n* New option in Editor Options (code-completion): Use code-completion =\r\ncache.\r\n  Well, it adds caching to code-completion. Depending on the cache size,\r\n  the program may take a bit longer to s",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126808915,
+                "timestamp": 1254722771.8583,
+                "length": 1452,
+                "preview": "les (disabled - work =\r\nin progress).\r\n\r\nVersion 4.9.5.2\r\n* Added new option in class-browser: Use colors\r\n  (available when right-clicking the class-browser\r\n  and selecting \"View mode\").\r\n* Dev-C++ ",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126810367,
+                "timestamp": 1254722771.8583,
+                "length": 29,
+                "preview": "04_01CA45B0.095693F0--\r\n\r\n.\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727550,
+                "timestamp": 1254722772.2488,
+                "length": 28,
+                "preview": "250 OK id=1Mugho-0003Dg-Un\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "CLIENT_TO_SERVER",
+                "src": "10.10.1.4:1470",
+                "dst": "74.53.140.153:25",
+                "seq": 2126810396,
+                "timestamp": 1254722774.7638,
+                "length": 6,
+                "preview": "QUIT\r\n",
+                "is_binary": false
+              },
+              {
+                "direction": "SERVER_TO_CLIENT",
+                "src": "74.53.140.153:25",
+                "dst": "10.10.1.4:1470",
+                "seq": 2934727578,
+                "timestamp": 1254722775.1055,
+                "length": 48,
+                "preview": "221 xc90.websitewelcome.com closing connection\r\n",
+                "is_binary": false
+              }
+            ]
+          }
+        }
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:58:59Z",
+      "end_time": "2026-09-18T11:58:59Z",
+      "stdout_summary": "Completed in 382.8ms with 1 evidence items.",
+      "stderr": "",
+      "evidence_ids": [
+        "E-75BB18"
+      ]
+    },
+    {
+      "execution_id": "EXEC-CD4A0818",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "report.generate_json",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-6D9C84A0"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:59:01Z",
+      "end_time": "2026-09-18T11:59:01Z",
+      "stdout_summary": "Completed in 3.11ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-65E033C1",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "report.generate_html",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-6D9C84A0"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:59:02Z",
+      "end_time": "2026-09-18T11:59:02Z",
+      "stdout_summary": "Completed in 11.75ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    },
+    {
+      "execution_id": "EXEC-9C669213",
+      "investigation_id": "INV-6D9C84A0",
+      "tool": "report.generate_pdf",
+      "tool_version": "2.6.0",
+      "args": {
+        "investigation_id": "INV-6D9C84A0"
+      },
+      "status": "SUCCESS",
+      "start_time": "2026-09-18T11:59:02Z",
+      "end_time": "2026-09-18T11:59:02Z",
+      "stdout_summary": "Completed in 8.59ms with 0 evidence items.",
+      "stderr": "",
+      "evidence_ids": []
+    }
+  ],
+  "limitations": [],
+  "recommendations": [
+    "Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH."
+  ],
+  "ai_summary": {
+    "investigation_summary": "This investigation analyzed a PCAP capture 'INV-6D9C84A0_wireshark_real_smtp.pcap' containing 60 packets. The capture was loaded and analyzed using various tools, including CaptureEngine, TCPReconstructionEngine, SMTPAnalyzer, CryptoRuleEngine, and CryptoRiskClassifier (XGBoost). The analysis revealed a medium risk level due to the presence of cleartext authentication transmission. The investigation also identified a deprecated TLS session, classified as 'DEPRECATED_TLS' with a risk probability of 99.9% and confidence of 96.6%. The analysis was limited by the completeness percentage of 80.0% and the security score of 70.0%. The recommended actions include implementing encryption for user credentials and upgrading to a more secure TLS version.",
+    "executive_summary": "Medium risk level detected due to cleartext authentication transmission and deprecated TLS session. Recommended actions include implementing encryption and upgrading to a more secure TLS version.",
+    "key_observations": [
+      "Cleartext authentication transmission detected",
+      "Deprecated TLS session classified as 'DEPRECATED_TLS'",
+      "Medium risk level due to cleartext authentication transmission"
+    ],
+    "finding_reasoning": [
+      {
+        "finding_id": "FND-8A38A5",
+        "title": "Cleartext Authentication Transmitted",
+        "severity": "high",
+        "reasoning": "The CryptoRuleEngine triggered a rule indicating that cleartext authentication transmission was observed. This is a high-risk finding as it exposes user credentials to potential eavesdropping.",
+        "supporting_evidence_ids": [
+          "E-75BB18"
+        ],
+        "confidence": 0.95
+      }
+    ],
+    "risk_explanation": "The presence of cleartext authentication transmission and a deprecated TLS session increases the risk level to medium. This is because cleartext authentication transmission exposes user credentials to potential eavesdropping, while the deprecated TLS session indicates a potential vulnerability to attacks.",
+    "limitations": [
+      "Completeness percentage of 80.0%",
+      "Security score of 70.0%"
+    ],
+    "recommended_actions": [
+      "Implement encryption for user credentials",
+      "Upgrade to a more secure TLS version"
+    ],
+    "status": "success",
+    "generated_by": "nvidia",
+    "provider": "nvidia",
+    "model": "meta/llama-3.2-11b-vision-instruct",
+    "prompt_version": "2.1.0",
+    "generated_at": "2026-09-18T11:59:35.453652+00:00",
+    "is_ai_generated": true,
+    "forensic_data_hash": "c930fd72d3c14f8a44e61dcda7b753530b7453f3bd65aaa2686e7c0e077d5cc0"
+  },
+  "ai_summary_note": null
+}

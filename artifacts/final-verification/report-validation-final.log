@@ -1,0 +1,9 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+[+] JSON report generated at: /home/aarush/Myoffice/hackathons/SIH/reports/INV-8768E7E5_report.json (54229 bytes)
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+[+] HTML report generated at: /home/aarush/Myoffice/hackathons/SIH/reports/INV-8768E7E5_report.html (18032 bytes)
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+[+] PDF report generated at: /home/aarush/Myoffice/hackathons/SIH/reports/INV-8768E7E5_report.pdf (3594 bytes)

@@ -1,0 +1,9 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+[+] JSON report generated at: /home/aarush/Myoffice/hackathons/SIH/reports/INV-REAL-SMTP-01_report.json (556333 bytes)
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+[+] HTML report generated at: /home/aarush/Myoffice/hackathons/SIH/reports/INV-REAL-SMTP-01_report.html (27568 bytes)
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+[+] PDF report generated at: /home/aarush/Myoffice/hackathons/SIH/reports/INV-REAL-SMTP-01_report.pdf (4411 bytes)

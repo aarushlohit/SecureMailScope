@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forensic Report: INV-6D9C84A0 - SecureMailScope</title>
+  <style>
+    :root {
+      --bg-main: #0B1120;
+      --bg-card: #1E293B;
+      --bg-card-alt: #0F172A;
+      --accent: #0EA5E9;
+      --accent-glow: rgba(14, 165, 233, 0.2);
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #334155;
+      --critical: #EF4444;
+      --high: #F97316;
+      --medium: #EAB308;
+      --low: #10B981;
+      --secure: #06B6D4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg-main); color: var(--text-main); line-height: 1.6; padding: 32px 16px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 1px solid var(--border); border-radius: 12px; padding: 24px 32px; margin-bottom: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 16px; }
+    .title { font-size: 24px; font-weight: 700; color: #38BDF8; letter-spacing: -0.5px; }
+    .subtitle { color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    .badge-critical { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid var(--critical); }
+    .badge-high { background: rgba(249, 115, 22, 0.2); color: #FDBA74; border: 1px solid var(--high); }
+    .badge-medium { background: rgba(234, 179, 8, 0.2); color: #FDE047; border: 1px solid var(--medium); }
+    .badge-low { background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid var(--low); }
+    .badge-secure { background: rgba(6, 182, 212, 0.2); color: #67E8F9; border: 1px solid var(--secure); }
+    
+    .grid-score { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .card-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+    .score-value { font-size: 38px; font-weight: 800; }
+    .score-critical { color: var(--critical); }
+    .score-high { color: var(--high); }
+    .score-medium { color: var(--medium); }
+    .score-secure { color: var(--secure); }
+    
+    .section-title { font-size: 18px; font-weight: 700; margin: 28px 0 16px 0; color: #E2E8F0; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ""; display: inline-block; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+    th { background: var(--bg-card-alt); color: var(--text-muted); text-align: left; padding: 12px; border-bottom: 2px solid var(--border); font-weight: 600; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .timeline-item { position: relative; padding-left: 28px; margin-bottom: 16px; }
+    .timeline-item::before { content: ""; position: absolute; left: 6px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+    .timeline-item::after { content: ""; position: absolute; left: 10px; top: 18px; width: 2px; height: calc(100% + 4px); background: var(--border); }
+    .timeline-item:last-child::after { display: none; }
+    .timeline-actor { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+    .timeline-time { font-size: 11px; color: var(--text-muted); float: right; }
+    .timeline-detail { font-size: 13px; color: var(--text-main); margin-top: 2px; }
+    
+    .callout { background: rgba(14, 165, 233, 0.1); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 16px; font-size: 13px; }
+    .callout-warning { background: rgba(249, 115, 22, 0.1); border-left-color: var(--high); }
+    .evidence-tag { font-family: monospace; font-size: 11px; background: #334155; padding: 2px 6px; border-radius: 4px; color: #38BDF8; display: inline-block; margin: 2px; }
+    code { font-family: monospace; background: #0F172A; padding: 2px 4px; border-radius: 4px; font-size: 12px; color: #E2E8F0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="title">SecureMailScope Forensic Dossier</div>
+          <div class="subtitle">SIH26159 | National Technical Research Organisation (NTRO)</div>
+        </div>
+        <div>
+          <span class="badge badge-medium">
+            MEDIUM RISK
+          </span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted);">
+        <div><strong>Investigation ID:</strong> <code>INV-6D9C84A0</code></div>
+        <div><strong>Artifact:</strong> <code>INV-6D9C84A0_wireshark_real_smtp.pcap</code></div>
+        <div><strong>SHA-256:</strong> <code>17ad230db1b6fd5dd18e...</code></div>
+        <div><strong>Packets:</strong> 60</div>
+        <div><strong>Generated:</strong> 2026-09-18T11:58:08.652368+00:00</div>
+      </div>
+    </div>
+
+    <!-- Posture Metrics -->
+    <div class="grid-score">
+      <div class="card">
+        <div class="card-title">Security Posture Score</div>
+        <div class="score-value score-medium">
+          70.0<span style="font-size: 18px; color: var(--text-muted);">/100</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Explainable Rule + ML Metric</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Capture Completeness</div>
+        <div class="score-value" style="color: #EAB308;">
+          80.0%
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Sequence Gaps Detected</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Forensic Confidence</div>
+        <div class="score-value" style="color: #38BDF8;">
+          78.4%
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Evidence Chain Completeness</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ML Risk Probability</div>
+        <div class="score-value" style="color: #EF4444;">
+          99.9%
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">XGBoost Anomaly Classification</div>
+      </div>
+    </div>
+
+    <!-- Score Deductions Breakdown -->
+    
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-title">Score Deductions & Attributions</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Attribution Source</th>
+            <th>Deduction</th>
+            <th>Reasoning / Observed Fact</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td><strong>Rule: RULE-CLEARTEXT-AUTH</strong></td>
+            <td style="color: var(--critical); font-weight: 700;">-30.0 pts</td>
+            <td>Cleartext authentication credentials transmitted.</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+    
+
+    <!-- AI-Assisted Investigation Summary -->
+    <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>AI-Assisted Investigation Summary & Reasoning</span>
+      <span style="font-size: 11px; font-weight: 500; color: #38BDF8; border: 1px solid #0284C7; padding: 2px 8px; border-radius: 4px;">
+        AI-Assisted Interpretation &bull; Grounded in Deterministic Evidence
+      </span>
+    </div>
+    
+    <div class="card" style="margin-bottom: 24px; border: 1px solid #38BDF8;">
+      <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+        <strong>Generated by:</strong> nvidia (meta/llama-3.2-11b-vision-instruct) &bull;
+        <strong>Prompt Version:</strong> 2.1.0 &bull;
+        <strong>Generated at:</strong> 2026-09-18T11:59:35
+      </div>
+      <div style="font-size: 14px; font-weight: 600; color: #F8FAFC; margin-bottom: 6px;">Executive Briefing:</div>
+      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 14px;">Medium risk level detected due to cleartext authentication transmission and deprecated TLS session. Recommended actions include implementing encryption and upgrading to a more secure TLS version.</p>
+
+      
+      <div style="font-size: 14px; font-weight: 600; color: #F8FAFC; margin-bottom: 6px;">Key Observations:</div>
+      <ul style="padding-left: 20px; font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        
+        <li style="margin-bottom: 4px;">Cleartext authentication transmission detected</li>
+        
+        <li style="margin-bottom: 4px;">Deprecated TLS session classified as 'DEPRECATED_TLS'</li>
+        
+        <li style="margin-bottom: 4px;">Medium risk level due to cleartext authentication transmission</li>
+        
+      </ul>
+      
+
+      
+      <div style="font-size: 14px; font-weight: 600; color: #F8FAFC; margin-bottom: 6px;">Risk Profile Assessment:</div>
+      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 14px;">The presence of cleartext authentication transmission and a deprecated TLS session increases the risk level to medium. This is because cleartext authentication transmission exposes user credentials to potential eavesdropping, while the deprecated TLS session indicates a potential vulnerability to attacks.</p>
+      
+
+      
+      <div style="font-size: 14px; font-weight: 600; color: #6EE7B7; margin-bottom: 6px;">Recommended Forensic Next Steps:</div>
+      <ul style="padding-left: 20px; font-size: 13px; color: var(--text-muted);">
+        
+        <li style="margin-bottom: 4px;">Implement encryption for user credentials</li>
+        
+        <li style="margin-bottom: 4px;">Upgrade to a more secure TLS version</li>
+        
+      </ul>
+      
+    </div>
+    
+
+    <!-- Verified Findings -->
+    <div class="section-title">Verified Findings (No Evidence &rarr; No Finding Gate)</div>
+    
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        
+        <div class="card" style="border-left: 4px solid var(--high);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <span class="badge badge-high">high</span>
+              <strong style="font-size: 16px; margin-left: 8px;">Cleartext Authentication Transmitted</strong>
+            </div>
+            <div style="font-size: 12px; color: #38BDF8; font-weight: 600;">Status: VERIFIED</div>
+          </div>
+          <p style="margin: 12px 0; font-size: 14px; color: var(--text-muted);">User credentials (LOGIN/AUTH/USER/PASS) were observed unencrypted across the network wire.</p>
+          
+          <div style="font-size: 13px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+            <strong style="color: #6EE7B7;">Remediation:</strong> Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH.
+          </div>
+          
+          <div style="font-size: 12px; color: var(--text-muted);">
+            <strong>Supporting Evidence:</strong>
+            
+            <span class="evidence-tag">E-9CDF83</span>
+            
+            <span class="evidence-tag">E-8B46A8</span>
+            
+            <span class="evidence-tag">E-10AE45</span>
+            
+            <span class="evidence-tag">E-F03E56</span>
+            
+            <span class="evidence-tag">E-A7D7F7</span>
+            
+          </div>
+        </div>
+        
+      </div>
+    
+
+    <!-- Adaptive Agent Hypotheses & Timeline -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px;">
+      <!-- Hypotheses -->
+      <div class="card">
+        <div class="card-title">Agent Hypotheses & Evidence Support</div>
+        
+      </div>
+
+      <!-- Timeline -->
+      <div class="card">
+        <div class="card-title">Investigation Execution Timeline</div>
+        <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">smtp.analyze returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">tls.certificate returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">pcap.inspect returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">pcap.sessions returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">smtp.analyze returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">imap.analyze returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">pop3.analyze returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">tls.handshake returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">rules.evaluate returned status 'SUCCESS' producing 1 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">report.generate_json returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">report.generate_html returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+          <div class="timeline-item">
+            <div class="timeline-actor">TOOL_GATEWAY &bull; TOOL_EXECUTION</div>
+            <div class="timeline-detail">report.generate_pdf returned status 'SUCCESS' producing 0 evidence item(s).</div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- Evidence Ledger Table -->
+    <div class="section-title">Evidence Ledger (Immutable Ground Truth)</div>
+    <div class="card" style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Claim / Observed Fact</th>
+            <th>Tool Source</th>
+            <th>Confidence</th>
+            <th>Provenance Ref</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr>
+            <td><span class="evidence-tag">E-9CDF83</span></td>
+            <td><code>OBSERVED</code></td>
+            <td style="color: #F8FAFC;">PCAP capture 'INV-6D9C84A0_wireshark_real_smtp.pcap' loaded: 60 packets, SHA256 17ad230db1b6fd5d...</td>
+            <td>CaptureEngine</td>
+            <td>100.0%</td>
+            <td><code>pcap://INV-6D9C84A0_wireshark_real_smtp.pcap</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-8B46A8</span></td>
+            <td><code>OBSERVED</code></td>
+            <td style="color: #F8FAFC;">Discovered 1 TCP stream(s) with protocols: SMTP.</td>
+            <td>TCPReconstructionEngine</td>
+            <td>100.0%</td>
+            <td><code>pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/streams</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-10AE45</span></td>
+            <td><code>starttls_advertised</code></td>
+            <td style="color: #F8FAFC;">SMTP Server advertised STARTTLS capability in EHLO response.</td>
+            <td>SMTPAnalyzer</td>
+            <td>100.0%</td>
+            <td><code>pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/TCP-0001/smtp</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-F03E56</span></td>
+            <td><code>OBSERVED</code></td>
+            <td style="color: #F8FAFC;">PCAP capture 'INV-6D9C84A0_wireshark_real_smtp.pcap' loaded: 60 packets, SHA256 17ad230db1b6fd5d...</td>
+            <td>CaptureEngine</td>
+            <td>100.0%</td>
+            <td><code>pcap://INV-6D9C84A0_wireshark_real_smtp.pcap</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-A7D7F7</span></td>
+            <td><code>OBSERVED</code></td>
+            <td style="color: #F8FAFC;">Discovered 1 TCP stream(s) with protocols: SMTP.</td>
+            <td>TCPReconstructionEngine</td>
+            <td>100.0%</td>
+            <td><code>pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/streams</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-6A0386</span></td>
+            <td><code>starttls_advertised</code></td>
+            <td style="color: #F8FAFC;">SMTP Server advertised STARTTLS capability in EHLO response.</td>
+            <td>SMTPAnalyzer</td>
+            <td>100.0%</td>
+            <td><code>pcap://INV-6D9C84A0_wireshark_real_smtp.pcap/TCP-0001/smtp</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-75BB18</span></td>
+            <td><code>crypto_rule_triggered</code></td>
+            <td style="color: #F8FAFC;">Rule Triggered [RULE-CLEARTEXT-AUTH]: Cleartext Authentication Transmitted - User credentials (LOGIN/AUTH/USER/PASS) were observed unencrypted across the network wire.</td>
+            <td>CryptoRuleEngine</td>
+            <td>100.0%</td>
+            <td><code>rule://RULE-CLEARTEXT-AUTH</code></td>
+          </tr>
+          
+          <tr>
+            <td><span class="evidence-tag">E-F311B3</span></td>
+            <td><code>ML_CLASSIFICATION</code></td>
+            <td style="color: #F8FAFC;">XGBoost Classifier classified session as 'DEPRECATED_TLS' (Risk Probability: 99.9%, Confidence: 96.6%).</td>
+            <td>CryptoRiskClassifier (XGBoost)</td>
+            <td>97.0%</td>
+            <td><code>ml://prediction/INV-6D9C84A0_wireshark_real_smtp.pcap</code></td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Forensic Limitations -->
+    
+
+  </div>
+</body>
+</html>

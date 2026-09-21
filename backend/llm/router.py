@@ -13,7 +13,7 @@ from backend.llm.base import LLMProvider
 from backend.llm.nvidia import NvidiaProvider
 from backend.llm.gemini import GeminiProvider
 from backend.llm.schemas import ChatRequest, ChatResponse, StreamChunk, HealthStatus
-from backend.llm.exceptions import LLMException
+from backend.llm.exceptions import LLMException, ProviderUnavailableError
 from securemailscope.core.config import config
 from securemailscope.db.session import SessionLocal
 from securemailscope.db.models import AuditEventModel
@@ -133,8 +133,16 @@ class LLMRouter:
                     failure_reason=str(e)
                 )
 
-        # 3. Deterministic Local Fallback
-        return self._deterministic_fallback_chat(request, investigation_id)
+        # 3. Explicit AI Unavailable (No fake deterministic reasoner masquerading as an LLM)
+        self._record_audit(
+            investigation_id=investigation_id,
+            provider="none",
+            model="none",
+            success=False,
+            latency_ms=0.0,
+            failure_reason="Both NVIDIA NIM and Google Gemini LLM providers are unavailable."
+        )
+        raise ProviderUnavailableError("AI reasoning unavailable: Neither NVIDIA NIM nor Google Gemini is available. Deterministic forensic pipeline remains active.")
 
     async def stream(self, request: ChatRequest, investigation_id: Optional[str] = None) -> AsyncIterator[StreamChunk]:
         """
@@ -172,88 +180,111 @@ class LLMRouter:
                     failure_reason=f"Streaming error: {e}"
                 )
 
-        # Fallback stream: emit deterministic response chunks
-        det_resp = self._deterministic_fallback_chat(request, investigation_id)
-        words = det_resp.content.split(" ")
-        for w in words:
-            yield StreamChunk(
-                delta=w + " ",
-                finish_reason=None,
-                model="deterministic-fallback",
-                provider="deterministic"
-            )
-        yield StreamChunk(
-            delta="",
-            finish_reason="stop",
-            model="deterministic-fallback",
-            provider="deterministic"
-        )
+        raise ProviderUnavailableError("AI streaming reasoning unavailable: Neither NVIDIA NIM nor Google Gemini is available.")
 
-    def _deterministic_fallback_chat(self, request: ChatRequest, investigation_id: Optional[str]) -> ChatResponse:
-        """
-        Deterministic, rule-based reasoning engine when external LLMs are unavailable.
-        Uses structured heuristics over evidence facts.
-        """
-        last_msg = request.messages[-1].content if request.messages else ""
-        query_text = str(last_msg).lower()
-
-        lines = [
-            "**Deterministic Forensic Reasoning Engine** *(No External LLM Available)*\n"
-        ]
-
-        if "starttls" in query_text or "downgrade" in query_text or "stripping" in query_text:
-            lines.append("• Evaluated STARTTLS transitions from passive PCAP evidence.")
-            lines.append("• State machine traces: EHLO advertisement -> STARTTLS request -> 220 acknowledgement.")
-            lines.append("• If plaintext SMTP continuation was recorded without TLS ClientHello, a STARTTLS stripping downgrade violation is established.")
-        elif "cert" in query_text or "x.509" in query_text or "chain" in query_text:
-            lines.append("• Observable X.509 certificates (TLS <= 1.2) were analyzed against key size and validity windows.")
-            lines.append("• For TLS 1.3 handshakes, certificates remain encrypted post-ServerHello and are recorded honestly as NOT_OBSERVABLE.")
-        elif "completeness" in query_text or "quality" in query_text:
-            lines.append("• Capture completeness evaluated via TCP sequence gap analysis and retransmission tracking.")
-            lines.append("• Scores < 60% generate honest INCONCLUSIVE findings rather than speculative attack declarations.")
-        else:
-            lines.append("• Passive network capture analysis operates deterministically on protocol state machines, cryptographic parameters, and ML feature attribution.")
-            lines.append("• All findings and severity scores are strictly anchored to immutable Evidence IDs in the ledger.")
-
-        content = "\n".join(lines)
-        self._record_audit(
-            investigation_id=investigation_id,
-            provider="deterministic",
-            model="deterministic-local-v1",
-            success=True,
-            latency_ms=1.0,
-            details={"note": "Fallback to deterministic local reasoning"}
-        )
-        return ChatResponse(
-            content=content,
-            role="assistant",
-            finish_reason="stop",
-            model="deterministic-local-v1",
-            provider="deterministic",
-            latency_ms=1.0
-        )
 
     async def get_system_llm_status(self) -> Dict[str, Any]:
         """
-        Return the health status of all configured providers without exposing API keys.
+        Perform REAL lightweight health pings to each configured provider.
+        Returns reachable=true only after a genuine HTTP 200 response.
+        Never exposes API keys.
         """
+        import httpx
+
         nv_conf = bool(self.nvidia.api_key)
         gem_conf = bool(self.gemini.api_key)
-        tav_conf = bool(config.tavily_api_key)
 
+        # ── NVIDIA NIM real ping ──────────────────────────────────────────────
+        nvidia_status: Dict[str, Any] = {
+            "provider": "nvidia_nim",
+            "configured": nv_conf,
+            "reachable": False,
+            "model": self.nvidia.model,
+            "latency_ms": None,
+            "last_error": None
+        }
+        if nv_conf:
+            try:
+                base = self.nvidia.base_url.rstrip("/")
+                t0 = time.perf_counter()
+                async with httpx.AsyncClient(timeout=8.0) as client:
+                    resp = await client.post(
+                        f"{base}/chat/completions",
+                        headers={"Authorization": f"Bearer {self.nvidia.api_key}",
+                                 "Content-Type": "application/json"},
+                        json={"model": self.nvidia.model,
+                              "messages": [{"role": "user", "content": "hi"}],
+                              "max_tokens": 1}
+                    )
+                lat = round((time.perf_counter() - t0) * 1000, 1)
+                nvidia_status["latency_ms"] = lat
+                if resp.status_code in (200, 201):
+                    nvidia_status["reachable"] = True
+                elif resp.status_code == 401:
+                    nvidia_status["last_error"] = "authentication_failed"
+                elif resp.status_code == 429:
+                    nvidia_status["last_error"] = "rate_limited"
+                    nvidia_status["reachable"] = True   # auth OK, just rate-limited
+                else:
+                    nvidia_status["last_error"] = f"http_{resp.status_code}"
+            except httpx.TimeoutException:
+                nvidia_status["last_error"] = "timeout"
+            except Exception as e:
+                nvidia_status["last_error"] = str(e)[:120]
+
+        # ── Gemini real ping ──────────────────────────────────────────────────
+        gemini_status: Dict[str, Any] = {
+            "provider": "google_gemini",
+            "configured": gem_conf,
+            "reachable": False,
+            "model": self.gemini.model,
+            "latency_ms": None,
+            "last_error": None
+        }
+        if gem_conf:
+            try:
+                t0 = time.perf_counter()
+                async with httpx.AsyncClient(timeout=8.0) as client:
+                    resp = await client.post(
+                        f"https://generativelanguage.googleapis.com/v1beta/models/"
+                        f"{self.gemini.model}:generateContent?key={self.gemini.api_key}",
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": "hi"}]}],
+                              "generationConfig": {"maxOutputTokens": 1}}
+                    )
+                lat = round((time.perf_counter() - t0) * 1000, 1)
+                gemini_status["latency_ms"] = lat
+                if resp.status_code in (200, 201):
+                    gemini_status["reachable"] = True
+                elif resp.status_code == 400:
+                    # 400 often means model exists but payload issue — still reachable
+                    gemini_status["reachable"] = True
+                    gemini_status["last_error"] = "bad_request_but_reachable"
+                elif resp.status_code == 401:
+                    gemini_status["last_error"] = "authentication_failed"
+                elif resp.status_code == 429:
+                    gemini_status["last_error"] = "rate_limited"
+                    gemini_status["reachable"] = True
+                else:
+                    gemini_status["last_error"] = f"http_{resp.status_code}"
+            except httpx.TimeoutException:
+                gemini_status["last_error"] = "timeout"
+            except Exception as e:
+                gemini_status["last_error"] = str(e)[:120]
+
+        active_provider = "none"
+        if nvidia_status["reachable"]:
+            active_provider = "nvidia_nim"
+        elif gemini_status["reachable"]:
+            active_provider = "google_gemini"
+
+        tav_conf = bool(config.tavily_api_key)
         return {
-            "primary": {
-                "provider": "nvidia",
-                "model": self.nvidia.model,
-                "configured": nv_conf,
-                "healthy": nv_conf
-            },
-            "fallback": {
-                "provider": "gemini",
-                "model": self.gemini.model,
-                "configured": gem_conf,
-                "healthy": gem_conf
-            },
+            "nvidia": nvidia_status,
+            "gemini": gemini_status,
+            "active_provider": active_provider,
+            "agentic_tool_calling": True,
+            "agent_mode": "live" if active_provider != "none" else "forensic_only",
             "tavily": {
                 "configured": tav_conf,
                 "enabled": config.tavily_enabled and config.allow_external_intel

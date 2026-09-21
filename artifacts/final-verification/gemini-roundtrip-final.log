@@ -1,0 +1,29 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+=================================================================
+     SECUREMAILSCOPE — LIVE GOOGLE GEMINI VALIDATION
+=================================================================
+API Key:       configured
+Model:         gemini-2.5-flash-lite
+-----------------------------------------------------------------
+[1/3] Testing Gemini API health...
+      Connectivity: OK (healthy=True, latency=1357.4ms)
+[2/3] Sending minimal test completion...
+      Response received in 1857.7ms from gemini-2.5-flash-lite
+      Snippet: STARTTLS stripping is a type of **man-in-the-middle (MITM) attack** that targets email communication...
+[3/3] Testing native Gemini function-call round trip...
+      Initial provider request: PENDING
+      Initial provider request: SUCCESS
+      Function call received: SUCCESS
+      Function validation: PENDING (check_completeness)
+      Function validation: SUCCESS
+      Local function execution: SUCCESS
+      Function result summary: packets=60 complete=80.0% sha256=17ad230db1b6fd5d...
+      Function response submission: PENDING
+      Function response submission: SUCCESS
+      Final model response: SUCCESS
+      Final snippet: The completeness assessment is MODERATE_PARTIAL, with 80% completeness and 60 packets analyzed. There were 18 retransmissions, 0 sequence gaps, and 0 truncated packets.
+
+[PASS] Google Gemini complete function-call round trip succeeded.
+      Overall round trip: PASS
+=================================================================

@@ -1,0 +1,25 @@
+[*] Analyzing capture: wireshark_real_pop_ssl.pcapng (Investigation ID: INV-9DC3AE48)...
+
+============================================================
+SecureMailScope — Real Forensic Analysis
+============================================================
+Artifact:         wireshark_real_pop_ssl.pcapng
+SHA256:           a9bf0b6c9125c181969c1e68718f1ad68bf7f091d5f115fb4089c983273e0e5d
+Packets:          38
+Protocols:        POP3
+Email Sessions:   1
+Capture Quality:  66.84%
+Security Posture: 75.0/100 [LOW RISK]
+Investigation:    INV-9DC3AE48
+------------------------------------------------------------
+Verified Findings (1):
+  [HIGH  ] Expired X.509 Certificate
+          Supporting Evidence: E-290225, E-CCCAED, E-DE29F9, E-313774, E-AE7E90
+          Remediation: Renew and deploy a valid SSL/TLS certificate from an accredited Certificate Authority.
+------------------------------------------------------------
+Forensic Reports Generated:
+  - JSON: /home/aarush/Myoffice/hackathons/SIH/reports/INV-9DC3AE48_report.json
+  - HTML: /home/aarush/Myoffice/hackathons/SIH/reports/INV-9DC3AE48_report.html
+  - PDF:  /home/aarush/Myoffice/hackathons/SIH/reports/INV-9DC3AE48_report.pdf
+============================================================
+

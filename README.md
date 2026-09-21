@@ -9,14 +9,14 @@
 
 ## 1. Executive Summary
 
-**SecureMailScope** is an **evidence-first, AI-assisted cryptographic forensic platform** designed to assess the security posture of SMTP, IMAP, and POP3 communications from passive network captures (PCAP/PCAPNG).
+**SecureMailScope** is an **evidence-first, AI-assisted cryptographic forensic platform** designed to assess the security posture of SMTP, IMAP, and POP3 communications from passive network captures (PCAP/PCAPNG) and message archives (EML).
 
-The platform reconstructs email communication sessions from PCAPs and deterministically analyzes:
-- **Protocol State Machines**: SMTP, IMAP, and POP3 state machines, transitions, and cleartext credential detection.
+The platform reconstructs email communication sessions from raw captures and deterministically analyzes:
+- **Protocol State Machines**: SMTP, IMAP, and POP3 state transitions, command flows, and cleartext credential exposure.
 - **STARTTLS Negotiation**: 10-state machine tracing `CONNECTED` &rarr; `GREETING` &rarr; `CAPABILITY/EHLO` &rarr; `STARTTLS_ADVERTISED` &rarr; `STARTTLS_REQUESTED` &rarr; `STARTTLS_ACCEPTED` &rarr; `TLS_NEGOTIATION` &rarr; `ENCRYPTED` &rarr; `PLAINTEXT_FALLBACK` &rarr; `FAILED`.
-- **Capture Completeness**: TCP sequence gap analysis, retransmissions, truncation penalties, and packet-loss confidence scoring.
-- **TLS Handshake Forensics**: Version negotiation (TLS 1.0 to 1.3), cipher suites, Perfect Forward Secrecy (PFS), ALPN, and SNI.
-- **Observable X.509 Certificates**: Public key strengths, expiration, SAN matching, self-signed detection, and chain analysis.
+- **Capture Completeness**: TCP sequence gap analysis, retransmission counts, truncation penalties, and packet-loss confidence scoring.
+- **TLS Handshake Forensics**: Version negotiation (TLS 1.0 to 1.3), cipher suite auditing, Perfect Forward Secrecy (PFS), ALPN, and SNI.
+- **Observable X.509 Certificates**: Public key strength, validity periods, Subject Alternative Name (SAN) validation, self-signed detection, and chain analysis.
 - **Honest TLS 1.3 Observability**: Explicit `NOT_OBSERVABLE` status for post-ServerHello encrypted certificate handshakes (never manufactures synthetic certs).
 - **Machine Learning Layer**: Gradient-boosted tree classifier (XGBoost) evaluating 15 cryptographic features with explainable SHAP attributions.
 - **Stateful Investigation Agent**: Explicit state machine (`OBSERVE` &rarr; `HYPOTHESIZE` &rarr; `PLAN` &rarr; `SELECT TOOL` &rarr; `EXECUTE` &rarr; `STORE EVIDENCE` &rarr; `CORRELATE` &rarr; `RE-EVALUATE` &rarr; `VERIFY` &rarr; `VERDICT`).
@@ -28,9 +28,9 @@ The platform reconstructs email communication sessions from PCAPs and determinis
 
 SecureMailScope enforces a strict one-way dependency chain:
 ```
-PCAP / PCAPNG Capture
+PCAP / PCAPNG / EML Capture
        ↓
-Deterministic Forensic Engines (TShark, Capinfos, OpenSSL, Scapy, Parsers)
+Deterministic Forensic Engines (TShark, Capinfos, OpenSSL, Scapy, RFC-822 Parsers)
        ↓
 Evidence Ledger & Database (SQLite / SQLAlchemy / Alembic)
        ↓
@@ -38,7 +38,7 @@ Machine Learning (XGBoost) & Deterministic Crypto Rules
        ↓
 Stateful Investigation Agent
        ↓
-LLM Router (Priority 1: NVIDIA NIM Kimi K3 | Priority 2: Gemini | Priority 3: Deterministic Fallback)
+LLM Router (Priority 1: NVIDIA NIM Llama 3.2 | Priority 2: Gemini 2.5 Flash Lite | Priority 3: Deterministic Fallback)
 ```
 
 > **CRITICAL GUARANTEE:** The LLM reasons *over* established facts. It never creates, hallucinates, or modifies evidence. When external LLM API keys are missing or offline, the entire forensic engine, finding validator, and reporting operate with zero loss of forensic accuracy.
@@ -48,85 +48,75 @@ LLM Router (Priority 1: NVIDIA NIM Kimi K3 | Priority 2: Gemini | Priority 3: De
 ## 3. Tech Stack & External Credentials
 
 ### External Credentials (Exactly Three):
-1. **NVIDIA NIM** (`NVIDIA_API_KEY`): Primary LLM (`moonshotai/kimi-k3`) via `https://integrate.api.nvidia.com/v1/chat/completions`.
-2. **Google Gemini** (`GEMINI_API_KEY`): Fallback LLM (`gemini-1.5-flash`).
-3. **Tavily** (`TAVILY_API_KEY`): External OSINT / web intelligence search (`intel.tavily_search`) strictly tagged as `EXTERNAL_INTELLIGENCE`.
+1. **NVIDIA NIM** (`NVIDIA_API_KEY`): Primary LLM (`meta/llama-3.2-11b-vision-instruct`) via OpenAI-compatible endpoints with structured tool-calling.
+2. **Google Gemini** (`GEMINI_API_KEY`): Fallback LLM (`gemini-2.5-flash-lite`) via Google GenAI REST API with native function declarations.
+3. **Tavily** (`TAVILY_API_KEY`): External OSINT threat search (`intel.tavily_search`) strictly tagged as `EXTERNAL_INTELLIGENCE`.
 
 ### Backend & Data Science:
-- **FastAPI & Uvicorn**: Async REST API and Server-Sent Events (SSE) streaming.
-- **SQLAlchemy 2.0 & Alembic**: Database models, migrations, and PostgreSQL portability.
+- **FastAPI & Uvicorn**: Async REST API and Server-Sent Events (SSE) / WebSocket streaming.
+- **SQLAlchemy 2.0 & SQLite / Alembic**: Database models, migrations, and database-level immutability triggers.
 - **Scapy & System Binaries**: `tshark`, `capinfos`, `openssl` for deep packet inspection.
 - **XGBoost & Scikit-learn**: Tabular cryptographic risk classification.
+- **SHAP**: TreeExplainer for feature importance attributions.
 - **ReportLab & Jinja2**: Multi-format audit reporting (JSON, HTML, PDF).
 
 ---
 
-## 4. Directory Structure
+## 4. Evidence-Ledger Integrity Model
 
-```
-SecureMailScope/
-├── backend/
-│   └── llm/                  # Provider Abstraction Layer
-│       ├── base.py           # Abstract LLMProvider interface
-│       ├── nvidia.py         # NVIDIA NIM (moonshotai/kimi-k3) provider
-│       ├── gemini.py         # Google Gemini fallback provider
-│       ├── router.py         # Priority LLM router & audit trail
-│       ├── schemas.py        # Chat & completion schemas
-│       └── exceptions.py     # Custom error hierarchy
-├── securemailscope/
-│   ├── agent/                # Real stateful agent & hypothesis engine
-│   ├── api/                  # FastAPI routes & SSE event bus
-│   ├── core/                 # Config & exception hierarchy
-│   ├── db/                   # SQLAlchemy models & session factory
-│   ├── evidence/             # Evidence ledger & finding verification gate
-│   ├── forensics/            # Scapy, TShark, STARTTLS, TLS & X.509 engines
-│   ├── ml/                   # XGBoost risk model & benchmark engine
-│   ├── reports/              # Deterministic JSON, HTML & PDF generators
-│   └── tools/                # Allowlisted Tool Gateway & Tavily tool
-├── demo/                     # Standalone demo scenarios
-│   ├── clean/                # Valid TLS 1.2 SMTP
-│   ├── starttls-anomaly/     # STARTTLS accepted -> cleartext fallback
-│   ├── weak-crypto/          # Deprecated TLS 1.0 + RC4
-│   ├── incomplete-capture/   # Truncated capture (inconclusive)
-│   └── tls13/                # TLS 1.3 encrypted cert limitation
-├── migrations/               # Alembic database migrations
-├── samples/                  # Pre-packaged test captures
-├── tests/                    # 29 unit & integration tests
-├── .env.example              # Environment configuration template
-├── requirements.txt          # Frozen Python dependencies
-└── README.md
-```
+The Evidence Ledger serves as the immutable ground-truth store:
+1. **Application-Level Immutability**: Any attempt to overwrite or modify an existing `evidence_id` raises `EvidenceMutationError` and logs a `MUTATION_ATTEMPT_BLOCKED` audit event.
+2. **Database-Level Immutability Triggers**: SQLite engine triggers (`prevent_evidence_update` and `prevent_evidence_delete`) abort raw SQL `UPDATE` and `DELETE` queries with `IMMUTABLE_VIOLATION`.
+3. **Cryptographic SHA-256 Hash Chaining**: Each record stores its canonical JSON representation, the `previous_entry_hash` (initialized with 64 zero characters at `GENESIS_HASH`), and computes an `entry_hash = SHA256(canonical_json + previous_entry_hash)`.
+4. **Referential Finding Validation**: Findings require valid, existing evidence IDs within the same investigation. Cross-investigation and cross-user citations are strictly rejected.
+5. **Auditing CLI**: `python -m securemailscope.cli verify-ledger` validates the complete sequential hash chain and citation graph.
 
 ---
 
-## 5. Local Setup & Quick Start
+## 5. Security & Authorization Architecture
+
+- **Password Hashing**: PBKDF2-HMAC-SHA256 with 600,000 iterations and 16-byte cryptographic salts.
+- **Database-Backed Sessions**: Tokens are signed HMAC-SHA256 JWTs; their SHA-256 hash is tracked in the `auth_sessions` table.
+- **Persistent Revocation**: Logout sets `revoked_at` in the database. Revoked sessions remain rejected across server restarts and in-memory cache clears.
+- **IDOR Protection**: All investigation, evidence, timeline, finding, and report endpoints enforce user ownership via `require_owned_investigation_model`.
+- **WebSocket Security**: `/ws/{investigation_id}` authenticates bearer tokens against the database and validates ownership before accepting the connection.
+- **CORS Hardening**: Explicitly restricted to trusted local origin domains (`localhost:8000`, `127.0.0.1:8000`, `localhost:3000`, `127.0.0.1:3000`).
+
+---
+
+## 6. Supported Input Formats
+
+- **PCAP**: Standard libpcap captures (Little-Endian / Big-Endian).
+- **PCAP-NG**: Next Generation Section Header Block format.
+- **CAP**: Legacy capture formats.
+- **EML**: RFC-822 / RFC-2822 email message archives with MIME multipart and header inspection.
+
+---
+
+## 7. Installation & Quick Start
 
 ### 1. Environment Setup
 ```bash
-# Create and activate virtual environment
+# Clone and enter directory
+cd /home/aarush/Myoffice/hackathons/SIH
+
+# Activate existing or create fresh virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install dependencies
+# Install frozen dependencies
 pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
 ```
 
-### 2. Database Migrations
+### 2. Database Initialization
 ```bash
-# Run database schema migrations
-alembic upgrade head
+python -c "from securemailscope.db.session import init_db; init_db()"
 ```
 
-### 3. Generate Demonstration Samples & Fixtures
-```bash
-python -m securemailscope.cli generate-samples
-PYTHONPATH=. python securemailscope/forensics/generate_demo_fixtures.py
-```
-
-### 4. Launch Web Investigation Console
+### 3. Launch Web Console
 ```bash
 python -m securemailscope.cli serve --host 127.0.0.1 --port 8000
 ```
@@ -134,46 +124,63 @@ Open **`http://127.0.0.1:8000`** in your browser.
 
 ---
 
-## 6. API Reference
+## 8. Verification & Audit Commands
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/health` | Health check and platform version |
-| `GET` | `/api/system/tools` | Discovers installed binaries (`tshark`, `capinfos`, `zeek`, `openssl`) |
-| `GET` | `/api/system/llm/status` | Real configuration and health of NVIDIA, Gemini, and Tavily |
-| `GET` | `/api/ml/metrics` | Empirical accuracy, precision, recall, F1, and confusion matrices |
-| `POST` | `/api/investigations` | Ingests a capture and executes the full agent investigation |
-| `GET` | `/api/investigations/{id}` | Fetches investigation dossier, posture score, and sessions |
-| `GET` | `/api/investigations/{id}/evidence` | Returns verified evidence items from the ledger |
-| `GET` | `/api/investigations/{id}/findings` | Returns validated cryptographic findings |
-| `GET` | `/api/investigations/{id}/sessions` | Returns reconstructed TCP conversations and streams |
-| `GET` | `/api/investigations/{id}/timeline` | Returns chronological timeline audit events |
-| `GET` | `/api/investigations/{id}/replay` | Deterministic replay of agent steps, hypotheses, and evidence without re-executing tools |
-| `POST` | `/api/investigations/{id}/agent/chat` | Conversational investigation reasoning grounded strictly in evidence |
-| `POST` | `/api/investigations/{id}/agent/step` | Manually triggers an individual state-machine tool step |
-| `GET` | `/api/investigations/{id}/events` | Real-time Server-Sent Events (SSE) stream |
-| `GET` | `/api/investigations/{id}/reports/json` | Downloads machine-readable JSON report |
-| `GET` | `/api/investigations/{id}/reports/html` | Downloads standalone HTML forensic report |
-| `GET` | `/api/investigations/{id}/reports/pdf` | Downloads publication-ready audit PDF report |
-
----
-
-## 7. Running Tests
-
-Execute the comprehensive 36-test verification suite:
+### 1. Full Pytest Suite (81 Tests)
 ```bash
 pytest tests/ -v
 ```
 
-Tests validate:
-- **LLM Priority Routing**: NVIDIA NIM (priority 1) &rarr; Gemini (priority 2) &rarr; Local Deterministic Reasoner (priority 3).
-- **Tavily Tool & External Intel**: Permission gating, strict `EXTERNAL_INTELLIGENCE` provenance tagging.
-- **Tool Gateway**: 21-tool allowlisting, JSON schema validation, malicious argument rejection.
-- **Evidence & Finding Gatekeeper**: "No Evidence &rarr; No Finding", cross-investigation rejection, provenance chains.
-- **Protocol Forensics**: SMTP/IMAP/POP3 STARTTLS downgrade attacks, weak ciphers (RC4, 3DES), deprecated TLS (TLS 1.0/1.1).
-- **TLS 1.3 Limitation**: Honest `NOT_OBSERVABLE` certificate status (never manufactures synthetic certs).
-- **Capture Completeness**: TCP sequence gap analysis, confidence penalties for truncated captures.
-- **Security Hardening**: Path traversal rejection, PCAP magic bytes validation, SSRF protection against internal IPs.
-- **Contradiction Detection**: Explicit identification and reconciliation of rule vs ML divergence and completeness anomalies.
-- **Deterministic Replay**: Ordered step replay without re-running forensic tools.
-- **Multi-Format Reports**: Verifiable JSON, HTML, and PDF reports.
+### 2. Evidence Ledger Integrity Check
+```bash
+python -m securemailscope.cli verify-ledger
+```
+
+### 3. Live External AI Provider Validation
+```bash
+# NVIDIA NIM (Llama 3.2 11B Vision Instruct)
+python scripts/live_nvidia_validation.py
+
+# Google Gemini (Gemini 2.5 Flash Lite)
+python scripts/live_gemini_validation.py
+```
+
+### 4. Standalone Report Generation
+```bash
+python -m securemailscope.cli report INV-REAL-SMTP-01 --format json
+python -m securemailscope.cli report INV-REAL-SMTP-01 --format html
+python -m securemailscope.cli report INV-REAL-SMTP-01 --format pdf
+```
+
+---
+
+## 9. Demo Presentation Flow (Judges' Walkthrough)
+
+1. **Authentication**: Register a new analyst account at `/signup` or log in at `/login`.
+2. **PCAP Ingestion**: Upload `samples/wireshark_real_smtp.pcap` or select from pre-packaged demonstration captures.
+3. **Session Reconstruction**: Inspect reassembled TCP streams, directional payload flows, and protocol handshakes.
+4. **Evidence & Posture Score**: Review the explainable security posture score (0-100), completeness penalties, and findings.
+5. **Agentic Tool Calling**: Observe real-time agent reasoning steps streaming over SSE/WebSocket.
+6. **Multi-Format Export**: Download publication-ready PDF, standalone HTML, or structured JSON forensic dossiers.
+7. **Ledger Audit**: Run `python -m securemailscope.cli verify-ledger` in the terminal to demonstrate cryptographic tamper detection live.
+
+---
+
+## 10. Verification Status & Limitations
+
+### Status
+> **Verified within the tested scope.**  
+> All 81 unit/integration tests pass. Cryptographic hash chain of 1,153 entries validated. Live NVIDIA NIM and Google Gemini function-calling round trips confirmed against real network captures.
+
+### Known Limitations
+1. **Public Diagnostic Endpoints**: `/api/intel/query` and `/api/ml/benchmark` are intentionally public for demonstration without bearer tokens.
+2. **Cookie `secure` Flag**: Set to `secure=False` by default to enable local plaintext HTTP development (`http://localhost:8000`). Production deployments behind HTTPS reverse proxies must configure `secure=True`.
+3. **Upstream AI Provider Quotas**: In the event of upstream rate limiting on third-party AI APIs, the system automatically falls back to local deterministic rule-based forensics with zero loss of cryptographic accuracy.
+
+---
+
+## 11. Future Improvements
+
+- Automated DANE / TLSA validator engine via direct DNSSEC resolver.
+- Hardware-accelerated PCAP parsing for multi-gigabyte continuous capture rings.
+- Dynamic TLS session key decryption via provided SSLKEYLOGFILE artifacts.

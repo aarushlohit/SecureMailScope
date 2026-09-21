@@ -14,7 +14,7 @@ class JSONReporter:
     """
 
     @staticmethod
-    def generate_report(investigation_id: str, ledger: EvidenceLedger, output_path: Path) -> Path:
+    def generate_report(investigation_id: str, ledger: EvidenceLedger, output_path: Path, ai_summary: Optional[Dict[str, Any]] = None) -> Path:
         inv = ledger.get_investigation(investigation_id)
         if not inv:
             raise ValueError(f"Investigation '{investigation_id}' not found.")
@@ -41,7 +41,9 @@ class JSONReporter:
             "timeline": [t.model_dump() for t in timeline],
             "tool_executions": [tx.model_dump() for tx in tool_execs],
             "limitations": inv.limitations,
-            "recommendations": inv.recommendations
+            "recommendations": inv.recommendations,
+            "ai_summary": ai_summary if ai_summary else None,
+            "ai_summary_note": "AI summary was not generated for this investigation." if not ai_summary else None
         }
 
         output_path.parent.mkdir(parents=True, exist_ok=True)

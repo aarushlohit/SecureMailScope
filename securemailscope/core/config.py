@@ -21,8 +21,7 @@ if env_file.exists():
                 key, _, val = line.partition("=")
                 key = key.strip()
                 val = val.strip().strip("'\"")
-                if key not in os.environ:
-                    os.environ[key] = val
+                os.environ[key] = val
 
 def _env_bool(key: str, default: bool) -> bool:
     val = os.environ.get(key)
@@ -50,24 +49,30 @@ class AppConfig(BaseModel):
     port: int = Field(default_factory=lambda: _env_int("APP_PORT", 8000))
     debug: bool = Field(default_factory=lambda: _env_bool("DEBUG", False))
 
-    # Database
+    # Database & Security
     database_url: str = Field(default_factory=lambda: os.environ.get("DATABASE_URL", f"sqlite:///{DATA_DIR}/securemailscope.db"))
+    # Production deployments must set this explicitly. Development may use a
+    # process-local random key so an accidental public default can never sign
+    # sessions.
+    secret_key: Optional[str] = Field(default_factory=lambda: os.environ.get("SECRET_KEY") or None)
 
     # Evidence & ML Paths
-    evidence_db_path: Path = DATA_DIR / "evidence_ledger.json"
+    evidence_db_path: Path = Field(default_factory=lambda: Path(os.environ.get("EVIDENCE_LEDGER_PATH", DATA_DIR / "evidence_ledger.json")))
     ml_model_path: Path = DATA_DIR / "xgboost_crypto_model.json"
     artifact_dir: Path = Field(default_factory=lambda: Path(os.environ.get("ARTIFACT_DIR", DATA_DIR / "artifacts")))
     tool_output_dir: Path = Field(default_factory=lambda: Path(os.environ.get("TOOL_OUTPUT_DIR", DATA_DIR / "tool-output")))
     report_dir: Path = Field(default_factory=lambda: Path(os.environ.get("REPORT_DIR", DATA_DIR / "reports")))
 
     # NVIDIA NIM Primary LLM
-    nvidia_api_key: Optional[str] = Field(default_factory=lambda: os.environ.get("NVIDIA_API_KEY") or None)
-    nvidia_model: str = Field(default_factory=lambda: os.environ.get("NVIDIA_MODEL", "moonshotai/kimi-k3"))
-    nvidia_base_url: str = Field(default_factory=lambda: os.environ.get("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"))
+    nvidia_api_key: Optional[str] = Field(default_factory=lambda: os.environ.get("NVIDIA_NIM_API_KEY") or os.environ.get("NVIDIA_API_KEY") or None)
+    nvidia_model: str = Field(default_factory=lambda: os.environ.get("NVIDIA_NIM_MODEL") or os.environ.get("NVIDIA_MODEL", "moonshotai/kimi-k3"))
+    nvidia_base_url: str = Field(default_factory=lambda: os.environ.get("NVIDIA_NIM_BASE_URL") or os.environ.get("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"))
+    nvidia_timeout_seconds: int = Field(default_factory=lambda: _env_int("NVIDIA_TIMEOUT_SECONDS", 60))
 
     # Google Gemini Fallback LLM
     gemini_api_key: Optional[str] = Field(default_factory=lambda: os.environ.get("GEMINI_API_KEY") or None)
-    gemini_model: str = Field(default_factory=lambda: os.environ.get("GEMINI_MODEL", "gemini-1.5-flash"))
+    gemini_model: str = Field(default_factory=lambda: os.environ.get("GEMINI_MODEL", "gemini-3.6-flash"))
+    gemini_timeout_seconds: int = Field(default_factory=lambda: _env_int("GEMINI_TIMEOUT_SECONDS", 30))
 
     # Tavily Search Tool
     tavily_api_key: Optional[str] = Field(default_factory=lambda: os.environ.get("TAVILY_API_KEY") or None)
@@ -96,6 +101,9 @@ class AppConfig(BaseModel):
 
 
 config = AppConfig()
+
+if config.environment.lower() in {"production", "prod"} and not config.secret_key:
+    raise RuntimeError("SECRET_KEY must be configured when APP_ENV is production")
 
 for directory in (SAMPLES_DIR, REPORTS_DIR, DATA_DIR, config.artifact_dir, config.tool_output_dir, config.report_dir):
     directory.mkdir(parents=True, exist_ok=True)

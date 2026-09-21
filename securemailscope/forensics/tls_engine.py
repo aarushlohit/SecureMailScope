@@ -322,3 +322,5 @@ class TLSEngine:
                 analysis.handshake_completed = True
 
             b_idx += 4 + msg_len
+
+    analyze_handshake = analyze_stream

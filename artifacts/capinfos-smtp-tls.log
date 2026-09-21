@@ -1,0 +1,33 @@
+File name:           samples/wireshark_real_smtp_ssl.pcapng
+File type:           Wireshark/... - pcapng
+File encapsulation:  Ethernet
+File timestamp precision:  nanoseconds (9)
+Packet size limit:   file hdr: (not set)
+Number of packets:   38
+File size:           8,968 bytes
+Data size:           7,156 bytes
+Capture duration:    1522669095.871706435 seconds
+Earliest packet time: 2015-01-30 17:01:42.005931161
+Latest packet time:   2063-05-02 04:39:57.877637596
+Data byte rate:      0 bytes/s
+Data bit rate:       0 bits/s
+Average packet size: 188.32 bytes
+Average packet rate: 0 packets/s
+SHA256:              ca2f8af9de247be43b3a0b8cca6795bc7a2a8076719c572beed6662e1ea46eb4
+SHA1:                a33cd7e09a16e1b892a0e7b723fbf5ff221e0ae2
+Strict time order:   False
+Capture oper-sys:    Linux 3.18.1-1-ARCH
+Capture application: Dumpcap (Wireshark) 1.99.1 (Git Rev Unknown from unknown)
+Capture comment:     CLIENT_RANDOM 1ED24D31EB077F45CF6CB0145390C4F1C86F3B7DC3E9868C00FDCF791E414ACC BFAB4EEAEE92E1091AFECC965CDCA60D69D62B409DDC1027B058FB5F09E380EC0F2B5B5222BAD49CBFA77CEF05615B45                                                   
+Number of interfaces in file: 1
+Interface #0 info:
+                     Name = lo
+                     Encapsulation = Ethernet (1 - ether)
+                     Capture length = 262144
+                     Time precision = nanoseconds (9)
+                     Time ticks per second = 1000000000
+                     Time resolution = 0x09
+                     Filter string = tcp port 25
+                     Operating system = Linux 3.18.1-1-ARCH
+                     Number of stat entries = 1
+                     Number of packets = 38

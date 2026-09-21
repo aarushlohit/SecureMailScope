@@ -1,0 +1,38 @@
+{
+  "investigation_summary": "This investigation analyzed a PCAP capture 'INV-6D9C84A0_wireshark_real_smtp.pcap' containing 60 packets. The capture was loaded and analyzed using various tools, including CaptureEngine, TCPReconstructionEngine, SMTPAnalyzer, CryptoRuleEngine, and CryptoRiskClassifier (XGBoost). The analysis revealed a medium risk level due to the presence of cleartext authentication transmission. The investigation also identified a deprecated TLS session, classified as 'DEPRECATED_TLS' with a risk probability of 99.9% and confidence of 96.6%. The analysis was limited by the completeness percentage of 80.0% and the security score of 70.0%. The recommended actions include implementing encryption for user credentials and upgrading to a more secure TLS version.",
+  "executive_summary": "Medium risk level detected due to cleartext authentication transmission and deprecated TLS session. Recommended actions include implementing encryption and upgrading to a more secure TLS version.",
+  "key_observations": [
+    "Cleartext authentication transmission detected",
+    "Deprecated TLS session classified as 'DEPRECATED_TLS'",
+    "Medium risk level due to cleartext authentication transmission"
+  ],
+  "finding_reasoning": [
+    {
+      "finding_id": "FND-8A38A5",
+      "title": "Cleartext Authentication Transmitted",
+      "severity": "high",
+      "reasoning": "The CryptoRuleEngine triggered a rule indicating that cleartext authentication transmission was observed. This is a high-risk finding as it exposes user credentials to potential eavesdropping.",
+      "supporting_evidence_ids": [
+        "E-75BB18"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "risk_explanation": "The presence of cleartext authentication transmission and a deprecated TLS session increases the risk level to medium. This is because cleartext authentication transmission exposes user credentials to potential eavesdropping, while the deprecated TLS session indicates a potential vulnerability to attacks.",
+  "limitations": [
+    "Completeness percentage of 80.0%",
+    "Security score of 70.0%"
+  ],
+  "recommended_actions": [
+    "Implement encryption for user credentials",
+    "Upgrade to a more secure TLS version"
+  ],
+  "status": "success",
+  "generated_by": "nvidia",
+  "provider": "nvidia",
+  "model": "meta/llama-3.2-11b-vision-instruct",
+  "prompt_version": "2.1.0",
+  "generated_at": "2026-09-18T11:59:35.453652+00:00",
+  "is_ai_generated": true,
+  "forensic_data_hash": "c930fd72d3c14f8a44e61dcda7b753530b7453f3bd65aaa2686e7c0e077d5cc0"
+}

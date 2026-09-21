@@ -1,0 +1,29 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+NVIDIA failed: NVIDIA API rate limit exceeded: {"status":429,"title":"Too Many Requests"}
+NVIDIA failed: NVIDIA API rate limit exceeded: {"status":429,"title":"Too Many Requests"}
+[*] Analyzing capture: wireshark_real_smtp.pcap (Investigation ID: INV-337C0641)...
+
+============================================================
+SecureMailScope — Real Forensic Analysis
+============================================================
+Artifact:         wireshark_real_smtp.pcap
+SHA256:           17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab
+Packets:          60
+Protocols:        SMTP
+Email Sessions:   1
+Capture Quality:  80.0%
+Security Posture: 70.0/100 [MEDIUM RISK]
+Investigation:    INV-337C0641
+------------------------------------------------------------
+Verified Findings (1):
+  [HIGH  ] Cleartext Authentication Transmitted
+          Supporting Evidence: E-7BA615, E-3BA6AE, E-E608F8, E-1CC480, E-7AAE79
+          Remediation: Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH.
+------------------------------------------------------------
+Forensic Reports Generated:
+  - JSON: /home/aarush/Myoffice/hackathons/SIH/reports/INV-337C0641_report.json
+  - HTML: /home/aarush/Myoffice/hackathons/SIH/reports/INV-337C0641_report.html
+  - PDF:  /home/aarush/Myoffice/hackathons/SIH/reports/INV-337C0641_report.pdf
+============================================================
+

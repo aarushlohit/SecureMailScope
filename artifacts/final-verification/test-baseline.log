@@ -1,0 +1,127 @@
+
+==================================== ERRORS ====================================
+________________ ERROR collecting tests/test_agent_branches.py _________________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_agent_branches.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_agent_branches.py:6: in <module>
+    from securemailscope.evidence.ledger import EvidenceLedger
+securemailscope/evidence/ledger.py:21: in <module>
+    from securemailscope.db.session import SessionLocal
+securemailscope/db/session.py:5: in <module>
+    from sqlalchemy import create_engine
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+________________ ERROR collecting tests/test_evidence_ledger.py ________________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_evidence_ledger.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_evidence_ledger.py:6: in <module>
+    from securemailscope.evidence.ledger import EvidenceLedger
+securemailscope/evidence/ledger.py:21: in <module>
+    from securemailscope.db.session import SessionLocal
+securemailscope/db/session.py:5: in <module>
+    from sqlalchemy import create_engine
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+_______________ ERROR collecting tests/test_failure_injection.py _______________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_failure_injection.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_failure_injection.py:22: in <module>
+    from securemailscope.api.app import app
+securemailscope/api/app.py:12: in <module>
+    from securemailscope.api.routes import router as api_router
+securemailscope/api/routes.py:12: in <module>
+    from sse_starlette.sse import EventSourceResponse
+E   ModuleNotFoundError: No module named 'sse_starlette'
+___________________ ERROR collecting tests/test_forensics.py ___________________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_forensics.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_forensics.py:7: in <module>
+    from securemailscope.forensics.capture import CaptureEngine
+securemailscope/forensics/capture.py:7: in <module>
+    from scapy.all import rdpcap, TCP, IP, IPv6
+E   ModuleNotFoundError: No module named 'scapy'
+_______________ ERROR collecting tests/test_ledger_integrity.py ________________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_ledger_integrity.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_ledger_integrity.py:14: in <module>
+    from sqlalchemy import create_engine, text
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+___________________ ERROR collecting tests/test_ml_model.py ____________________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_ml_model.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_ml_model.py:5: in <module>
+    from securemailscope.ml.model import CryptoRiskClassifier
+securemailscope/ml/model.py:7: in <module>
+    import xgboost as xgb
+E   ModuleNotFoundError: No module named 'xgboost'
+______________ ERROR collecting tests/test_production_backend.py _______________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_production_backend.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_production_backend.py:19: in <module>
+    from backend.llm.schemas import ChatRequest, ChatMessage, ChatResponse, TokenUsage
+backend/llm/__init__.py:7: in <module>
+    from backend.llm.router import LLMRouter
+backend/llm/router.py:18: in <module>
+    from securemailscope.db.session import SessionLocal
+securemailscope/db/session.py:5: in <module>
+    from sqlalchemy import create_engine
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+______________ ERROR collecting tests/test_real_pcap_forensics.py ______________
+ImportError while importing test module '/home/aarush/Myoffice/hackathons/SIH/tests/test_real_pcap_forensics.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib64/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_real_pcap_forensics.py:16: in <module>
+    from securemailscope.agent.investigator import InvestigationAgent
+securemailscope/agent/investigator.py:29: in <module>
+    from securemailscope.evidence.ledger import EvidenceLedger
+securemailscope/evidence/ledger.py:21: in <module>
+    from securemailscope.db.session import SessionLocal
+securemailscope/db/session.py:5: in <module>
+    from sqlalchemy import create_engine
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+=============================== warnings summary ===============================
+tests/test_failure_injection.py:20
+  /home/aarush/Myoffice/hackathons/SIH/tests/test_failure_injection.py:20: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_agent_branches.py
+ERROR tests/test_evidence_ledger.py
+ERROR tests/test_failure_injection.py
+ERROR tests/test_forensics.py
+ERROR tests/test_ledger_integrity.py
+ERROR tests/test_ml_model.py
+ERROR tests/test_production_backend.py
+ERROR tests/test_real_pcap_forensics.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 8 errors during collection !!!!!!!!!!!!!!!!!!!!
+1 warning, 8 errors in 0.69s

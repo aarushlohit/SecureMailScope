@@ -1,0 +1,89 @@
+/home/aarush/Myoffice/hackathons/SIH/scripts/full_api_smoke_test.py:41: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+NVIDIA failed: NVIDIA API rate limit exceeded: {"status":429,"title":"Too Many Requests"}
+Gemini failed: Gemini server error (503): {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+LLM call iteration 1 failed: AI reasoning unavailable: Neither NVIDIA NIM nor Google Gemini is available. Deterministic forensic pipeline remains active.
+External LLM reasoning loop failed or unavailable: AI reasoning unavailable: Neither NVIDIA NIM nor Google Gemini is available. Deterministic forensic pipeline remains active.
+=================================================================
+   SECUREMAILSCOPE — FULL 25-STEP API SMOKE VERIFICATION
+=================================================================
+
+[Step 1/25] Testing Health Endpoint (/api/health)...
+       [PASS] Platform: SecureMailScope, Version: 2.6.0
+
+[Step 2/25] Testing User Registration (/api/auth/signup)...
+       [PASS] Registered user analyst.35d779@soc.gov.in (ID: USR-D1AED56F)
+
+[Step 3/25] Testing Duplicate Signup Rejection...
+       [PASS] Correctly rejected duplicate email with HTTP 400
+
+[Step 4/25] Testing User Authentication (/api/auth/login)...
+       [PASS] Authenticated successfully, token issued
+
+[Step 5/25] Testing Invalid Login Rejection...
+       [PASS] Generic invalid-login error returned (no user enumeration)
+
+[Step 6/25] Testing Authenticated Profile (/api/auth/me)...
+       [PASS] Validated session for analyst.35d779@soc.gov.in (Role: analyst)
+
+[Step 7-8/25] Uploading Authentic PCAP with Auth Headers...
+       [PASS] Investigation Created: INV-8DABBBD0 (Artifact: INV-8DABBBD0_wireshark_real_smtp.pcap)
+
+[Step 9/25] Verifying Artifact SHA-256 Hash...
+       [PASS] Artifact SHA-256: 17ad230db1b6fd5dd18e...a86a47ab
+
+[Step 10/25] Verifying Forensic Pipeline Execution...
+       [PASS] Status: COMPLETED, Packets: 60
+
+[Step 11/25] Testing SSE Event Bus Connection...
+       [PASS] Timeline records 10 chronological forensic events
+
+[Step 12/25] Verifying Protocol Detection...
+       [PASS] Protocols detected: ['SMTP'] (Streams: 1)
+
+[Step 13/25] Querying Evidence Ledger (/api/investigations/{id}/evidence)...
+       [PASS] Retrieved 5 immutable Evidence Ledger records
+
+[Step 14/25] Querying Verified Findings (/api/investigations/{id}/findings)...
+       [PASS] Retrieved 1 verified cryptographic findings
+
+[Step 15/25] Verifying Security Posture Scoring...
+       [PASS] Posture Score: 70.0/100 [MEDIUM RISK] (Confidence: 78.4%)
+
+[Step 16-19/25] Auditing SQL Database Persistence...
+       [PASS] Agent Runs: 1
+              Provider recorded: none (Model: none)
+       [PASS] Agent Steps in SQL: 3
+       [PASS] Tool Executions in SQL: 9
+
+[Step 20/25] Testing JSON Report Export...
+       [PASS] Machine-readable JSON forensic dossier generated
+
+[Step 21/25] Testing HTML Report Export...
+       [PASS] Publication-ready HTML report generated (15851 bytes)
+
+[Step 22/25] Testing PDF Report Export...
+       [PASS] Audit-grade PDF generated via ReportLab (3362 bytes)
+
+[Step 23/25] Testing Step-by-Step Forensic Replay Trace...
+       [PASS] Step Replay contains 3 forensic execution steps
+
+[Step 24/25] Testing Session Invalidation (/api/auth/logout)...
+       [PASS] Session token successfully revoked
+
+[Step 25/25] Verifying 401 Unauthorized on Protected Endpoint Post-Logout...
+       [PASS] Session revocation enforced (HTTP 401 Unauthorized)
+
+=================================================================
+ [SUCCESS] ALL 25 API SMOKE TEST STEPS PASSED WITHOUT ERROR
+=================================================================
+

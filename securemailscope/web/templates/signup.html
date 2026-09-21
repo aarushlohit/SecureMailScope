@@ -150,7 +150,9 @@
     <h1 class="auth-title">Create your account</h1>
     <p class="auth-subtitle">Join the cryptographic email forensic platform.</p>
 
-    <form onsubmit="event.preventDefault(); window.location.href='/app';">
+    <div id="signup-error" style="display:none; padding:10px 14px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:var(--radius-md); color:#991B1B; font-size:12px; margin-bottom:16px;"></div>
+
+    <form id="signup-form" onsubmit="handleSignup(event);">
       <div class="form-group">
         <label class="form-label" for="fullname">Full Name</label>
         <input type="text" id="fullname" class="form-input" placeholder="Alex Morgan" required>
@@ -163,7 +165,7 @@
 
       <div class="form-group">
         <label class="form-label" for="password">Password</label>
-        <input type="password" id="password" class="form-input" placeholder="Minimum 12 characters" required>
+        <input type="password" id="password" class="form-input" placeholder="Minimum 8 characters" required>
       </div>
 
       <div style="display: flex; align-items: flex-start; gap: 8px; margin: 16px 0 20px;">
@@ -173,7 +175,7 @@
         </label>
       </div>
 
-      <button type="submit" class="btn-primary-dark" style="width: 100%; justify-content: center; padding: 11px 16px;">
+      <button type="submit" id="submit-btn" class="btn-primary-dark" style="width: 100%; justify-content: center; padding: 11px 16px;">
         Create account &rarr;
       </button>
     </form>
@@ -198,6 +200,39 @@
 
   <script>
     if (window.lucide) window.lucide.createIcons();
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      const btn = document.getElementById("submit-btn");
+      errEl.style.display = "none";
+      btn.disabled = true;
+      btn.innerText = "Creating account...";
+
+      const full_name = document.getElementById("fullname").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const resp = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ full_name, email, password })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || "Registration failed");
+        }
+        localStorage.setItem("securemailscope_token", data.token);
+        localStorage.setItem("securemailscope_user", JSON.stringify(data));
+        window.location.href = "/app";
+      } catch (err) {
+        errEl.innerText = err.message;
+        errEl.style.display = "block";
+        btn.disabled = false;
+        btn.innerText = "Create account →";
+      }
+    }
   </script>
 </body>
 </html>

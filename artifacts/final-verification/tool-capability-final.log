@@ -1,0 +1,25 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+
+=================================================================
+       SECUREMAILSCOPE — SYSTEM & DEPENDENCY AUDIT
+=================================================================
+Platform:              Linux-7.1.13-200.fc44.x86_64-x86_64-with-glibc2.43
+Python Version:        3.14.7
+Binary [tshark   ]:    INSTALLED (TShark (Wireshark) 4.6.8 (Git commit e67)
+Binary [capinfos ]:    INSTALLED (Capinfos (Wireshark) 4.6.8 (Git commit e)
+Binary [openssl  ]:    INSTALLED (OpenSSL 3.5.8 25 Aug 2026 (Library: Open)
+Binary [zeek     ]:    UNAVAILABLE (gracefully degraded)
+Package [scapy]:       INSTALLED (2.7.0)
+Package [xgboost]:     INSTALLED (3.4.1)
+Package [sklearn]:     INSTALLED (1.9.0)
+Package [shap]:        INSTALLED (0.52.0)
+Package [mail-parser]: INSTALLED (installed)
+Package [dnspython]:   INSTALLED (2.8.0)
+Package [sse-starlette]: INSTALLED (3.4.11)
+-----------------------------------------------------------------
+LLM Primary (NVIDIA):  CONFIGURED (meta/llama-3.2-11b-vision-instruct)
+LLM Fallback (Gemini): CONFIGURED (gemini-3.6-flash)
+Database:              CONNECTED (sqlite) | Users: 13, Invs: 48
+=================================================================
+

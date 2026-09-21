@@ -1,0 +1,25 @@
+[*] Analyzing capture: wireshark_real_smtp.pcap (Investigation ID: INV-971E7B92)...
+
+============================================================
+SecureMailScope — Real Forensic Analysis
+============================================================
+Artifact:         wireshark_real_smtp.pcap
+SHA256:           17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab
+Packets:          60
+Protocols:        SMTP
+Email Sessions:   1
+Capture Quality:  80.0%
+Security Posture: 70.0/100 [MEDIUM RISK]
+Investigation:    INV-971E7B92
+------------------------------------------------------------
+Verified Findings (1):
+  [HIGH  ] Cleartext Authentication Transmitted
+          Supporting Evidence: E-2976B7, E-2CDD73, E-3D4A9F, E-9D3BC8, E-F553BA
+          Remediation: Prohibit cleartext authentication over unencrypted ports. Require explicit STARTTLS before AUTH.
+------------------------------------------------------------
+Forensic Reports Generated:
+  - JSON: /home/aarush/Myoffice/hackathons/SIH/reports/INV-971E7B92_report.json
+  - HTML: /home/aarush/Myoffice/hackathons/SIH/reports/INV-971E7B92_report.html
+  - PDF:  /home/aarush/Myoffice/hackathons/SIH/reports/INV-971E7B92_report.pdf
+============================================================
+

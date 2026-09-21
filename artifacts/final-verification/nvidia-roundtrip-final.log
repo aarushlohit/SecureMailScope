@@ -1,0 +1,33 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+=================================================================
+     SECUREMAILSCOPE — LIVE NVIDIA NIM VALIDATION
+=================================================================
+API Key:       configured
+Base URL:      https://integrate.api.nvidia.com/v1
+Model:         meta/llama-3.2-11b-vision-instruct
+-----------------------------------------------------------------
+[1/3] Testing NVIDIA NIM endpoint connectivity...
+      Connectivity: OK (healthy=True, latency=922.1ms)
+[2/3] Sending minimal test completion (max_tokens=15)...
+      Response received in 13943.9ms from meta/llama-3.2-11b-vision-instruct
+      Snippet: The primary risk of plaintext SMTP over port 25 is eavesdropping and interception of sensitive infor...
+[3/3] Testing structured tool-call round trip...
+      Initial provider request: PENDING
+      Initial provider request: SUCCESS
+      Tool call received: SUCCESS
+      Tool validation: PENDING (check_completeness)
+      Tool validation: SUCCESS
+      Local tool execution: SUCCESS
+      Tool result summary: packets=60 complete=80.0% sha256=17ad230db1b6fd5d...
+      Tool result submission: PENDING
+      Tool result submission: SUCCESS
+      Final model response: SUCCESS
+      Final snippet: The final validation summary for the approved sample "wireshark_real_smtp.pcap" is:
+
+The packet count is 60.
+The completeness percentage is 80.0%, which is assessed as MODERATE_PAR
+
+[PASS] NVIDIA NIM complete tool-call round trip succeeded.
+      Overall round trip: PASS
+=================================================================

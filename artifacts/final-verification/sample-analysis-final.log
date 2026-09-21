@@ -1,0 +1,37 @@
+/home/aarush/Myoffice/hackathons/SIH/.venv/lib64/python3.14/site-packages/scapy/layers/tls/crypto/groups.py:25: CryptographyDeprecationWarning: Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.
+  from cryptography.hazmat.primitives.asymmetric.dh import DHParameterNumbers
+{
+  "artifact_name": "wireshark_real_smtp.pcap",
+  "artifact_path": "/home/aarush/Myoffice/hackathons/SIH/samples/wireshark_real_smtp.pcap",
+  "artifact_sha256": "17ad230db1b6fd5dd18eb311092df1cf6eb162054bdb47697b89bef5a86a47ab",
+  "artifact_md5": "c06e944f3cc2c3f305bb37e23cfd6908",
+  "artifact_size": 27850,
+  "file_type": "pcap",
+  "packet_count": 60,
+  "start_time": 1254722767.49206,
+  "end_time": 1254722776.690444,
+  "duration_seconds": 9.198,
+  "completeness": {
+    "completeness_percentage": 80.0,
+    "total_tcp_packets": 53,
+    "tcp_streams_count": 1,
+    "sequence_gaps": 0,
+    "retransmissions": 18,
+    "truncated_packets": 0,
+    "is_complete": false,
+    "assessment": "MODERATE_PARTIAL"
+  },
+  "capinfos_metadata": {
+    "file_name": "/home/aarush/Myoffice/hackathons/SIH/samples/wireshark_real_smtp.pcap",
+    "number_of_packets": "60",
+    "file_size": "27 kB",
+    "data_size": "26 kB",
+    "capture_duration": "9.198384 seconds"
+  },
+  "protocols_observed": [
+    "IPV4",
+    "TCP"
+  ],
+  "snaplen": "65535 bytes",
+  "data_size": "26 kB"
+}

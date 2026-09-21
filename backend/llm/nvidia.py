@@ -30,14 +30,28 @@ class NvidiaProvider(LLMProvider):
         api_key: Optional[str] = None,
         model: Optional[str] = None,
         base_url: Optional[str] = None,
-        timeout: float = 10.0,
-        max_retries: int = 1
+        timeout: Optional[float] = None,
+        max_retries: int = 0
     ):
         self.api_key = api_key or config.nvidia_api_key
         self.model = model or config.nvidia_model or "moonshotai/kimi-k3"
         self.base_url = (base_url or config.nvidia_base_url or "https://integrate.api.nvidia.com/v1").rstrip("/")
-        self.timeout = timeout
+        self.timeout = timeout if timeout is not None else float(config.nvidia_timeout_seconds)
         self.max_retries = max_retries
+
+    async def health(self) -> HealthStatus:
+        if not self.api_key:
+            return HealthStatus(provider="nvidia", model=self.model, configured=False, healthy=False)
+        try:
+            t0 = time.perf_counter()
+            url = f"{self.base_url}/models"
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                res = await client.get(url, headers={"Authorization": f"Bearer {self.api_key}"})
+                lat = (time.perf_counter() - t0) * 1000
+                is_ok = res.status_code == 200
+                return HealthStatus(provider="nvidia", model=self.model, configured=True, healthy=is_ok, latency_ms=lat)
+        except Exception:
+            return HealthStatus(provider="nvidia", model=self.model, configured=True, healthy=False)
 
     def _headers(self, stream: bool = False) -> Dict[str, str]:
         if not self.api_key:

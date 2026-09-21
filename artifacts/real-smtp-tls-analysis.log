@@ -1,0 +1,25 @@
+[*] Analyzing capture: wireshark_real_smtp_ssl.pcapng (Investigation ID: INV-9C2ACA1D)...
+
+============================================================
+SecureMailScope — Real Forensic Analysis
+============================================================
+Artifact:         wireshark_real_smtp_ssl.pcapng
+SHA256:           ca2f8af9de247be43b3a0b8cca6795bc7a2a8076719c572beed6662e1ea46eb4
+Packets:          38
+Protocols:        SMTP
+Email Sessions:   1
+Capture Quality:  80.0%
+Security Posture: 75.0/100 [LOW RISK]
+Investigation:    INV-9C2ACA1D
+------------------------------------------------------------
+Verified Findings (1):
+  [HIGH  ] Expired X.509 Certificate
+          Supporting Evidence: E-B53765, E-E8D6E5, E-4AF405, E-D4899F, E-A018F8
+          Remediation: Renew and deploy a valid SSL/TLS certificate from an accredited Certificate Authority.
+------------------------------------------------------------
+Forensic Reports Generated:
+  - JSON: /home/aarush/Myoffice/hackathons/SIH/reports/INV-9C2ACA1D_report.json
+  - HTML: /home/aarush/Myoffice/hackathons/SIH/reports/INV-9C2ACA1D_report.html
+  - PDF:  /home/aarush/Myoffice/hackathons/SIH/reports/INV-9C2ACA1D_report.pdf
+============================================================
+
