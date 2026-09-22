@@ -479,7 +479,7 @@
 
       if (catBadge) {
         catBadge.textContent = (node.category || 'node').toUpperCase();
-        catBadge.className = `badge ${node.category === 'evidence' ? 'badge-secure' : (node.category === 'finding' ? 'badge-critical' : 'badge-neutral')}`;
+        catBadge.className = `badge ${node.category === 'evidence' ? (node.data && node.data.type === 'EXTERNAL_INTELLIGENCE' ? 'badge-info' : 'badge-secure') : (node.category === 'finding' ? 'badge-critical' : 'badge-neutral')}`;
       }
       if (titleEl) {
         titleEl.textContent = node.label;
@@ -575,7 +575,16 @@
     }
 
     async authFetch(url, options = {}) {
-      const token = localStorage.getItem('securemailscope_token');
+      let token = localStorage.getItem('securemailscope_token');
+      if (!token) {
+        const match = document.cookie.match(/(?:^|;\s*)securemailscope_token=([^;]+)/);
+        if (match) {
+          token = decodeURIComponent(match[1]);
+          try {
+            localStorage.setItem('securemailscope_token', token);
+          } catch (e) {}
+        }
+      }
       const headers = { ...(options.headers || {}) };
       if (token && !headers['Authorization']) {
         headers['Authorization'] = `Bearer ${token}`;
@@ -1548,9 +1557,21 @@
     }
 
 
-    appendAgentErrorMessage(errorText) {
+    appendAgentErrorMessage(errorText, placeholderId = null) {
       const thread = document.getElementById('home-conversation-container');
       if (!thread) return;
+
+      if (placeholderId) {
+        const ph = document.getElementById(placeholderId);
+        if (ph) ph.remove();
+      } else {
+        // Remove any lingering in-progress placeholders
+        const pending = thread.querySelectorAll('.chat-message-agent .working-indicator-badge');
+        pending.forEach((p) => {
+          const parent = p.closest('.chat-message-agent');
+          if (parent) parent.remove();
+        });
+      }
 
       const msgEl = document.createElement('div');
       msgEl.className = 'chat-message chat-message-agent';
@@ -1558,11 +1579,12 @@
         <div class="chat-avatar" style="background: var(--critical);">
           <i data-lucide="alert-triangle" style="width: 16px; height: 16px; color: #fff;"></i>
         </div>
-        <div class="chat-message-bubble" style="background: var(--critical-bg); border: 1px solid var(--critical-border); color: var(--critical-text);">
+        <div class="chat-message-bubble" style="background: var(--critical-bg); border: 1px solid var(--critical-border); color: var(--critical-text); line-height: 1.5;">
           <strong>Analysis Error:</strong> ${this.escapeHtml(errorText)}
         </div>
       `;
       thread.appendChild(msgEl);
+      msgEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
       if (window.lucide) window.lucide.createIcons();
     }
 
@@ -2235,7 +2257,7 @@
                   (ev) => `
                 <tr style="cursor: pointer;" onclick="window.workstation.openEvidenceDrawer('${ev.evidence_id}')">
                   <td style="font-family: var(--font-mono); font-weight: 700;"><span class="evidence-badge">${ev.evidence_id}</span></td>
-                  <td><span class="badge badge-neutral">${ev.evidence_type}</span></td>
+                  <td><span class="badge ${ev.evidence_type === 'EXTERNAL_INTELLIGENCE' ? 'badge-info' : 'badge-neutral'}">${ev.evidence_type}</span></td>
                   <td style="font-size: 13px;">${this.escapeHtml(ev.claim || ev.observed_claim || '')}</td>
                   <td style="font-family: var(--font-mono); font-size: 11px;">${ev.source_tool || 'sensor'}</td>
                   <td style="font-family: var(--font-mono); font-size: 11px;">${(ev.confidence * 100).toFixed(0)}%</td>

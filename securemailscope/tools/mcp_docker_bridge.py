@@ -23,6 +23,7 @@ class DockerMCPBridge:
         """
         Executes a single JSON-RPC call against the Docker MCP container via stdio.
         """
+        proc = None
         try:
             proc = subprocess.Popen(
                 ["docker", "run", "--rm", "-i", self.image, "serve"],
@@ -43,9 +44,11 @@ class DockerMCPBridge:
                     "clientInfo": {"name": "SecureMailScope", "version": "1.0.0"}
                 }
             }
-            proc.stdin.write(json.dumps(init_req) + "\n")
-            proc.stdin.flush()
-            _ = proc.stdout.readline()
+            if proc.stdin:
+                proc.stdin.write(json.dumps(init_req) + "\n")
+                proc.stdin.flush()
+            if proc.stdout:
+                _ = proc.stdout.readline()
 
             # 2. Main Method
             req = {
@@ -54,19 +57,32 @@ class DockerMCPBridge:
                 "method": method,
                 "params": params
             }
-            proc.stdin.write(json.dumps(req) + "\n")
-            proc.stdin.flush()
+            if proc.stdin:
+                proc.stdin.write(json.dumps(req) + "\n")
+                proc.stdin.flush()
 
-            raw_resp = proc.stdout.readline()
-            proc.kill()
+            raw_resp = proc.stdout.readline() if proc.stdout else ""
 
             if not raw_resp:
                 return {"error": "Empty response from Docker MCP"}
 
             return json.loads(raw_resp)
         except Exception as e:
-            logger.error(f"Docker MCP RPC failed: {e}")
+            logger.debug(f"Docker MCP RPC unavailable: {e}")
             return {"error": str(e)}
+        finally:
+            if proc:
+                try:
+                    if proc.stdin:
+                        proc.stdin.close()
+                    if proc.stdout:
+                        proc.stdout.close()
+                    if proc.stderr:
+                        proc.stderr.close()
+                    proc.kill()
+                    proc.wait(timeout=0.2)
+                except Exception:
+                    pass
 
     def list_tools(self) -> List[Dict[str, Any]]:
         if self._available_tools is not None:

@@ -1,0 +1,209 @@
+{
+  "status": "TRAINED",
+  "trained_at": "2026-09-22T12:31:46.066588+00:00",
+  "model_version": "CryptoRiskClassifier-v2-RealData",
+  "classes": [
+    "SECURE_BASELINE",
+    "DEPRECATED_TLS",
+    "WEAK_CIPHER",
+    "WEAK_CERTIFICATE",
+    "CERTIFICATE_ANOMALY",
+    "STARTTLS_STRIPPING",
+    "PLAINTEXT_FALLBACK",
+    "INCOMPLETE_HANDSHAKE"
+  ],
+  "dataset_stats": {
+    "total_samples": 1680,
+    "real_pcap_feature_vectors": 80,
+    "real_pcaps_processed": 16,
+    "eff_domains_loaded": 6733,
+    "synthetic_samples": 1600,
+    "feature_count": 15,
+    "class_distribution": {
+      "SECURE_BASELINE": 261,
+      "DEPRECATED_TLS": 209,
+      "WEAK_CIPHER": 194,
+      "WEAK_CERTIFICATE": 189,
+      "CERTIFICATE_ANOMALY": 201,
+      "STARTTLS_STRIPPING": 208,
+      "PLAINTEXT_FALLBACK": 213,
+      "INCOMPLETE_HANDSHAKE": 205
+    },
+    "pcap_sources": [
+      "wireshark_real_smtp_ssl.pcapng",
+      "wireshark_real_imap_ssl.pcapng",
+      "wireshark_real_pop_ssl.pcapng",
+      "mail_secure_tls13.pcap",
+      "wireshark_real_smtp.pcap",
+      "wireshark_real_imap.pcap",
+      "mail_pop3_plaintext_auth.pcap",
+      "mail_attack_starttls_strip.pcap",
+      "mail_weak_crypto_tls10_rc4.pcap",
+      "mail_imap_cert_expired.pcap",
+      "mail_partial_capture_inconclusive.pcap",
+      "wireshark_tls12_aes128ccm.pcap",
+      "wireshark_tls13_rfc8446.pcap",
+      "wireshark_tls12_aes256gcm.pcap",
+      "wireshark_tls12_chacha20.pcap",
+      "wireshark_tls13_chacha20.pcap"
+    ]
+  },
+  "train_samples": 1344,
+  "test_samples": 336,
+  "metrics": {
+    "accuracy": 0.994,
+    "precision_weighted": 0.9943,
+    "recall_weighted": 0.994,
+    "f1_weighted": 0.994,
+    "macro_f1": 0.994
+  },
+  "per_class_metrics": {
+    "SECURE_BASELINE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 52
+    },
+    "DEPRECATED_TLS": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 42
+    },
+    "WEAK_CIPHER": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 39
+    },
+    "WEAK_CERTIFICATE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 38
+    },
+    "CERTIFICATE_ANOMALY": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 40
+    },
+    "STARTTLS_STRIPPING": {
+      "precision": 0.9535,
+      "recall": 1.0,
+      "f1_score": 0.9762,
+      "support": 41
+    },
+    "PLAINTEXT_FALLBACK": {
+      "precision": 1.0,
+      "recall": 0.9535,
+      "f1_score": 0.9762,
+      "support": 43
+    },
+    "INCOMPLETE_HANDSHAKE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 41
+    }
+  },
+  "feature_importances": {
+    "tls_version_num": 0.04919999837875366,
+    "cipher_strength_score": 0.0877000018954277,
+    "has_pfs": 0.0,
+    "cert_key_bits": 0.07249999791383743,
+    "is_self_signed": 0.09220000356435776,
+    "is_cert_expired": 0.28769999742507935,
+    "has_weak_sig": 0.037700001150369644,
+    "starttls_advertised": 0.04309999942779541,
+    "starttls_requested": 0.15029999613761902,
+    "starttls_accepted": 0.0,
+    "plaintext_after_starttls": 0.08049999922513962,
+    "auth_in_plaintext": 0.014800000004470348,
+    "capture_completeness": 0.06549999862909317,
+    "handshake_rtt_ms": 0.015300000086426735,
+    "stream_total_bytes": 0.0034000000450760126
+  },
+  "confusion_matrix": [
+    [
+      52,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      42,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      39,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      38,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      40,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      41,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      41,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      41
+    ]
+  ]
+}

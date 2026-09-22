@@ -734,6 +734,41 @@ class ToolGateway:
                     search_depth=args.get("search_depth", "basic"),
                     hypothesis_id=hypothesis_id
                 )
+                if result_payload.get("status") == "SUCCESS":
+                    ev_id = f"E-{uuid.uuid4().hex[:6].upper()}"
+                    res_cnt = result_payload.get("results_count", 0)
+                    summary = result_payload.get("answer") or ""
+                    if not summary and result_payload.get("results"):
+                        summary = result_payload["results"][0].get("snippet", "")[:160]
+                    claim = f"External OSINT Threat Intel (Tavily): Query '{args['query']}' yielded {res_cnt} result(s)."
+                    if summary:
+                        claim += f" Details: {summary[:180]}"
+
+                    ev = Evidence(
+                        evidence_id=ev_id,
+                        investigation_id=investigation_id,
+                        type=EvidenceType.EXTERNAL_INTELLIGENCE,
+                        claim=claim,
+                        source_tool="intel.tavily_search",
+                        tool_version=self.tool_version,
+                        tool_args={"query": args["query"], "max_results": args.get("max_results", 5)},
+                        raw_artifact_ref=f"osint://tavily/{result_payload.get('external_id', 'query')}",
+                        confidence=0.85,
+                        severity=SeverityLevel.MEDIUM,
+                        hypothesis_id=hypothesis_id,
+                        provenance_chain=[investigation_id, "intel.tavily_search"],
+                        details={
+                            "external_id": result_payload.get("external_id"),
+                            "query": args["query"],
+                            "answer": result_payload.get("answer"),
+                            "results": result_payload.get("results", []),
+                            "classification": "EXTERNAL_INTELLIGENCE"
+                        }
+                    )
+                    self.ledger.record_evidence(ev)
+                    generated_evidence_ids.append(ev_id)
+                    result_payload["evidence_id"] = ev_id
+                    result_payload["evidence_ids"] = [ev_id]
             elif tool_name == "intel.ip":
                 result_payload = {"ip": args.get("ip"), "reputation": "KNOWN_MAIL_GATEWAY"}
 

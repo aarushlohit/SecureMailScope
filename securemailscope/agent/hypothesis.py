@@ -37,7 +37,7 @@ class HypothesisEngine:
         if evidence_id not in hyp.supporting_evidence_ids:
             hyp.supporting_evidence_ids.append(evidence_id)
         hyp.confidence = min(1.0, round(hyp.confidence + confidence_boost, 2))
-        if hyp.confidence >= 0.85:
+        if hyp.confidence >= 0.85 and hyp.status not in (HypothesisStatus.CONFIRMED, HypothesisStatus.REFUTED):
             hyp.status = HypothesisStatus.SUPPORTED
         if note:
             hyp.notes.append(f"[SUPPORTED] {note}")

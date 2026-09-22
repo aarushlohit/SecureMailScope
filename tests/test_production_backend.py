@@ -113,6 +113,89 @@ def test_tavily_disabled_and_enabled_handling():
         assert res["status"] == "DISALLOWED"
 
 
+def test_tavily_external_intelligence_evidence_generation(tmp_path):
+    """Verify that ToolGateway execution of intel.tavily_search strictly records Evidence with EXTERNAL_INTELLIGENCE type."""
+    ledger = EvidenceLedger(storage_path=tmp_path / "ledger.json")
+    gw = ToolGateway(ledger)
+
+    mock_tavily_payload = {
+        "status": "SUCCESS",
+        "external_id": "EXT-TEST1234",
+        "query": "mail.securecorp.com STARTTLS vulnerability",
+        "answer": "Known vulnerability: CVE-2021-38371 STARTTLS stripping detected on legacy MTAs.",
+        "results_count": 2,
+        "results": [
+            {
+                "title": "STARTTLS Stripping Analysis",
+                "url": "https://example.com/cve",
+                "snippet": "Vulnerability affects cleartext SMTP fallbacks."
+            }
+        ],
+        "evidence_classification": "EXTERNAL_INTELLIGENCE"
+    }
+
+    with patch.object(TavilySearchTool, "execute", return_value=mock_tavily_payload):
+        res = gw.execute_tool(
+            "INV-TAVILY-01",
+            "intel.tavily_search",
+            {"query": "mail.securecorp.com STARTTLS vulnerability", "max_results": 3}
+        )
+
+    assert res["status"] == "SUCCESS"
+    assert len(res["evidence_ids"]) == 1
+    ev_id = res["evidence_ids"][0]
+
+    # Verify ledger entry strictly adheres to EXTERNAL_INTELLIGENCE
+    ev_items = ledger.get_evidence_for_investigation("INV-TAVILY-01")
+    assert len(ev_items) == 1
+    ev = ev_items[0]
+    assert ev.evidence_id == ev_id
+    assert ev.type == EvidenceType.EXTERNAL_INTELLIGENCE
+    assert ev.source_tool == "intel.tavily_search"
+    assert "CVE-2021-38371" in ev.claim
+    assert ev.raw_artifact_ref == "osint://tavily/EXT-TEST1234"
+    assert ev.details["classification"] == "EXTERNAL_INTELLIGENCE"
+
+
+def test_agent_uses_tavily_threat_intel(tmp_path):
+    """Verify that InvestigationAgent actively executes intel.tavily_search when certificates or STARTTLS anomalies are detected."""
+    ledger = EvidenceLedger(storage_path=tmp_path / "ledger.json")
+    agent = InvestigationAgent(ledger)
+
+    mock_tavily_payload = {
+        "status": "SUCCESS",
+        "external_id": "EXT-CERT5678",
+        "query": "mail.example.com certificate trust reputation",
+        "answer": "Domain mail.example.com has self-signed certs flagged in public threat feeds.",
+        "results_count": 1,
+        "results": [{"title": "Cert Rep", "url": "https://osint.io", "snippet": "Untrusted root CA."}],
+        "evidence_classification": "EXTERNAL_INTELLIGENCE"
+    }
+
+    pcap_file = SAMPLES_DIR / "mail_imap_cert_expired.pcap"
+    if not pcap_file.exists():
+        pytest.skip("mail_imap_cert_expired.pcap sample fixture not available")
+
+    with patch.object(config, "tavily_enabled", True), \
+         patch.object(config, "allow_external_intel", True), \
+         patch.object(config, "tavily_api_key", "tvly-test-key"), \
+         patch.object(TavilySearchTool, "execute", return_value=mock_tavily_payload):
+
+        inv = agent.run_investigation("INV-AGENT-TAVILY", pcap_file)
+
+    # Verify agent recorded EXTERNAL_INTELLIGENCE evidence in ledger
+    ev_items = ledger.get_evidence_for_investigation("INV-AGENT-TAVILY")
+    ext_intel = [e for e in ev_items if e.type == EvidenceType.EXTERNAL_INTELLIGENCE]
+    assert len(ext_intel) >= 1
+    assert ext_intel[0].source_tool == "intel.tavily_search"
+
+    # Verify ToolExecution record exists
+    tool_execs = [tx for tx in ledger._tool_executions.values() if tx.tool == "intel.tavily_search"]
+    assert len(tool_execs) >= 1
+    assert ext_intel[0].evidence_id in tool_execs[0].evidence_ids
+
+
+
 def test_tool_allowlisting_and_malicious_rejection(tmp_path):
     """Verify that ToolGateway strictly rejects un-allowlisted or malicious tool invocations."""
     ledger = EvidenceLedger(storage_path=tmp_path / "ledger.json")
@@ -450,6 +533,72 @@ def test_workstation_live_endpoints():
     intel_data = resp_intel.json()
     assert intel_data["target"] == "example.com"
     assert "dns_security" in intel_data
+
+
+@pytest.mark.anyio
+async def test_agent_chat_dispatches_tavily_search():
+    """Verify that /agent/chat endpoint invokes search_threat_intel -> intel.tavily_search and records EXTERNAL_INTELLIGENCE."""
+    from tests.conftest import make_authed_client
+    authed = make_authed_client()
+
+    # Create owned investigation via API
+    inv_create_resp = authed.post(
+        "/api/investigations",
+        data={"sample_name": "mail_imap_cert_expired.pcap"}
+    )
+    assert inv_create_resp.status_code == 200
+    inv_id = inv_create_resp.json()["investigation_id"]
+    ledger = EvidenceLedger.get_instance()
+
+    mock_tavily_payload = {
+        "status": "SUCCESS",
+        "external_id": "EXT-CHAT-99",
+        "query": "mail.example.com STARTTLS vulnerability",
+        "answer": "STARTTLS stripping reported on port 25.",
+        "results_count": 1,
+        "results": [{"title": "Threat Feed", "url": "https://threat.io", "snippet": "Stripping detected."}],
+        "evidence_classification": "EXTERNAL_INTELLIGENCE"
+    }
+
+    mock_resp1 = ChatResponse(
+        content="",
+        model="moonshotai/kimi-k3",
+        provider="nvidia",
+        tool_calls=[
+            {
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                    "name": "search_threat_intel",
+                    "arguments": '{"query": "mail.example.com STARTTLS vulnerability"}'
+                }
+            }
+        ]
+    )
+    mock_resp2 = ChatResponse(
+        content="Based on external threat intelligence, mail.example.com has known STARTTLS stripping issues.",
+        model="moonshotai/kimi-k3",
+        provider="nvidia",
+        tool_calls=[]
+    )
+
+    with patch("backend.llm.router.LLMRouter.chat", side_effect=[mock_resp1, mock_resp2]), \
+         patch.object(TavilySearchTool, "execute", return_value=mock_tavily_payload):
+
+        resp = authed.post(
+            f"/api/investigations/{inv_id}/agent/chat",
+            json={"message": "Please search threat intel for mail.example.com"}
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "STARTTLS stripping issues" in data["reply"]
+        assert any(tc.get("tool") == "search_threat_intel" or tc.get("name") == "search_threat_intel" for tc in data.get("tool_calls_made", []))
+        # Verify EXTERNAL_INTELLIGENCE evidence was recorded
+        evs = ledger.get_evidence_for_investigation(inv_id)
+        ext_ev = [e for e in evs if e.type == EvidenceType.EXTERNAL_INTELLIGENCE]
+        assert len(ext_ev) >= 1
+        assert ext_ev[0].source_tool == "intel.tavily_search"
+
 
 
 

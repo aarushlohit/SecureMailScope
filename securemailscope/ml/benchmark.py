@@ -1,39 +1,40 @@
 """
 SecureMailScope - Rule-Only vs Rule+ML Benchmark Evaluation
+Evaluates Rule-Only Baseline vs XGBoost trained on real PCAP datasets +
+EFF STARTTLS empirical transparency observations.
 """
 import numpy as np
 from typing import Dict, Any, List
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
 import xgboost as xgb
-from securemailscope.ml.dataset_generator import DatasetGenerator, CLASS_NAMES
+
+from securemailscope.ml.dataset_generator import CLASS_NAMES
 from securemailscope.ml.feature_extractor import FeatureExtractor
+from securemailscope.ml.real_dataset_pipeline import RealDatasetPipeline
 
 
 class BenchmarkEngine:
     """
     Evaluates and compares the forensic effectiveness of:
     1. Rule-Only Baseline
-    2. Rule + ML (XGBoost) Augmented Engine
-    Across precision, recall, F1, and confusion matrix.
+    2. Rule + ML (XGBoost) Augmented Engine trained on multi-source real datasets
+    Across precision, recall, F1, accuracy, and confusion matrix.
     """
 
     @staticmethod
     def evaluate_benchmark(num_samples: int = 1000) -> Dict[str, Any]:
-        X, y = DatasetGenerator.generate_tabular_dataset(num_samples=num_samples)
+        X, y, stats = RealDatasetPipeline.build_comprehensive_training_set(num_synthetic=num_samples)
         X_arr = np.array(X)
         y_arr = np.array(y)
 
-        X_train, X_test, y_train, y_test = train_test_split(X_arr, y_arr, test_size=0.25, random_state=42, stratify=y_arr)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_arr, y_arr, test_size=0.25, random_state=42, stratify=y_arr
+        )
 
         # 1. Rule-Only Baseline Model
-        # A static rule detector that checks basic threshold conditions (e.g. tls_ver < 1.2 or pt_after == 1)
         y_pred_rule = []
         for row in X_test:
-            # Feature indices:
-            # 0: tls_version_num, 1: cipher_strength, 2: has_pfs, 3: cert_key_bits, 4: is_self_signed,
-            # 5: is_cert_expired, 6: has_weak_sig, 7: st_adv, 8: st_req, 9: st_acc, 10: pt_after,
-            # 11: auth_pt, 12: completeness, 13: rtt_ms, 14: stream_bytes
             tls_ver = row[0]
             c_strength = row[1]
             cert_bits = row[3]
@@ -55,18 +56,18 @@ class BenchmarkEngine:
             elif tls_ver >= 1.2 and c_strength >= 0.6:
                 pred = CLASS_NAMES.index("SECURE_BASELINE")
             else:
-                # Rules miss complex multi-feature subtle anomalies (e.g. STARTTLS stripping vs handshake drop)
                 pred = CLASS_NAMES.index("STARTTLS_STRIPPING")
             y_pred_rule.append(pred)
 
-        # 2. Rule + ML Engine (XGBoost trained on features)
+        # 2. Rule + ML Engine (XGBoost trained on comprehensive real feature set)
         model = xgb.XGBClassifier(
             n_estimators=120,
             max_depth=5,
             learning_rate=0.08,
             objective="multi:softprob",
             num_class=len(CLASS_NAMES),
-            random_state=42
+            random_state=42,
+            eval_metric="mlogloss"
         )
         model.fit(X_train, y_train)
         y_pred_ml = model.predict(X_test)
@@ -78,7 +79,6 @@ class BenchmarkEngine:
         cm_rule = confusion_matrix(y_test, y_pred_rule).tolist()
         cm_ml = confusion_matrix(y_test, y_pred_ml).tolist()
 
-        # Feature importances from XGBoost
         raw_importances = model.feature_importances_
         feature_names = FeatureExtractor.FEATURE_NAMES
         top_features = []
@@ -94,13 +94,14 @@ class BenchmarkEngine:
             "precision": round(float(p_ml), 4),
             "recall": round(float(r_ml), 4),
             "f1_score": round(float(f1_ml), 4),
-            "accuracy": round(float(np.mean(y_pred_ml == y_test)), 4),
+            "accuracy": round(float(accuracy_score(y_test, y_pred_ml)), 4),
             "confusion_matrix": cm_ml
         }
 
         return {
-            "total_samples": num_samples,
+            "total_samples": len(X),
             "test_samples_count": len(y_test),
+            "dataset_stats": stats,
             "classes": CLASS_NAMES,
             "rule_only_baseline": {
                 "precision": round(float(p_rule), 4),

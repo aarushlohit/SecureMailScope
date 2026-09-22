@@ -109,7 +109,7 @@ class KnowledgeGraphEngine:
                     continue
                 # Include tools that produced evidence, or core protocol/cryptographic engines
                 is_evidence_producer = (tool_name in evidence_source_tools) or bool(t.evidence_ids)
-                is_core_analyzer = any(k in tool_name for k in ["analyze", "handshake", "certificate", "completeness", "entropy", "rules", "explain", "cipher", "yara", "inspect"])
+                is_core_analyzer = any(k in tool_name for k in ["analyze", "handshake", "certificate", "completeness", "entropy", "rules", "explain", "cipher", "yara", "inspect", "tavily", "intel"])
                 
                 if not (is_evidence_producer or is_core_analyzer):
                     continue

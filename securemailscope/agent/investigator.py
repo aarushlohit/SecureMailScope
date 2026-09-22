@@ -190,11 +190,11 @@ LLM_TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "search_threat_intel",
-            "description": "Executes external web intelligence search via Tavily.",
+            "description": "Executes external OSINT web threat intelligence search via Tavily for mail servers, domains, IPs, CVEs, or downgrade attack patterns. Results are strictly categorized as EXTERNAL_INTELLIGENCE.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "Search query."}
+                    "query": {"type": "string", "description": "Search query for threat intelligence (e.g. domain, MTA reputation, or vulnerability)."}
                 },
                 "required": ["query"]
             }
@@ -367,7 +367,7 @@ class InvestigationAgent:
         elif tool_name in ("run_ml_classifier", "ml.predict"):
             ctx = args.get("forensic_context") or forensic_context
             return self.gateway.execute_tool(investigation_id, "ml.predict", {"forensic_context": ctx})
-        elif tool_name in ("search_threat_intel", "intel.tavily_search"):
+        elif tool_name in ("search_threat_intel", "intel.tavily_search", "intel_tavily_search"):
             return self.gateway.execute_tool(investigation_id, "intel.tavily_search", {"query": args.get("query", "")})
         elif tool_name in ("yara_scan", "yara.scan"):
             return self.gateway.execute_tool(investigation_id, "yara.scan", {"payload": args.get("payload", "")})
@@ -433,6 +433,8 @@ class InvestigationAgent:
             "evaluate_rules, run_ml_classifier, search_threat_intel, finalize_finding. "
             "Investigate the traffic for cryptographic violations such as STARTTLS stripping/downgrade, "
             "expired or weak certificates, deprecated TLS 1.0/1.1 or broken ciphers (RC4, DES), and cleartext credentials. "
+            "When encountering mail server hostnames, external domains, or suspected vulnerabilities, you SHOULD actively call search_threat_intel "
+            "to query external threat intelligence via Tavily (strictly tagged as EXTERNAL_INTELLIGENCE). "
             "You MUST ONLY cite real evidence IDs returned by the tools in finalize_finding. Never invent facts. "
             "Call tools iteratively to build evidence, and call finalize_finding for each confirmed issue."
         )
@@ -1038,6 +1040,32 @@ class InvestigationAgent:
                 stream_exec = self.gateway.execute_tool(investigation_id, "pcap.tcp_stream", {"file_path": str(pcap_path)}, hypothesis_id=h1.hypothesis_id)
                 if smtp_data.get("plaintext_after_starttls"):
                     hyp_engine.confirm_hypothesis(h1.hypothesis_id, "Verified cleartext MAIL FROM / DATA payload after STARTTLS acceptance.")
+
+                # Query external intelligence via Tavily if configured
+                if config.tavily_enabled and config.allow_external_intel and config.tavily_api_key:
+                    target_endpoint = streams[0].get("server_endpoint", "") if streams else ""
+                    target_domain = target_endpoint.split(":")[0] if target_endpoint else "mail server"
+                    query = f"{target_domain} STARTTLS stripping downgrade vulnerability"
+                    record_step(
+                        state="SELECT_TOOL",
+                        reason=f"STARTTLS downgrade anomaly verified with high capture completeness ({comp_score}%). Querying external threat intelligence (intel.tavily_search) for known downgrade attacks.",
+                        tool="intel.tavily_search",
+                        tool_args={"query": query, "max_results": 3},
+                        hypothesis_title=h1.title
+                    )
+                    tav_res = self.gateway.execute_tool(
+                        investigation_id,
+                        "intel.tavily_search",
+                        {"query": query, "max_results": 3},
+                        hypothesis_id=h1.hypothesis_id
+                    )
+                    if tav_res.get("evidence_ids"):
+                        hyp_engine.add_supporting_evidence(
+                            h1.hypothesis_id,
+                            tav_res["evidence_ids"][0],
+                            0.25,
+                            "External OSINT intelligence enriched threat context."
+                        )
             else:
                 # Low completeness supports H2, casts doubt on H1
                 if comp_exec["evidence_ids"]:
@@ -1062,27 +1090,40 @@ class InvestigationAgent:
                 next_action="Perform certificate validation."
             )
 
-            is_self_signed = cert_data.get("is_self_signed", False)
-            # If public-facing and external intelligence could reduce uncertainty:
-            if not is_self_signed and config.tavily_enabled and config.allow_external_intel and config.tavily_api_key:
+            # Query external intelligence via Tavily if enabled & configured
+            if config.tavily_enabled and config.allow_external_intel and config.tavily_api_key:
                 domain_query = streams[0].get("server_endpoint", "").split(":")[0] if streams else "mail.example.com"
+                subj = cert_data.get("subject")
+                if isinstance(subj, dict):
+                    cert_cn = subj.get("common_name") or domain_query
+                elif isinstance(subj, str) and subj:
+                    cn_part = [p for p in subj.split(",") if p.strip().startswith("CN=")]
+                    cert_cn = cn_part[0].split("=", 1)[1].strip() if cn_part else subj.strip()
+                else:
+                    cert_cn = domain_query
+                search_q = f"{cert_cn} certificate trust reputation"
                 record_step(
                     state="SELECT_TOOL",
-                    reason="Certificate is public-facing with domain mismatch. Calling intel.tavily_search to check external domain trust.",
+                    reason="Certificate anomaly detected. Calling intel.tavily_search to check external domain trust and certificate reputation.",
                     tool="intel.tavily_search",
-                    tool_args={"query": f"{domain_query} mail certificate", "max_results": 3},
+                    tool_args={"query": search_q, "max_results": 3},
                     hypothesis_title=h4.title
                 )
                 tav_res = self.gateway.execute_tool(
                     investigation_id,
                     "intel.tavily_search",
-                    {"query": f"{domain_query} mail certificate", "max_results": 3},
+                    {"query": search_q, "max_results": 3},
                     hypothesis_id=h4.hypothesis_id
                 )
-                if tav_res["evidence_ids"]:
-                    hyp_engine.add_supporting_evidence(h4.hypothesis_id, tav_res["evidence_ids"][0], 0.3, "External intelligence query completed.")
+                if tav_res.get("evidence_ids"):
+                    hyp_engine.add_supporting_evidence(
+                        h4.hypothesis_id,
+                        tav_res["evidence_ids"][0],
+                        0.3,
+                        "External intelligence query completed."
+                    )
 
-            hyp_engine.confirm_hypothesis(h4.hypothesis_id, f"Confirmed certificate defects: {', '.join(cert_errs)}")
+            hyp_engine.confirm_hypothesis(h4.hypothesis_id, f"Confirmed certificate defects: {', '.join(cert_errs) if cert_errs else 'Untrusted certificate'}")
 
         # -------------------------------------------------------------
         # BRANCH 3: Weak Cryptography & Legacy Protocol

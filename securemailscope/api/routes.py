@@ -227,6 +227,39 @@ def get_ml_metrics():
     return BenchmarkEngine.evaluate_benchmark(num_samples=600)
 
 
+@router.post("/ml/retrain")
+def retrain_ml_model(num_synthetic: int = 1600):
+    """
+    Triggers end-to-end retraining of the XGBoost CryptoRiskClassifier
+    using the multi-source RealDatasetPipeline (Authentic PCAPs + EFF Transparency data).
+    """
+    from securemailscope.ml.model import CryptoRiskClassifier
+    classifier = CryptoRiskClassifier.get_instance()
+    report = classifier.train_and_save(num_synthetic=num_synthetic)
+    return {
+        "status": "SUCCESS",
+        "message": "Model retrained successfully on multi-source authentic datasets.",
+        "report": report
+    }
+
+
+@router.get("/ml/dataset/stats")
+def get_ml_dataset_stats():
+    """
+    Returns real dataset statistics, including authentic PCAP captures,
+    EFF domain coverage, and latest training evaluation metrics.
+    """
+    from securemailscope.ml.model import CryptoRiskClassifier
+    from securemailscope.ml.real_dataset_pipeline import RealDatasetPipeline
+    classifier = CryptoRiskClassifier.get_instance()
+    report = classifier.get_training_report()
+    _, _, live_stats = RealDatasetPipeline.build_comprehensive_training_set(num_synthetic=100)
+    return {
+        "dataset_summary": live_stats,
+        "latest_training_report": report
+    }
+
+
 
 
 @router.get("/all-findings")
@@ -787,7 +820,8 @@ async def chat_with_agent(
         "3. Available forensic tools: inspect_pcap, list_sessions, extract_smtp, extract_imap, "
         "extract_pop3, analyze_tls, extract_certificate, check_completeness, evaluate_rules, "
         "run_ml_classifier, search_threat_intel, finalize_finding.\n"
-        "4. Stop calling tools once evidence is sufficient. Provide a final grounded answer.\n\n"
+        "4. When asked about external threat intelligence, reputations, or domain/MTA history, invoke search_threat_intel to perform Tavily OSINT threat search.\n"
+        "5. Stop calling tools once evidence is sufficient. Provide a final grounded answer.\n\n"
         f"INVESTIGATION: {inv.investigation_id} — {inv.artifact_name}\n"
         f"COMPLETENESS: {inv.completeness_percentage}%\n"
         f"POSTURE SCORE: {posture_score}/100\n"
@@ -823,6 +857,8 @@ async def chat_with_agent(
         "evaluate_rules": "rules.evaluate",
         "run_ml_classifier": "ml.predict",
         "search_threat_intel": "intel.tavily_search",
+        "intel_tavily_search": "intel.tavily_search",
+        "intel.tavily_search": "intel.tavily_search",
         "finalize_finding": "findings.verify",
     }
 
@@ -887,6 +923,7 @@ async def chat_with_agent(
 
             tool_calls_made.append({
                 "tool": t_name,
+                "name": t_name,
                 "arguments": t_args,
                 "round": round_num + 1,
                 "provider": resp.provider

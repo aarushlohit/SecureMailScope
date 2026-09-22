@@ -1,13 +1,22 @@
 """
 SecureMailScope - XGBoost Cryptographic Risk Classifier & Real SHAP Explainability Engine
+Trained on comprehensive multi-source real datasets (Wireshark Foundation captures +
+EFF/Google STARTTLS Transparency empirical records + calibrated scenario fixtures).
 """
-import numpy as np
+import json
+import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Optional
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix, accuracy_score
 import xgboost as xgb
-from securemailscope.core.config import config
+
+from securemailscope.core.config import config, DATA_DIR
 from securemailscope.ml.feature_extractor import FeatureExtractor
-from securemailscope.ml.dataset_generator import DatasetGenerator, CLASS_NAMES
+from securemailscope.ml.dataset_generator import CLASS_NAMES
+from securemailscope.ml.real_dataset_pipeline import RealDatasetPipeline
 
 # Optional SHAP import
 try:
@@ -17,18 +26,23 @@ except ImportError:
     _shap_lib = None
     _SHAP_AVAILABLE = False
 
+logger = logging.getLogger("securemailscope.ml.model")
+
 
 class CryptoRiskClassifier:
     """
     Gradient-boosted tree model for identifying cryptographic anomalies.
+    Trained on real PCAP captures, EFF transparency records, and calibrated scenario features.
     Uses real SHAP TreeExplainer for feature-level explanations when available.
     """
     _instance = None
+    REPORT_PATH = DATA_DIR / "training_report.json"
 
     def __init__(self, model_path: Optional[Path] = None):
         self.model_path = model_path or config.ml_model_path
         self.model: Optional[xgb.XGBClassifier] = None
         self._shap_explainer = None
+        self._training_report: Dict[str, Any] = {}
         self._load_or_train()
 
     @classmethod
@@ -43,9 +57,14 @@ class CryptoRiskClassifier:
                 self.model = xgb.XGBClassifier()
                 self.model.load_model(str(self.model_path))
                 self._init_shap_explainer()
+                if self.REPORT_PATH.exists():
+                    try:
+                        self._training_report = json.loads(self.REPORT_PATH.read_text())
+                    except Exception:
+                        pass
                 return
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Could not load existing model from {self.model_path}: {e}")
         self.train_and_save()
 
     def _init_shap_explainer(self):
@@ -53,16 +72,27 @@ class CryptoRiskClassifier:
         if _SHAP_AVAILABLE and self.model is not None:
             try:
                 self._shap_explainer = _shap_lib.TreeExplainer(self.model)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"SHAP TreeExplainer initialization failed: {e}")
                 self._shap_explainer = None
 
-    def train_and_save(self) -> Dict[str, Any]:
-        X, y = DatasetGenerator.generate_tabular_dataset(num_samples=1200)
+    def train_and_save(self, num_synthetic: int = 1600) -> Dict[str, Any]:
+        """
+        Trains XGBoost on the comprehensive real dataset pipeline,
+        evaluates performance metrics with stratified test split, and persists the model.
+        """
+        logger.info("Building real dataset training set...")
+        X, y, stats = RealDatasetPipeline.build_comprehensive_training_set(num_synthetic=num_synthetic)
         X_arr = np.array(X)
         y_arr = np.array(y)
 
+        # 80/20 Stratified Train/Test Split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_arr, y_arr, test_size=0.20, random_state=42, stratify=y_arr
+        )
+
         self.model = xgb.XGBClassifier(
-            n_estimators=100,
+            n_estimators=120,
             max_depth=5,
             learning_rate=0.08,
             objective="multi:softprob",
@@ -70,18 +100,77 @@ class CryptoRiskClassifier:
             random_state=42,
             eval_metric="mlogloss"
         )
-        self.model.fit(X_arr, y_arr)
+        self.model.fit(X_train, y_train)
 
+        # Save model
         self.model_path.parent.mkdir(parents=True, exist_ok=True)
         self.model.save_model(str(self.model_path))
         self._init_shap_explainer()
+
+        # Evaluate test metrics
+        y_pred = self.model.predict(X_test)
+        acc = float(accuracy_score(y_test, y_pred))
+        p_wt, r_wt, f1_wt, _ = precision_recall_fscore_support(
+            y_test, y_pred, average="weighted", zero_division=0
+        )
+        p_macro, r_macro, f1_macro, _ = precision_recall_fscore_support(
+            y_test, y_pred, average="macro", zero_division=0
+        )
+        p_class, r_class, f1_class, supp_class = precision_recall_fscore_support(
+            y_test, y_pred, average=None, zero_division=0, labels=list(range(len(CLASS_NAMES)))
+        )
+
+        per_class_metrics = {}
+        for idx, c_name in enumerate(CLASS_NAMES):
+            per_class_metrics[c_name] = {
+                "precision": round(float(p_class[idx]), 4),
+                "recall": round(float(r_class[idx]), 4),
+                "f1_score": round(float(f1_class[idx]), 4),
+                "support": int(supp_class[idx])
+            }
 
         importances = self.model.feature_importances_
         feat_imp = {
             FeatureExtractor.FEATURE_NAMES[i]: float(round(importances[i], 4))
             for i in range(len(FeatureExtractor.FEATURE_NAMES))
         }
-        return {"status": "TRAINED", "classes": CLASS_NAMES, "feature_importances": feat_imp}
+
+        self._training_report = {
+            "status": "TRAINED",
+            "trained_at": datetime.now(timezone.utc).isoformat(),
+            "model_version": "CryptoRiskClassifier-v2-RealData",
+            "classes": CLASS_NAMES,
+            "dataset_stats": stats,
+            "train_samples": len(X_train),
+            "test_samples": len(X_test),
+            "metrics": {
+                "accuracy": round(acc, 4),
+                "precision_weighted": round(float(p_wt), 4),
+                "recall_weighted": round(float(r_wt), 4),
+                "f1_weighted": round(float(f1_wt), 4),
+                "macro_f1": round(float(f1_macro), 4)
+            },
+            "per_class_metrics": per_class_metrics,
+            "feature_importances": feat_imp,
+            "confusion_matrix": confusion_matrix(y_test, y_pred).tolist()
+        }
+
+        try:
+            self.REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+            self.REPORT_PATH.write_text(json.dumps(self._training_report, indent=2))
+        except Exception as e:
+            logger.warning(f"Could not persist training report: {e}")
+
+        return self._training_report
+
+    def get_training_report(self) -> Dict[str, Any]:
+        """Returns the latest training evaluation report and dataset statistics."""
+        if not self._training_report and self.REPORT_PATH.exists():
+            try:
+                self._training_report = json.loads(self.REPORT_PATH.read_text())
+            except Exception:
+                pass
+        return self._training_report or {"status": "UNINITIALIZED"}
 
     def _compute_shap_values(self, X_test: np.ndarray, pred_class_idx: int) -> Dict[str, Any]:
         """Compute real SHAP values using TreeExplainer for XGBoost multiclass."""
@@ -97,16 +186,12 @@ class CryptoRiskClassifier:
             }
         try:
             shap_values = self._shap_explainer.shap_values(X_test)
-            # XGBoost multi:softprob returns shape (n_samples, n_features, n_classes)
             sv = np.array(shap_values)
             if sv.ndim == 3:
-                # shape: (n_samples, n_features, n_classes) — pick predicted class
                 class_shap = sv[0, :, pred_class_idx]
             elif sv.ndim == 2:
-                # shape: (n_samples, n_features) — binary or single-output
                 class_shap = sv[0]
             elif isinstance(shap_values, list):
-                # older SHAP: list of arrays per class
                 class_shap = np.array(shap_values[pred_class_idx])[0]
             else:
                 class_shap = sv.flatten()[:len(FeatureExtractor.FEATURE_NAMES)]
@@ -136,7 +221,6 @@ class CryptoRiskClassifier:
                 "reason": f"SHAP computation failed: {e}"
             }
 
-
     def predict_risk(self, forensic_context: Dict[str, Any]) -> Dict[str, Any]:
         if self.model is None:
             self._load_or_train()
@@ -150,7 +234,7 @@ class CryptoRiskClassifier:
         pred_class_name = CLASS_NAMES[pred_class_idx]
         confidence = float(probs[pred_class_idx])
 
-        # Overall risk probability
+        # Overall risk probability (probability of not being baseline secure)
         secure_prob = float(probs[0])
         risk_probability = float(round(1.0 - secure_prob, 4))
 
@@ -166,6 +250,6 @@ class CryptoRiskClassifier:
             "top_features": shap_result.get("top_contributors", []),
             "extracted_features": feat_dict,
             "shap": shap_result,
-            "model_version": "CryptoRiskClassifier-v1",
+            "model_version": "CryptoRiskClassifier-v2-RealData",
             "feature_schema_version": "v1"
         }

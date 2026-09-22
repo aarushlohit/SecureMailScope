@@ -77,7 +77,7 @@ class AppConfig(BaseModel):
     # Tavily Search Tool
     tavily_api_key: Optional[str] = Field(default_factory=lambda: os.environ.get("TAVILY_API_KEY") or None)
     tavily_enabled: bool = Field(default_factory=lambda: _env_bool("TAVILY_ENABLED", True))
-    allow_external_intel: bool = Field(default_factory=lambda: _env_bool("ALLOW_EXTERNAL_INTEL", False))
+    allow_external_intel: bool = Field(default_factory=lambda: _env_bool("ALLOW_EXTERNAL_INTEL", True if os.environ.get("TAVILY_API_KEY") else False))
 
     # Agent Configuration
     agent_enabled: bool = Field(default_factory=lambda: _env_bool("AGENT_ENABLED", True))
