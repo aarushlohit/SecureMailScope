@@ -813,21 +813,19 @@ async def chat_with_agent(
     posture_score = inv.posture.overall_posture_score if inv.posture else "N/A"
 
     system_prompt = (
-        "You are SecureMailScope's Forensic AI Agent.\n"
-        "RULES:\n"
-        "1. Only cite real Evidence IDs listed below — never invent packets, versions, or certificate details.\n"
-        "2. If you need more data, call a tool. Do NOT fabricate findings.\n"
-        "3. Available forensic tools: inspect_pcap, list_sessions, extract_smtp, extract_imap, "
-        "extract_pop3, analyze_tls, extract_certificate, check_completeness, evaluate_rules, "
-        "run_ml_classifier, search_threat_intel, finalize_finding.\n"
-        "4. When asked about external threat intelligence, reputations, or domain/MTA history, invoke search_threat_intel to perform Tavily OSINT threat search.\n"
-        "5. Stop calling tools once evidence is sufficient. Provide a final grounded answer.\n\n"
-        f"INVESTIGATION: {inv.investigation_id} — {inv.artifact_name}\n"
-        f"COMPLETENESS: {inv.completeness_percentage}%\n"
-        f"POSTURE SCORE: {posture_score}/100\n"
-        f"PROTOCOLS: {protocols}\n\n"
-        f"EVIDENCE ({len(evidence_facts)} items):\n" + "\n".join(evidence_facts) + "\n\n"
-        f"VERIFIED FINDINGS ({len(findings_facts)} items):\n" + ("\n".join(findings_facts) or "(none yet)")
+        "You are SecureMailScope's Forensic AI Agent specializing in email cryptographic network forensics.\n"
+        "INSTRUCTIONS:\n"
+        "1. Answer the analyst's question directly, insightfully, and professionally in markdown.\n"
+        "2. Ground all explanations in the verified evidence records and findings provided below.\n"
+        "3. Explicitly reference relevant Evidence IDs (e.g., [EVD-xxxx] or [E-xxxx]) supporting each claim.\n"
+        "4. Maintain a clear, authoritative, forensic analysis tone. Never fabricate packets or cryptographic details.\n"
+        "5. Provide natural markdown answers — do not output raw JSON schema blocks as your final answer.\n\n"
+        f"ACTIVE INVESTIGATION: {inv.investigation_id} — {inv.artifact_name}\n"
+        f"CAPTURE COMPLETENESS: {inv.completeness_percentage}%\n"
+        f"OVERALL POSTURE SCORE: {posture_score}/100\n"
+        f"PROTOCOLS OBSERVED: {protocols}\n\n"
+        f"VERIFIED FINDINGS:\n" + ("\n".join(findings_facts) or "(No critical findings)") + "\n\n"
+        f"EVIDENCE LEDGER ({len(evidence_facts)} items):\n" + "\n".join(evidence_facts)
     )
 
     messages = [
@@ -838,7 +836,7 @@ async def chat_with_agent(
     run_id = f"CHAT-{uuid.uuid4().hex[:8].upper()}"
     tool_calls_made: list = []
     agent_steps: list = []
-    max_rounds = 4
+    max_rounds = 2
     final_answer = ""
     provider_used = "unknown"
     model_used = "unknown"
@@ -863,13 +861,12 @@ async def chat_with_agent(
     }
 
     for round_num in range(max_rounds):
-        # Send to LLM WITH tool schemas
         try:
             llm_req = LLMChatRequest(
                 messages=messages,
-                tools=LLM_TOOL_SCHEMAS,
+                tools=LLM_TOOL_SCHEMAS if round_num == 0 else None,
                 max_tokens=2048,
-                temperature=0.2
+                temperature=0.3
             )
             resp = await llm_router.chat(llm_req, investigation_id=investigation_id)
             provider_used = resp.provider
@@ -892,6 +889,22 @@ async def chat_with_agent(
             raise HTTPException(status_code=502, detail=f"LLM error: {exc}")
 
         tool_calls = resp.tool_calls or []
+
+        # Check if model returned raw JSON function invocation in content
+        if not tool_calls and resp.content and resp.content.strip().startswith('{"name":'):
+            try:
+                parsed_call = _json.loads(resp.content.strip())
+                if "name" in parsed_call and ("parameters" in parsed_call or "arguments" in parsed_call):
+                    tool_calls = [{
+                        "id": f"call_{uuid.uuid4().hex[:6]}",
+                        "type": "function",
+                        "function": {
+                            "name": parsed_call["name"],
+                            "arguments": parsed_call.get("parameters") or parsed_call.get("arguments") or {}
+                        }
+                    }]
+            except Exception:
+                pass
 
         if not tool_calls:
             # LLM provided a final text answer — stop the loop

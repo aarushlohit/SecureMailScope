@@ -330,7 +330,8 @@ class InvestigationAgent:
         if loop and loop.is_running():
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                return pool.submit(_runner).result()
+                fut = pool.submit(_runner)
+                return fut.result(timeout=12.0)
         else:
             return asyncio.run(self.router.chat(request, investigation_id))
 
@@ -448,7 +449,7 @@ class InvestigationAgent:
         ]
 
         iterations = 0
-        max_iterations = 3
+        max_iterations = 1
         llm_called_successfully = False
 
         while iterations < max_iterations:
