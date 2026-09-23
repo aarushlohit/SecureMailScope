@@ -1457,11 +1457,22 @@
   background: var(--bg-surface);
   overflow: hidden;
   flex-shrink: 0;
-  transition: border-color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .tool-exec-card:hover {
   border-color: var(--border-strong);
+}
+
+.tool-exec-card.is-running {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 14px rgba(59, 130, 246, 0.15);
+  animation: toolCardGlow 1.4s infinite alternate ease-in-out;
+}
+
+@keyframes toolCardGlow {
+  0% { border-color: rgba(59, 130, 246, 0.35); box-shadow: 0 0 6px rgba(59, 130, 246, 0.1); }
+  100% { border-color: rgba(59, 130, 246, 0.85); box-shadow: 0 0 16px rgba(59, 130, 246, 0.3); }
 }
 
 .tool-exec-header {
@@ -1555,6 +1566,27 @@
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 180px;
+}
+
+.badge-running {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-running .pulse-dot-anim {
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  animation: pulseDot 1s infinite alternate;
 }
 
 .tool-evidence-link-row {

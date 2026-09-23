@@ -13,7 +13,7 @@
   <script>
     (function() {
       var autoToken = "{{ auto_token }}";
-      if (autoToken && (!localStorage.getItem('securemailscope_token') || localStorage.getItem('securemailscope_token') === '')) {
+      if (autoToken) {
         try {
           localStorage.setItem('securemailscope_token', autoToken);
         } catch (e) {
