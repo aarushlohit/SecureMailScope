@@ -627,11 +627,19 @@
       if (btn && dropdown) {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          dropdown.classList.toggle('show');
+          const isShown = dropdown.classList.contains('show') || dropdown.style.display === 'flex';
+          if (isShown) {
+            dropdown.classList.remove('show');
+            dropdown.style.display = 'none';
+          } else {
+            dropdown.classList.add('show');
+            dropdown.style.display = 'flex';
+          }
         });
 
         document.addEventListener('click', () => {
           dropdown.classList.remove('show');
+          dropdown.style.display = 'none';
         });
       }
 
