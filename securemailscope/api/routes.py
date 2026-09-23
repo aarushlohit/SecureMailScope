@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request, Response, BackgroundTasks, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request, Response, BackgroundTasks, Depends, status
 from fastapi.responses import FileResponse, JSONResponse
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy.orm import Session
@@ -757,7 +757,7 @@ async def general_agent_chat(
 
     tool_calls_made: list = []
     agent_steps: list = []
-    max_rounds = 3
+    max_rounds = 2
     final_answer = ""
     provider_used = "unknown"
     model_used = "unknown"
@@ -767,7 +767,6 @@ async def general_agent_chat(
     user_wants_search = any(k in req.message.lower() for k in search_keywords)
 
     if user_wants_search:
-        # Pre-fetch live web OSINT search intelligence to guarantee rich grounding
         t0 = time.perf_counter()
         clean_query = req.message
         for prefix in ["search the web for", "search web for", "search for", "look up", "lookup", "find"]:
@@ -806,25 +805,25 @@ async def general_agent_chat(
             "duration": duration_ms,
             "evidence_ids": eids,
             "provider": "live_osint_engine",
-            "model": "duckduckgo_osint_scraper",
+            "model": "tavily_or_duckduckgo",
             "success": "error" not in tool_result
         })
 
-        # Append search findings to context
         search_summary = "\n".join([
             f"- [{r.get('title')}]: {r.get('snippet')} (URL: {r.get('url')})"
             for r in res_output.get("results", [])[:5]
         ])
         messages.append(ChatMessage(
             role="system",
-            content=f"LIVE OSINT WEB SEARCH FINDINGS for '{clean_query}':\n{search_summary}\nCite these real findings in your response."
+            content=f"LIVE OSINT WEB SEARCH FINDINGS for '{clean_query}':\n{search_summary}\nSummarize these verified findings for the user."
         ))
 
     for round_num in range(max_rounds):
         try:
+            tools_to_pass = None if user_wants_search else (LLM_TOOL_SCHEMAS if round_num == 0 else None)
             llm_req = LLMChatRequest(
                 messages=messages,
-                tools=LLM_TOOL_SCHEMAS if round_num == 0 else None,
+                tools=tools_to_pass,
                 temperature=0.3,
                 max_tokens=1500
             )
