@@ -128,7 +128,12 @@
       margin: 6px 0;
     }
   </style>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="/static/lucide.min.js"></script>
+  <script>
+    if (typeof lucide === 'undefined') {
+      document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');
+    }
+  </script>
   <script>
     (function() {
       var autoToken = "{{ auto_token }}";
@@ -299,7 +304,7 @@
             
             <!-- Greeting (Hides when conversation is active) -->
             <div class="home-greeting-section" id="home-greeting-wrap">
-              <h1 class="home-greeting-title">Good morning, Alex.</h1>
+              <h1 class="home-greeting-title" id="home-greeting-title">Good morning, Alex.</h1>
               <p class="home-greeting-sub">What are you investigating?</p>
             </div>
 

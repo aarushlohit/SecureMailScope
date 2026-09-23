@@ -673,6 +673,14 @@
         if (ddEmail) ddEmail.textContent = user.email || 'analyst@agency.gov';
         if (ddRole) ddRole.textContent = (user.role || 'Analyst').toUpperCase();
 
+        const greetingEl = document.getElementById('home-greeting-title');
+        if (greetingEl) {
+          const hour = new Date().getHours();
+          const timeOfDay = hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening');
+          const firstName = (user.full_name || 'Analyst').split(' ')[0];
+          greetingEl.textContent = `${timeOfDay}, ${firstName}.`;
+        }
+
         const settingsName = document.getElementById('settings-user-name');
         const settingsEmail = document.getElementById('settings-user-email');
         if (settingsName) settingsName.value = user.full_name || '';
