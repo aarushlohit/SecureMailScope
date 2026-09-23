@@ -160,6 +160,7 @@ def get_current_user_optional(
 
 
 def get_or_create_default_user(db: Session) -> UserModel:
+    # Seed analyst@agency.gov
     user = db.query(UserModel).filter_by(email="analyst@agency.gov").first()
     if not user:
         user = UserModel(
@@ -177,6 +178,24 @@ def get_or_create_default_user(db: Session) -> UserModel:
         except Exception:
             db.rollback()
             user = db.query(UserModel).filter_by(user_id="USR-DEFAULTANALYST").first()
+
+    # Seed admin@soc.gov
+    admin_user = db.query(UserModel).filter_by(email="admin@soc.gov").first()
+    if not admin_user:
+        admin_user = UserModel(
+            user_id="USR-DEFAULTADMIN",
+            email="admin@soc.gov",
+            password_hash=hash_password("admin123!"),
+            full_name="Lead Auditor (SOC Team)",
+            role="admin",
+            is_active=True
+        )
+        db.add(admin_user)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+
     return user
 
 

@@ -6,91 +6,300 @@
   <title>Sign In — SecureMailScope</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/design-tokens.css">
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      background: var(--bg-app);
+      background: var(--bg-app, #F8FAFC);
+      font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+      color: #0F172A;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
       padding: 24px;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .auth-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .back-home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary, #64748B);
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color var(--transition-fast, 0.15s ease);
+    }
+    .back-home-link:hover {
+      color: #0F172A;
     }
 
     .auth-card {
       background: #FFFFFF;
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-xl);
-      width: 100%;
-      max-width: 400px;
-      padding: 40px 36px;
-      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-default, #E2E8F0);
+      border-radius: var(--radius-xl, 16px);
+      padding: 36px 32px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
       text-align: left;
     }
 
+    .auth-brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
     .auth-logo {
-      width: 36px;
-      height: 36px;
-      background: #000000;
+      width: 38px;
+      height: 38px;
+      background: #0F172A;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #FFFFFF;
-      margin-bottom: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+    }
+
+    .brand-meta-name {
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.3px;
+      color: #0F172A;
+    }
+
+    .brand-meta-sub {
+      font-size: 11px;
+      color: var(--text-tertiary, #94A3B8);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
     }
 
     .auth-title {
       font-size: 22px;
       font-weight: 700;
       letter-spacing: -0.4px;
-      color: #000000;
+      color: #0F172A;
       margin-bottom: 6px;
     }
 
     .auth-subtitle {
       font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 28px;
+      color: var(--text-secondary, #64748B);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .quick-demo-section {
+      background: rgba(241, 245, 249, 0.7);
+      border: 1px dashed var(--border-default, #CBD5E1);
+      border-radius: var(--radius-md, 8px);
+      padding: 12px 14px;
+      margin-bottom: 22px;
+    }
+
+    .quick-demo-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #2563EB;
+      margin-bottom: 8px;
+    }
+
+    .quick-demo-chips {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-demo-chip {
+      flex: 1;
+      padding: 7px 10px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-default, #E2E8F0);
+      border-radius: var(--radius-sm, 6px);
+      font-size: 11px;
+      font-weight: 600;
+      color: #0F172A;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-demo-chip:hover {
+      background: #F8FAFC;
+      border-color: #2563EB;
+      color: #2563EB;
+      transform: translateY(-1px);
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .form-label {
       display: block;
       font-size: 12px;
       font-weight: 600;
-      color: var(--text-primary);
+      color: #334155;
       margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper i.input-icon {
+      position: absolute;
+      left: 12px;
+      color: #94A3B8;
+      pointer-events: none;
     }
 
     .form-input {
       width: 100%;
-      padding: 10px 14px;
-      background: var(--bg-surface-subtle);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-md);
+      padding: 10px 14px 10px 36px;
+      background: #F8FAFC;
+      border: 1px solid var(--border-default, #CBD5E1);
+      border-radius: var(--radius-md, 8px);
       font-size: 13px;
-      color: #000000;
+      color: #0F172A;
       outline: none;
-      transition: all var(--transition-fast);
+      transition: all 0.15s ease;
+      font-family: inherit;
     }
     .form-input:focus {
       background: #FFFFFF;
-      border-color: #000000;
-      box-shadow: 0 0 0 1px #000000;
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .btn-password-toggle {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #94A3B8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+    .btn-password-toggle:hover {
+      color: #0F172A;
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .remember-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .remember-wrap input[type="checkbox"] {
+      accent-color: #0F172A;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .remember-wrap label {
+      font-size: 12px;
+      color: var(--text-secondary, #64748B);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .forgot-link {
+      font-size: 12px;
+      color: #2563EB;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 11px 16px;
+      background: #0F172A;
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-md, 8px);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.1);
+    }
+    .btn-submit:hover {
+      background: #1E293B;
+      transform: translateY(-1px);
+    }
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .auth-divider {
       display: flex;
       align-items: center;
       text-align: center;
-      margin: 24px 0;
-      color: var(--text-quaternary);
+      margin: 22px 0;
+      color: #94A3B8;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.8px;
@@ -98,7 +307,7 @@
     .auth-divider::before, .auth-divider::after {
       content: '';
       flex: 1;
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-default, #E2E8F0);
     }
     .auth-divider span {
       padding: 0 12px;
@@ -107,125 +316,237 @@
     .sso-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
     }
 
     .btn-sso {
       background: #FFFFFF;
-      border: 1px solid var(--border-default);
+      border: 1px solid var(--border-default, #E2E8F0);
       padding: 9px 12px;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-md, 8px);
       font-size: 12px;
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      color: var(--text-primary);
-      transition: all var(--transition-fast);
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
     .btn-sso:hover {
-      background: var(--bg-surface-subtle);
-      border-color: var(--border-strong);
+      background: #F8FAFC;
+      border-color: #94A3B8;
+      color: #0F172A;
     }
 
     .auth-footer {
-      margin-top: 28px;
+      margin-top: 24px;
       text-align: center;
       font-size: 13px;
-      color: var(--text-tertiary);
+      color: var(--text-secondary, #64748B);
     }
     .auth-footer a {
-      color: #000000;
+      color: #2563EB;
       font-weight: 600;
+      text-decoration: none;
+    }
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .auth-alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-md, 8px);
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+      animation: alertSlide 0.2s ease-out;
+    }
+    .auth-alert-error {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #991B1B;
+    }
+    .auth-alert-success {
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      color: #166534;
+    }
+
+    @keyframes alertSlide {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <div class="auth-card">
-    <div class="auth-logo">
-      <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
-    </div>
+  <div class="auth-wrapper">
+    <a href="/" class="back-home-link">
+      <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+      <span>Back to overview</span>
+    </a>
 
-    <h1 class="auth-title">Welcome back</h1>
-    <p class="auth-subtitle">Continue your cryptographic forensic investigations.</p>
-
-    <div id="login-error" style="display:none; padding:10px 14px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:var(--radius-md); color:#991B1B; font-size:12px; margin-bottom:16px;"></div>
-
-    <form id="login-form" onsubmit="handleLogin(event);">
-      <div class="form-group">
-        <label class="form-label" for="email">Work Email</label>
-        <input type="email" id="email" class="form-input" placeholder="analyst@agency.gov" required>
-      </div>
-
-      <div class="form-group">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <label class="form-label" for="password" style="margin-bottom: 0;">Password</label>
-          <a href="#" style="font-size: 11px; color: var(--text-tertiary);">Forgot password?</a>
+    <div class="auth-card">
+      <div class="auth-brand-row">
+        <div class="auth-logo">
+          <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
         </div>
-        <input type="password" id="password" class="form-input" placeholder="••••••••••••" required>
+        <div>
+          <div class="brand-meta-name">SECUREMAILSCOPE</div>
+          <div class="brand-meta-sub">Cryptographic Forensics</div>
+        </div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
-        <input type="checkbox" id="remember" checked style="accent-color: #000;">
-        <label for="remember" style="font-size: 12px; color: var(--text-secondary); cursor: pointer;">Remember this workstation for 30 days</label>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-subtitle">Sign in to resume cryptographic email forensic investigations.</p>
+
+      <div class="quick-demo-section">
+        <div class="quick-demo-header">
+          <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+          <span>Instant Evaluator Demo Access</span>
+        </div>
+        <div class="quick-demo-chips">
+          <button type="button" class="btn-demo-chip" onclick="fillDemoCredentials('analyst@agency.gov', 'analyst123!')" title="Fill Analyst Credentials">
+            <i data-lucide="user" style="width: 12px; height: 12px; color: #2563EB;"></i>
+            <span>Demo Analyst</span>
+          </button>
+          <button type="button" class="btn-demo-chip" onclick="fillDemoCredentials('admin@soc.gov', 'admin123!')" title="Fill Lead Auditor Credentials">
+            <i data-lucide="shield" style="width: 12px; height: 12px; color: #059669;"></i>
+            <span>Lead Auditor</span>
+          </button>
+        </div>
       </div>
 
-      <button type="submit" id="submit-btn" class="btn-primary-dark" style="width: 100%; justify-content: center; padding: 11px 16px;">
-        Sign in &rarr;
-      </button>
-    </form>
+      <div id="login-alert" class="auth-alert auth-alert-error" style="display:none;">
+        <i data-lucide="alert-circle" style="width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px;"></i>
+        <span id="login-alert-text"></span>
+      </div>
 
-    <div class="auth-divider">
-      <span>or continue with</span>
-    </div>
+      <form id="login-form" onsubmit="handleLogin(event);">
+        <div class="form-group">
+          <label class="form-label" for="email">Work Email</label>
+          <div class="input-wrapper">
+            <i data-lucide="mail" class="input-icon" style="width: 14px; height: 14px;"></i>
+            <input type="email" id="email" class="form-input" placeholder="analyst@agency.gov" required autocomplete="email">
+          </div>
+        </div>
 
-    <div class="sso-grid">
-      <button type="button" class="btn-sso" onclick="window.location.href='/app';">
-        <i data-lucide="key" style="width: 14px; height: 14px;"></i> Enterprise SSO
-      </button>
-      <button type="button" class="btn-sso" onclick="window.location.href='/app';">
-        <i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub
-      </button>
-    </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock" class="input-icon" style="width: 14px; height: 14px;"></i>
+            <input type="password" id="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+            <button type="button" class="btn-password-toggle" onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility">
+              <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+            </button>
+          </div>
+        </div>
 
-    <div class="auth-footer">
-      Don't have an account? <a href="/signup">Create one</a>
+        <div class="form-options">
+          <div class="remember-wrap">
+            <input type="checkbox" id="remember" checked>
+            <label for="remember">Remember workstation (30d)</label>
+          </div>
+          <a href="#" class="forgot-link" onclick="alert('Demo Mode: Use quick sign-in buttons above or reset via administrator.')">Forgot password?</a>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-submit">
+          <span>Sign in</span>
+          <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+        </button>
+      </form>
+
+      <div class="auth-divider">
+        <span>or enterprise single sign-on</span>
+      </div>
+
+      <div class="sso-grid">
+        <button type="button" class="btn-sso" onclick="fillDemoCredentials('analyst@agency.gov', 'analyst123!')">
+          <i data-lucide="key" style="width: 14px; height: 14px;"></i>
+          <span>Agency SSO</span>
+        </button>
+        <button type="button" class="btn-sso" onclick="fillDemoCredentials('analyst@agency.gov', 'analyst123!')">
+          <i data-lucide="github" style="width: 14px; height: 14px;"></i>
+          <span>GitHub</span>
+        </button>
+      </div>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="/signup">Create one now &rarr;</a>
+      </div>
     </div>
   </div>
 
   <script>
     if (window.lucide) window.lucide.createIcons();
 
-    async function handleLogin(e) {
-      e.preventDefault();
-      const errEl = document.getElementById("login-error");
-      const btn = document.getElementById("submit-btn");
-      errEl.style.display = "none";
-      btn.disabled = true;
-      btn.innerText = "Signing in...";
+    function fillDemoCredentials(email, password) {
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = password;
+      const alertEl = document.getElementById('login-alert');
+      alertEl.style.display = 'none';
+      const form = document.getElementById('login-form');
+      form.dispatchEvent(new Event('submit'));
+    }
 
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<i data-lucide="eye-off" style="width: 14px; height: 14px;"></i>';
+      } else {
+        input.type = 'password';
+        btn.innerHTML = '<i data-lucide="eye" style="width: 14px; height: 14px;"></i>';
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    async function handleLogin(e) {
+      if (e) e.preventDefault();
+      const alertEl = document.getElementById('login-alert');
+      const alertText = document.getElementById('login-alert-text');
+      const btn = document.getElementById('submit-btn');
+
+      alertEl.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = `<span>Authenticating session...</span>`;
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
 
       try {
-        const resp = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const resp = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
+
         const data = await resp.json();
         if (!resp.ok) {
-          throw new Error(data.detail || "Authentication failed");
+          throw new Error(data.detail || 'Invalid email or password credentials.');
         }
-        localStorage.setItem("securemailscope_token", data.token);
-        localStorage.setItem("securemailscope_user", JSON.stringify(data));
-        window.location.href = "/app";
+
+        // Save token and user details to localStorage
+        localStorage.setItem('securemailscope_token', data.token);
+        localStorage.setItem('securemailscope_user', JSON.stringify(data));
+
+        btn.innerHTML = `<span>✓ Verified &bull; Redirecting...</span>`;
+        btn.style.background = '#059669';
+
+        setTimeout(() => {
+          window.location.href = '/app';
+        }, 300);
       } catch (err) {
-        errEl.innerText = err.message;
-        errEl.style.display = "block";
+        alertText.innerText = err.message || 'Authentication error occurred.';
+        alertEl.style.display = 'flex';
         btn.disabled = false;
-        btn.innerText = "Sign in →";
+        btn.innerHTML = `<span>Sign in</span> <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>`;
+        if (window.lucide) window.lucide.createIcons();
       }
     }
   </script>

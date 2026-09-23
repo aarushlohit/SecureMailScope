@@ -605,6 +605,7 @@
       this.bindCommandPalette();
       this.bindThreatIntel();
       this.bindFilters();
+      this.bindUserProfile();
 
       // Handle direct URL routing or load default
       this.handleInitialRoute();
@@ -617,6 +618,72 @@
       if (window.lucide) {
         window.lucide.createIcons();
       }
+    }
+
+    bindUserProfile() {
+      const btn = document.getElementById('user-profile-btn');
+      const dropdown = document.getElementById('profile-dropdown-menu');
+
+      if (btn && dropdown) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+          dropdown.classList.remove('show');
+        });
+      }
+
+      this.loadCurrentUserProfile();
+    }
+
+    async loadCurrentUserProfile() {
+      try {
+        const resp = await this.authFetch('/api/auth/me');
+        if (!resp.ok) {
+          return;
+        }
+
+        const user = await resp.json();
+        const initials = (user.full_name || 'Alex Morgan')
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2) || 'AM';
+
+        const avatarEl = document.getElementById('header-user-avatar');
+        const nameEl = document.getElementById('header-user-name');
+        const ddName = document.getElementById('dropdown-user-fullname');
+        const ddEmail = document.getElementById('dropdown-user-email');
+        const ddRole = document.getElementById('dropdown-user-role');
+
+        if (avatarEl) avatarEl.textContent = initials;
+        if (nameEl) nameEl.textContent = user.full_name || 'Alex Morgan';
+        if (ddName) ddName.textContent = user.full_name || 'Alex Morgan';
+        if (ddEmail) ddEmail.textContent = user.email || 'analyst@agency.gov';
+        if (ddRole) ddRole.textContent = (user.role || 'Analyst').toUpperCase();
+
+        const settingsName = document.getElementById('settings-user-name');
+        const settingsEmail = document.getElementById('settings-user-email');
+        if (settingsName) settingsName.value = user.full_name || '';
+        if (settingsEmail) settingsEmail.value = user.email || '';
+      } catch (err) {
+        console.warn('Error loading user profile:', err);
+      }
+    }
+
+    async handleLogout() {
+      try {
+        await this.authFetch('/api/auth/logout', { method: 'POST' });
+      } catch (e) {
+        console.warn('Logout API call:', e);
+      }
+      localStorage.removeItem('securemailscope_token');
+      localStorage.removeItem('securemailscope_user');
+      document.cookie = 'securemailscope_token=; Max-Age=0; path=/;';
+      window.location.href = '/login';
     }
 
     /* -------------------------------------------------------------

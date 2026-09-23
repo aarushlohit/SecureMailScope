@@ -135,9 +135,36 @@
             <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
           </button>
 
-          <div class="user-profile-badge" title="Active Analyst Profile">
-            <div class="user-avatar" aria-hidden="true">AM</div>
-            <span class="user-name">Alex Morgan</span>
+          <div class="user-profile-badge" id="user-profile-btn" title="Active Analyst Profile (Click for options)">
+            <div class="user-avatar" id="header-user-avatar" aria-hidden="true">AM</div>
+            <span class="user-name" id="header-user-name">Alex Morgan</span>
+            <i data-lucide="chevron-down" style="width: 12px; height: 12px; color: var(--text-tertiary);"></i>
+
+            <!-- Dropdown Menu -->
+            <div class="profile-dropdown-menu" id="profile-dropdown-menu" onclick="event.stopPropagation();">
+              <div class="profile-dropdown-header">
+                <div class="profile-dropdown-name" id="dropdown-user-fullname">Alex Morgan</div>
+                <div class="profile-dropdown-email" id="dropdown-user-email">analyst@agency.gov</div>
+                <div class="profile-dropdown-role" id="dropdown-user-role">Analyst</div>
+              </div>
+              <a class="profile-dropdown-item" href="javascript:void(0)" onclick="window.workstation.navigate('settings'); document.getElementById('profile-dropdown-menu').classList.remove('show');">
+                <i data-lucide="settings" style="width: 14px; height: 14px;"></i>
+                <span>Account Settings</span>
+              </a>
+              <a class="profile-dropdown-item" href="javascript:void(0)" onclick="window.workstation.navigate('docs'); document.getElementById('profile-dropdown-menu').classList.remove('show');">
+                <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
+                <span>Documentation & API</span>
+              </a>
+              <div class="profile-dropdown-divider"></div>
+              <a class="profile-dropdown-item" href="/login">
+                <i data-lucide="users" style="width: 14px; height: 14px;"></i>
+                <span>Switch Account</span>
+              </a>
+              <a class="profile-dropdown-item danger" href="javascript:void(0)" onclick="window.workstation.handleLogout();">
+                <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                <span>Sign Out</span>
+              </a>
+            </div>
           </div>
         </div>
       </header>
