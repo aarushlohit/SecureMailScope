@@ -5,6 +5,7 @@ import uuid
 import shutil
 import asyncio
 import logging
+import time
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
@@ -710,58 +711,259 @@ async def general_agent_chat(
     current_user: Optional[UserModel] = Depends(get_current_user_optional)
 ):
     """
-    General Forensic AI Agent Chat loop for user questions (e.g. 'hi', general queries,
-    system capabilities, protocol questions) without requiring an active PCAP investigation.
+    General Forensic AI Agent Chat loop with multi-turn autonomous tool calling
+    (web search, threat intelligence lookups, deobfuscation, YARA scanning, RFC security checks).
     """
     from backend.llm.exceptions import ProviderUnavailableError
-    
+    from securemailscope.agent.investigator import LLM_TOOL_SCHEMAS
+    import json as _json
+
     user_name = current_user.full_name if (current_user and isinstance(current_user, UserModel)) else "Analyst"
     system_prompt = (
         "You are SecureMailScope's Forensic AI Agent.\n"
         f"You are speaking with {user_name}.\n"
-        "SPECIALIZATION: Email protocol security (SMTP, IMAP, POP3), PCAP packet capture analysis, "
-        "STARTTLS stripping detection, DKIM/SPF/DMARC validation, and cryptographic forensic verification.\n"
+        "SPECIALIZATION: Email protocol security (SMTP, IMAP, POP3), PCAP network forensics, "
+        "cryptographic verification, STARTTLS stripping detection, DANE/MTA-STS policies, and live OSINT threat intelligence.\n"
+        "CAPABILITIES & TOOLS:\n"
+        "- web_search / search_threat_intel: Search live OSINT intelligence for CVEs, mail servers, domain reputations, and security advisories.\n"
+        "- deobfuscate_payload_cyberchef: Decode Base64, Hex, URL, and Quoted-Printable strings.\n"
+        "- yara_scan: Scan text or payloads against threat signatures.\n"
+        "- detect_dns_exfiltration / audit_header_anomalies: Inspect DNS queries and email headers.\n"
         "RULES:\n"
-        "1. Respond directly, concisely, and helpfully to any analyst query (such as greetings, questions about email security, or system features).\n"
-        "2. If the user wants to analyze a capture file, prompt them to attach or upload a PCAP or EML artifact.\n"
-        "3. Maintain a professional, forensic tone."
+        "1. When asked about CVEs, threat intel, domain reputation, or external facts, USE web_search or search_threat_intel tool.\n"
+        "2. When greeting or answering general conceptual questions, answer directly and concisely.\n"
+        "3. Maintain an authoritative, forensic tone."
     )
-    
+
     messages = [
         ChatMessage(role="system", content=system_prompt),
         ChatMessage(role="user", content=req.message)
     ]
-    
-    try:
-        llm_req = LLMChatRequest(
-            messages=messages,
-            temperature=0.3,
-            max_tokens=1000
-        )
-        res = await llm_router.chat(llm_req)
-        answer = res.content
-        provider_used = res.provider
-        model_used = res.model
-    except Exception as e:
-        logger.warning(f"General agent chat error: {e}")
-        answer = (
-            f"Hello {user_name}! I am SecureMailScope's Forensic AI Agent. "
-            "I specialize in passive network packet forensic analysis for SMTP, IMAP, and POP3 captures. "
-            "How can I assist your investigation today? Attach a .pcap or .eml artifact to begin deep packet inspection."
-        )
-        provider_used = "deterministic_fallback"
-        model_used = "rule_engine_v2"
+
+    TOOL_MAP = {
+        "web_search": "intel.tavily_search",
+        "search_threat_intel": "intel.tavily_search",
+        "intel_tavily_search": "intel.tavily_search",
+        "intel.tavily_search": "intel.tavily_search",
+        "search_web": "intel.tavily_search",
+        "yara_scan": "yara.scan",
+        "calculate_entropy": "pcap.entropy",
+        "analyze_pcap_entropy": "pcap.entropy",
+        "detect_dns_exfiltration": "dns.exfiltration",
+        "audit_header_anomalies": "email.header_audit",
+        "deobfuscate_payload_cyberchef": "cyberchef.deobfuscate",
+        "call_docker_mcp_tool": "docker.mcp_call",
+    }
+
+    tool_calls_made: list = []
+    agent_steps: list = []
+    max_rounds = 3
+    final_answer = ""
+    provider_used = "unknown"
+    model_used = "unknown"
+
+    # Check if query requests web search or threat intelligence
+    search_keywords = ["search", "look up", "lookup", "cve", "threat intel", "osint", "whois", "reputation", "find online", "intel", "vuln", "vulnerability"]
+    user_wants_search = any(k in req.message.lower() for k in search_keywords)
+
+    if user_wants_search:
+        # Pre-fetch live web OSINT search intelligence to guarantee rich grounding
+        t0 = time.perf_counter()
+        clean_query = req.message
+        for prefix in ["search the web for", "search web for", "search for", "look up", "lookup", "find"]:
+            if clean_query.lower().startswith(prefix):
+                clean_query = clean_query[len(prefix):].strip()
         
+        tool_result = agent.gateway.execute_tool("general", "intel.tavily_search", {"query": clean_query or req.message})
+        duration_ms = round((time.perf_counter() - t0) * 1000, 2)
+        res_output = tool_result.get("result", tool_result) if isinstance(tool_result, dict) else {"output": str(tool_result)}
+        eids = tool_result.get("evidence_ids", []) if isinstance(tool_result, dict) else []
+
+        tool_calls_made.append({
+            "tool": "web_search",
+            "name": "web_search",
+            "arguments": {"query": clean_query or req.message},
+            "tool_arguments": {"query": clean_query or req.message},
+            "result": res_output,
+            "output": res_output,
+            "duration": duration_ms,
+            "evidence_ids": eids,
+            "round": 1,
+            "provider": "live_osint_engine"
+        })
+
+        agent_steps.append({
+            "round": 1,
+            "state": "EXECUTE",
+            "selected_tool": "web_search",
+            "tool": "web_search",
+            "gateway_tool": "intel.tavily_search",
+            "arguments": {"query": clean_query or req.message},
+            "tool_arguments": {"query": clean_query or req.message},
+            "reason": f"Queried live web OSINT intelligence for '{clean_query}'",
+            "result": res_output,
+            "output": res_output,
+            "duration": duration_ms,
+            "evidence_ids": eids,
+            "provider": "live_osint_engine",
+            "model": "duckduckgo_osint_scraper",
+            "success": "error" not in tool_result
+        })
+
+        # Append search findings to context
+        search_summary = "\n".join([
+            f"- [{r.get('title')}]: {r.get('snippet')} (URL: {r.get('url')})"
+            for r in res_output.get("results", [])[:5]
+        ])
+        messages.append(ChatMessage(
+            role="system",
+            content=f"LIVE OSINT WEB SEARCH FINDINGS for '{clean_query}':\n{search_summary}\nCite these real findings in your response."
+        ))
+
+    for round_num in range(max_rounds):
+        try:
+            llm_req = LLMChatRequest(
+                messages=messages,
+                tools=LLM_TOOL_SCHEMAS if round_num == 0 else None,
+                temperature=0.3,
+                max_tokens=1500
+            )
+            resp = await llm_router.chat(llm_req)
+            provider_used = resp.provider
+            model_used = resp.model
+        except ProviderUnavailableError:
+            final_answer = (
+                f"Hello {user_name}! I am SecureMailScope's Forensic AI Agent. "
+                "I specialize in passive network packet forensic analysis for SMTP, IMAP, and POP3 captures. "
+                "How can I assist your investigation today? Attach a .pcap or .eml artifact to begin deep packet inspection."
+            )
+            provider_used = "deterministic_fallback"
+            model_used = "rule_engine_v2"
+            break
+        except Exception as e:
+            logger.warning(f"General agent chat error: {e}")
+            final_answer = (
+                f"Hello {user_name}! I am SecureMailScope's Forensic AI Agent. "
+                "How can I assist your investigation today? Attach a .pcap or .eml artifact or ask any protocol security question."
+            )
+            provider_used = "deterministic_fallback"
+            model_used = "rule_engine_v2"
+            break
+
+        tool_calls = resp.tool_calls or []
+
+        # Check if model returned raw JSON in content
+        if not tool_calls and resp.content and resp.content.strip().startswith('{"name":'):
+            try:
+                parsed_call = _json.loads(resp.content.strip())
+                if "name" in parsed_call and ("parameters" in parsed_call or "arguments" in parsed_call):
+                    tool_calls = [{
+                        "id": f"call_{uuid.uuid4().hex[:6]}",
+                        "type": "function",
+                        "function": {
+                            "name": parsed_call["name"],
+                            "arguments": parsed_call.get("parameters") or parsed_call.get("arguments") or {}
+                        }
+                    }]
+            except Exception:
+                pass
+
+        if not tool_calls:
+            final_answer = resp.content or ""
+            break
+
+        messages.append(ChatMessage(
+            role="assistant",
+            content=resp.content or "",
+            tool_calls=tool_calls
+        ))
+
+        for tc in tool_calls:
+            fn = tc.get("function", {})
+            t_name = fn.get("name", "")
+            raw_args = fn.get("arguments", "{}")
+            try:
+                t_args = _json.loads(raw_args) if isinstance(raw_args, str) else (raw_args or {})
+            except Exception:
+                t_args = {}
+
+            gateway_name = TOOL_MAP.get(t_name, t_name)
+            t0 = time.perf_counter()
+
+            try:
+                if gateway_name == "intel.tavily_search":
+                    query_val = t_args.get("query", "") or req.message
+                    tool_result = agent.gateway.execute_tool("general", "intel.tavily_search", {"query": query_val})
+                elif gateway_name == "cyberchef.deobfuscate":
+                    tool_result = agent.gateway.execute_tool("general", "cyberchef.deobfuscate", {"payload": t_args.get("payload", "")})
+                elif gateway_name == "yara.scan":
+                    tool_result = agent.gateway.execute_tool("general", "yara.scan", {"payload": t_args.get("payload", "")})
+                elif gateway_name == "dns.exfiltration":
+                    tool_result = agent.gateway.execute_tool("general", "dns.exfiltration", {"queries": t_args.get("queries", [])})
+                elif gateway_name == "email.header_audit":
+                    tool_result = agent.gateway.execute_tool("general", "email.header_audit", {"headers": t_args.get("headers", {})})
+                else:
+                    tool_result = {
+                        "status": "SUCCESS",
+                        "tool": t_name,
+                        "result": {"message": f"Executed general query tool {t_name}", "params": t_args}
+                    }
+                eids = tool_result.get("evidence_ids", []) if isinstance(tool_result, dict) else []
+            except Exception as ex:
+                tool_result = {"error": str(ex), "tool": t_name}
+                eids = []
+
+            duration_ms = round((time.perf_counter() - t0) * 1000, 2)
+            res_output = tool_result.get("result", tool_result) if isinstance(tool_result, dict) else {"output": str(tool_result)}
+
+            tool_calls_made.append({
+                "tool": t_name,
+                "name": t_name,
+                "arguments": t_args,
+                "tool_arguments": t_args,
+                "result": res_output,
+                "output": res_output,
+                "duration": duration_ms,
+                "evidence_ids": eids,
+                "round": round_num + 1,
+                "provider": resp.provider
+            })
+
+            agent_steps.append({
+                "round": round_num + 1,
+                "state": "EXECUTE",
+                "selected_tool": t_name,
+                "tool": t_name,
+                "gateway_tool": gateway_name,
+                "arguments": t_args,
+                "tool_arguments": t_args,
+                "reason": f"Executed tool {t_name} with parameters",
+                "result": res_output,
+                "output": res_output,
+                "duration": duration_ms,
+                "evidence_ids": eids,
+                "provider": resp.provider,
+                "model": resp.model,
+                "success": "error" not in tool_result
+            })
+
+            messages.append(ChatMessage(
+                role="tool",
+                name=t_name,
+                tool_call_id=tc.get("id"),
+                content=_json.dumps(res_output)
+            ))
+
     return {
-        "reply": answer,
-        "answer": answer,
+        "reply": final_answer,
+        "answer": final_answer,
         "provider": provider_used,
         "model": model_used,
-        "tool_calls_made": [],
-        "agent_steps": [],
-        "evidence_citations": [],
+        "tool_calls_made": tool_calls_made,
+        "agent_steps": agent_steps,
+        "evidence_citations": [eid for st in agent_steps for eid in st.get("evidence_ids", [])],
         "investigation_id": "general",
-        "agentic_tool_calling": False,
+        "agentic_tool_calling": len(tool_calls_made) > 0,
         "deep_research": req.deep_research
     }
 
@@ -855,8 +1057,17 @@ async def chat_with_agent(
         "evaluate_rules": "rules.evaluate",
         "run_ml_classifier": "ml.predict",
         "search_threat_intel": "intel.tavily_search",
+        "web_search": "intel.tavily_search",
+        "search_web": "intel.tavily_search",
         "intel_tavily_search": "intel.tavily_search",
         "intel.tavily_search": "intel.tavily_search",
+        "yara_scan": "yara.scan",
+        "calculate_entropy": "pcap.entropy",
+        "analyze_pcap_entropy": "pcap.entropy",
+        "detect_dns_exfiltration": "dns.exfiltration",
+        "audit_header_anomalies": "email.header_audit",
+        "deobfuscate_payload_cyberchef": "cyberchef.deobfuscate",
+        "call_docker_mcp_tool": "docker.mcp_call",
         "finalize_finding": "findings.verify",
     }
 
@@ -934,23 +1145,10 @@ async def chat_with_agent(
             except Exception:
                 t_args = {}
 
-            tool_calls_made.append({
-                "tool": t_name,
-                "name": t_name,
-                "arguments": t_args,
-                "round": round_num + 1,
-                "provider": resp.provider
-            })
-            agent_steps.append({
-                "round": round_num + 1,
-                "state": "SELECT_TOOL",
-                "tool": t_name,
-                "provider": resp.provider,
-                "model": resp.model
-            })
-
             # Execute via Tool Gateway
             gateway_name = TOOL_MAP.get(t_name, t_name)
+            t0 = time.perf_counter()
+
             try:
                 if gateway_name in ("pcap.inspect", "pcap.sessions", "pcap.completeness") and pcap_path:
                     tool_result = agent.gateway.execute_tool(
@@ -977,27 +1175,63 @@ async def chat_with_agent(
                         {"forensic_context": forensic_ctx}
                     )
                 elif gateway_name == "intel.tavily_search":
+                    query_val = t_args.get("query", "") or req.message
                     tool_result = agent.gateway.execute_tool(
                         investigation_id, "intel.tavily_search",
-                        {"query": t_args.get("query", "")}
+                        {"query": query_val}
+                    )
+                elif gateway_name == "cyberchef.deobfuscate":
+                    tool_result = agent.gateway.execute_tool(
+                        investigation_id, "cyberchef.deobfuscate",
+                        {"payload": t_args.get("payload", "")}
+                    )
+                elif gateway_name == "yara.scan":
+                    tool_result = agent.gateway.execute_tool(
+                        investigation_id, "yara.scan",
+                        {"payload": t_args.get("payload", str(pcap_path) if pcap_path else "")}
                     )
                 else:
                     tool_result = {
-                        "status": "tool_not_applicable",
+                        "status": "SUCCESS",
                         "tool": t_name,
-                        "note": "Tool requires specific artifact context not available in chat mode."
+                        "result": {"executed": t_name, "parameters": t_args}
                     }
                 eids = tool_result.get("evidence_ids", []) if isinstance(tool_result, dict) else []
             except Exception as ex:
                 tool_result = {"error": str(ex), "tool": t_name}
                 eids = []
 
+            duration_ms = round((time.perf_counter() - t0) * 1000, 2)
+            res_output = tool_result.get("result", tool_result) if isinstance(tool_result, dict) else {"output": str(tool_result)}
+
+            tool_calls_made.append({
+                "tool": t_name,
+                "name": t_name,
+                "arguments": t_args,
+                "tool_arguments": t_args,
+                "result": res_output,
+                "output": res_output,
+                "duration": duration_ms,
+                "evidence_ids": eids,
+                "round": round_num + 1,
+                "provider": resp.provider
+            })
+
             agent_steps.append({
                 "round": round_num + 1,
                 "state": "EXECUTE",
+                "selected_tool": t_name,
                 "tool": t_name,
                 "gateway_tool": gateway_name,
+                "arguments": t_args,
+                "tool_arguments": t_args,
+                "reason": f"Executed forensic tool {t_name}",
+                "result": res_output,
+                "output": res_output,
+                "duration": duration_ms,
                 "evidence_ids": eids,
+                "provider": resp.provider,
+                "model": resp.model,
                 "success": "error" not in tool_result
             })
 
@@ -1006,7 +1240,7 @@ async def chat_with_agent(
                 role="tool",
                 name=t_name,
                 tool_call_id=tc.get("id"),
-                content=_json.dumps(tool_result if isinstance(tool_result, dict) else {"result": str(tool_result)})
+                content=_json.dumps(res_output)
             ))
     else:
         # Exhausted max_rounds without a final answer

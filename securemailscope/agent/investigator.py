@@ -190,11 +190,25 @@ LLM_TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "search_threat_intel",
-            "description": "Executes external OSINT web threat intelligence search via Tavily for mail servers, domains, IPs, CVEs, or downgrade attack patterns. Results are strictly categorized as EXTERNAL_INTELLIGENCE.",
+            "description": "Executes external OSINT web threat intelligence search for mail servers, domains, IPs, CVEs, or downgrade attack patterns. Results are strictly categorized as EXTERNAL_INTELLIGENCE.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "query": {"type": "string", "description": "Search query for threat intelligence (e.g. domain, MTA reputation, or vulnerability)."}
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": "Performs live web OSINT search for email vulnerabilities, CVE details, MTA-STS policies, DANE TLSA records, and security advisories.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Search term or question to find online."}
                 },
                 "required": ["query"]
             }
